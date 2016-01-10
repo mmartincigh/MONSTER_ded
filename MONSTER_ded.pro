@@ -33,6 +33,8 @@ MOC_DIR = $${DESTDIR}/.moc
 OBJECTS_DIR = $${DESTDIR}/.obj
 RCC_DIR = $${DESTDIR}/.rcc
 
+INCLUDEPATH += \
+    "$$PWD/include"
 win32 {
     INCLUDEPATH += \
         "Z:/OpenCV/current/build/include"
@@ -43,8 +45,11 @@ unix {
 }
 
 win32 {
+    LIBS += \
+        -L"$$PWD\lib\win"
     CONFIG(debug, debug|release) {
         LIBS += \
+            -lcryptlibd \
             -L"Z:/OpenCV/current/build/x86/vc10/lib/Debug" \
             -lopencv_core300d \
             -lopencv_highgui300d \
@@ -53,6 +58,7 @@ win32 {
     }
     CONFIG(release, debug|release) {
         LIBS += \
+            -lcryptlib \
             -L"Z:/OpenCV/current/build/x86/vc10/lib/Release" \
             -lopencv_core300 \
             -lopencv_highgui300 \
@@ -69,11 +75,25 @@ unix {
         -lopencv_imgcodecs
 }
 
+win32 {
+    QMAKE_CXXFLAGS += \
+        /wd4100 \
+        /wd4189
+}
+
+win32 {
+    RC_ICONS = 1UpMushroom256x256.ico
+}
+
 HEADERS += \
     applicationmanager.h \
     applicationutils.h \
     base.h \
     destinationmanager.h \
+    encryptionmanager.h \
+    encryptionmanagerutils.h \
+    encryptionstates.h \
+    fileencryptor.h \
     enums.h \
     filemanager.h \
     logmanager.h \
@@ -89,6 +109,9 @@ SOURCES += \
     applicationutils.cpp \
     base.cpp \
     destinationmanager.cpp \
+    encryptionmanager.cpp \
+    encryptionmanagerutils.cpp \
+    fileencryptor.cpp \
     filemanager.cpp \
     logmanager.cpp \
     main.cpp \
@@ -101,10 +124,6 @@ SOURCES += \
 
 RESOURCES += \
     resources.qrc
-
-win32 {
-    RC_ICONS = 1UpMushroom256x256.ico
-}
 
 win32 {
     OTHER_FILES += \

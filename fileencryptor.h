@@ -11,15 +11,16 @@
 #include <default.h>
 #include <files.h>
 
-#include "encryptionstates.h"
+#include "base.h"
+#include "enums.h"
 
-class FileEncryptor : public QObject
+class FileEncryptor : public Base
 {
     Q_OBJECT
 
 private:
-    static const quint64 m_ENCRYPTION_THRESHOLD_SIZE;
-    static const quint64 m_ENCRYPTION_CHUNK_SIZE;
+    static const unsigned long long m_ENCRYPTION_THRESHOLD_SIZE;
+    static const unsigned long long m_ENCRYPTION_CHUNK_SIZE;
 
 public:
     explicit FileEncryptor(QObject *parent = NULL);
@@ -28,14 +29,15 @@ public:
 public:
     int encryptFile(const QString &input, const QString &output, const QString &passphrase, QTime &encryptionTime, bool *pause, bool *stop, QMutex *mutex, QWaitCondition *waitCondition);
 
+private:
+    bool processStateCheckpoint(bool *pause, bool *stop, QMutex *mutex, QWaitCondition *waitCondition);
+
 signals:
-    void bytesEncrypted(qint64 bytesEncrypted);
-    void stateChanged(EncryptionStates state);
+    void bytesEncryptedChanged(unsigned long long bytesEncryptedChanged);
+    void stateChanged(Enums::State state);
+    void working();
     void paused();
-    void resumed();
     void stopped();
-    void exit();
-    void log(const QString &log);
 };
 
 #endif // FILEENCRYPTOR_H

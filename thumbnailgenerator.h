@@ -28,8 +28,8 @@ class ThumbnailGenerator : public Base
     Q_PROPERTY(QUrl thumbnailUrl READ thumbnailUrl NOTIFY thumbnailUrlChanged)
 
 private:
-    QMutex m_thumbnailGeneratorMutex;
-    QWaitCondition m_thumbnailGeneratorWaitCondition;
+    QMutex m_mutex;
+    QWaitCondition m_waitCondition;
     QThread m_thumbnailGeneratorImplThread;
     QSharedPointer<ThumbnailGeneratorImpl> m_thumbnailGeneratorImplSptr;
 
@@ -39,6 +39,7 @@ public:
 
 public:
     void initialize();
+    void uninitialize();
     bool isEnabled() const;
     int thumbnailRows() const;
     int thumbnailColumns() const;

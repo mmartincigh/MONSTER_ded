@@ -2,10 +2,10 @@
 
 ThumbnailGenerator::ThumbnailGenerator(QObject *parent) :
     Base("TG", parent),
-    m_thumbnailGeneratorMutex(),
-    m_thumbnailGeneratorWaitCondition(),
+    m_mutex(),
+    m_waitCondition(),
     m_thumbnailGeneratorImplThread(this),
-    m_thumbnailGeneratorImplSptr(new ThumbnailGeneratorImpl(&m_thumbnailGeneratorMutex, &m_thumbnailGeneratorWaitCondition))
+    m_thumbnailGeneratorImplSptr(new ThumbnailGeneratorImpl(&m_mutex, &m_waitCondition))
 {
     QObject::connect(m_thumbnailGeneratorImplSptr.data(), SIGNAL(thumbnailRows(int*)), this, SIGNAL(thumbnailRows(int*)));
     QObject::connect(m_thumbnailGeneratorImplSptr.data(), SIGNAL(thumbnailColumns(int*)), this, SIGNAL(thumbnailColumns(int*)));
@@ -39,6 +39,7 @@ ThumbnailGenerator::ThumbnailGenerator(QObject *parent) :
 
 ThumbnailGenerator::~ThumbnailGenerator()
 {
+    this->uninitialize();
     this->onStop();
 
     m_thumbnailGeneratorImplThread.quit();
@@ -55,6 +56,14 @@ void ThumbnailGenerator::initialize()
     m_thumbnailGeneratorImplThread.start();
 
     this->debug("Initialized");
+}
+
+void ThumbnailGenerator::uninitialize()
+{
+    // Disconnect all the thumbnail generator implementation's signals during shut down to avoid deadlocks.
+    QObject::disconnect(m_thumbnailGeneratorImplSptr.data(), NULL, NULL, NULL);
+
+    this->debug("Uninitialized");
 }
 
 bool ThumbnailGenerator::isEnabled() const
@@ -174,30 +183,30 @@ void ThumbnailGenerator::onGenerateThumbnails()
 
 void ThumbnailGenerator::onPause()
 {
-    m_thumbnailGeneratorMutex.lock();
+    m_mutex.lock();
     m_thumbnailGeneratorImplSptr.data()->setPause(true);
-    m_thumbnailGeneratorMutex.unlock();
+    m_mutex.unlock();
 
     this->debug("Pause event set");
 }
 
 void ThumbnailGenerator::onResume()
 {
-    m_thumbnailGeneratorMutex.lock();
+    m_mutex.lock();
     m_thumbnailGeneratorImplSptr.data()->setPause(false);
-    m_thumbnailGeneratorWaitCondition.wakeAll();
-    m_thumbnailGeneratorMutex.unlock();
+    m_waitCondition.wakeAll();
+    m_mutex.unlock();
 
     this->debug("Pause event reset");
 }
 
 void ThumbnailGenerator::onStop()
 {
-    m_thumbnailGeneratorMutex.lock();
+    m_mutex.lock();
     m_thumbnailGeneratorImplSptr.data()->setPause(false);
     m_thumbnailGeneratorImplSptr.data()->setStop(true);
-    m_thumbnailGeneratorWaitCondition.wakeAll();
-    m_thumbnailGeneratorMutex.unlock();
+    m_waitCondition.wakeAll();
+    m_mutex.unlock();
 
     this->debug("Stop event set");
 }

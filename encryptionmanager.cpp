@@ -4,7 +4,7 @@ const QString EncryptionManager::m_ENCRYPTED_FILE_EXTENSION("mef");
 const QString EncryptionManager::m_PASSPHRASE("Let's pretend that this is a clever passphrase.");
 
 EncryptionManager::EncryptionManager(bool *pause, bool *stop, QMutex *mutex, QWaitCondition *waitCondition, QObject *parent) :
-    QObject(parent),
+    Base("EM", parent),
     m_isEncrypting(false),
     m_files(),
     m_destination("D:\\Temp\\EncryptionTest"),
@@ -25,7 +25,7 @@ EncryptionManager::EncryptionManager(bool *pause, bool *stop, QMutex *mutex, QWa
     m_exit(new QFinalState()),
     m_fileEncryptor(new FileEncryptor(this))
 {
-    QObject::connect(m_fileEncryptor, SIGNAL(bytesEncrypted(qint64)), this, SLOT(onBytesEncrypted(qint64)));
+    QObject::connect(m_fileEncryptor, SIGNAL(bytesEncryptedChanged(unsigned long long)), this, SLOT(onBytesEncryptedChanged(unsigned long long)));
     QObject::connect(m_fileEncryptor, SIGNAL(stateChanged(EncryptionStates)), this, SLOT(onStateChanged(EncryptionStates)));
     QObject::connect(m_fileEncryptor, SIGNAL(paused()), this, SIGNAL(paused()));
     QObject::connect(m_fileEncryptor, SIGNAL(resumed()), this, SIGNAL(resumed()));
@@ -59,12 +59,12 @@ EncryptionManager::EncryptionManager(bool *pause, bool *stop, QMutex *mutex, QWa
 
     m_completed->addTransition(this, SIGNAL(exit()), m_exit);
 
-    qDebug() << "EM> Encryption manager created";
+    this->debug("Encryption manager created");
 }
 
 EncryptionManager::~EncryptionManager()
 {
-    qDebug() << "EM> Encryption manager disposed of";
+    this->debug("Encryption manager disposed of");
 }
 
 void EncryptionManager::setIsEncrypting(bool isEncrypting)
@@ -127,7 +127,7 @@ void EncryptionManager::setOverwrite(bool overwrite)
     qDebug() << "EM> Overwrite changed:" << m_overwrite;
 }
 
-void EncryptionManager::setBytesToEncrypt(quint64 bytesToEncrypt)
+void EncryptionManager::setBytesToEncrypt(unsigned long long bytesToEncrypt)
 {
     if (m_bytesToEncrypt == bytesToEncrypt)
     {
@@ -140,7 +140,7 @@ void EncryptionManager::setBytesToEncrypt(quint64 bytesToEncrypt)
     qDebug() << "EM> Bytes to encrypt changed:" << m_bytesToEncrypt;
 }
 
-void EncryptionManager::setBytesEncrypted(quint64 bytesEncrypted)
+void EncryptionManager::setBytesEncrypted(unsigned long long bytesEncrypted)
 {
     if (m_bytesEncrypted == bytesEncrypted)
     {
@@ -243,7 +243,7 @@ void EncryptionManager::onIdle()
     qDebug() << "EM> Starting encryption...";
 
     // Calculate the total size of the data to encrypt.
-    quint64 bytes_to_encrypt = 0;
+    unsigned long long bytes_to_encrypt = 0;
     for (int i = 0; i < m_files.count(); i++)
     {
         QFileInfo file_to_encrypt_info(m_files.at(i));
@@ -382,7 +382,7 @@ void EncryptionManager::onExit()
     qDebug() << "EM> Encryption exited";
 }
 
-void EncryptionManager::onBytesEncrypted(qint64 bytesEncrypted)
+void EncryptionManager::onBytesEncryptedChanged(unsigned long long bytesEncrypted)
 {
     this->setBytesEncrypted(m_bytesEncrypted + bytesEncrypted);
 

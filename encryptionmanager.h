@@ -9,11 +9,12 @@
 #include <QFinalState>
 #include <QDebug>
 
+#include "base.h"
 #include "fileencryptor.h"
 #include "encryptionstates.h"
 #include "encryptionmanagerutils.h"
 
-class EncryptionManager : public QObject
+class EncryptionManager : public Base
 {
     Q_OBJECT
 
@@ -24,8 +25,8 @@ private:
     QStringList m_files;
     QDir m_destination;
     bool m_overwrite;
-    quint64 m_bytesToEncrypt;
-    quint64 m_bytesEncrypted;
+    unsigned long long m_bytesToEncrypt;
+    unsigned long long m_bytesEncrypted;
     double m_progress;
     QTime m_encryptionTime;
     EncryptionStates m_state;
@@ -49,8 +50,8 @@ private:
     void setFiles(const QStringList &files);
     void setDestination(const QDir &destination);
     void setOverwrite(bool overwrite);
-    void setBytesToEncrypt(quint64 bytesToEncrypt);
-    void setBytesEncrypted(quint64 bytesEncrypted);
+    void setBytesToEncrypt(unsigned long long bytesToEncrypt);
+    void setBytesEncrypted(unsigned long long bytesEncrypted);
     void setProgress(double progress);
     void setEncryptionTime(const QTime &encryptionTime);
     void setState(EncryptionStates state);
@@ -63,7 +64,7 @@ private slots:
     void onEncrypt();
     void onComplete();
     void onExit();
-    void onBytesEncrypted(qint64 bytesEncrypted);
+    void onBytesEncryptedChanged(unsigned long long bytesEncrypted);
     void onStateChanged(EncryptionStates state);
 
 public:
@@ -79,8 +80,8 @@ signals:
     void filesChanged(const QStringList &files);
     void destinationChanged(const QDir &destination);
     void overwriteChanged(bool overwrite);
-    void bytesToEncryptChanged(quint64 bytesToEncrypt);
-    void bytesEncryptedChanged(quint64 bytesEncrypted);
+    void bytesToEncryptChanged(unsigned long long bytesToEncrypt);
+    void bytesEncryptedChanged(unsigned long long bytesEncrypted);
     void progressChanged(double progress);
     void encryptionTimeChanged(const QTime &encryptionTime);
     void stateChanged(EncryptionStates state);

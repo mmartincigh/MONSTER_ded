@@ -8,6 +8,8 @@
 #include "base.h"
 #include "enums.h"
 
+#include "fileencryptor.h"
+
 class ThumbnailGeneratorImpl : public Base
 {
     Q_OBJECT
@@ -15,6 +17,7 @@ class ThumbnailGeneratorImpl : public Base
 private:
     static const QString m_CURRENT_INPUT_FILE_NONE;
     static const QString m_OUTPUT_FILE_EXTENSION;
+    static const QString m_PASSPHRASE;
     bool m_isEnabled;
     int m_thumbnailRows;
     int m_thumbnailColumns;
@@ -36,6 +39,8 @@ private:
     QUrl m_thumbnailUrl;
     QMutex *m_mutex;
     QWaitCondition *m_waitCondition;
+
+    FileEncryptor *m_fileEncryptor;
 
 public:
     explicit ThumbnailGeneratorImpl(QMutex *mutex, QWaitCondition *waitCondition, QObject *parent = NULL);
@@ -93,6 +98,7 @@ public slots:
     void onGenerateThumbnails();
 
 private slots:
+    void onUpdateState(Enums::State state);
     void onStateChanged(Enums::State state);
     void onProgressChanged(float progress);
 
@@ -126,7 +132,7 @@ signals:
     void destinationPath(QString *destinationPath);
     void videoFiles(QStringList *videoFiles);
     void overwriteOutputFiles(bool *overwriteOutputFiles);
-    void running();
+    void working();
     void paused();
     void stopped();
 };

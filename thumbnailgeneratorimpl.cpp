@@ -19,7 +19,8 @@
 #include "utils.h"
 
 const QString ThumbnailGeneratorImpl::m_CURRENT_INPUT_FILE_NONE("none");
-const QString ThumbnailGeneratorImpl::m_OUTPUT_FILE_EXTENSION(".png");
+const QString ThumbnailGeneratorImpl::m_OUTPUT_FILE_EXTENSION(".mef");
+const QString ThumbnailGeneratorImpl::m_PASSPHRASE("Let's pretend that this is a clever passphrase.");
 
 ThumbnailGeneratorImpl::ThumbnailGeneratorImpl(QMutex *mutex, QWaitCondition *waitCondition, QObject *parent) :
     Base("TGI", parent),
@@ -43,10 +44,14 @@ ThumbnailGeneratorImpl::ThumbnailGeneratorImpl(QMutex *mutex, QWaitCondition *wa
     m_currentInputFile(m_CURRENT_INPUT_FILE_NONE),
     m_thumbnailUrl(),
     m_mutex(mutex),
-    m_waitCondition(waitCondition)
+    m_waitCondition(waitCondition),
+    m_fileEncryptor(new FileEncryptor(this))
 {
     QObject::connect(this, SIGNAL(stateChanged(Enums::State)), this, SLOT(onStateChanged(Enums::State)));
     QObject::connect(this, SIGNAL(progressChanged(float)), this, SLOT(onProgressChanged(float)));
+
+    QObject::connect(m_fileEncryptor, SIGNAL(stateChanged(Enums::State)), this, SLOT(onUpdateState(Enums::State)));
+    //QObject::connect(m_fileEncryptor, SIGNAL(bytesEncryptedChanged(unsigned long long)), this, SLOT(onBytesEncryptedChanged(unsigned long long)));
 
     this->debug("Thumbnail generator implementation created");
 }
@@ -281,7 +286,7 @@ void ThumbnailGeneratorImpl::setState(Enums::State state)
 
     m_state = state;
 
-    this->debug("State is changed: " + QString::number(m_state));
+    this->debug("State changed: " + QString::number(m_state));
 
     emit this->stateChanged(m_state);
 }
@@ -482,7 +487,7 @@ bool ThumbnailGeneratorImpl::processStateCheckpoint()
         {
             // The process has been resumed.
             this->setState(Enums::Working);
-            emit this->running();
+            emit this->working();
         }
     }
 
@@ -709,6 +714,35 @@ void ThumbnailGeneratorImpl::onGenerateThumbnails()
             }
         }
         QString output_file = output_file_info.absoluteFilePath();
+
+        // ---------
+
+        // Encrypt the file.
+        QTime encryption_time(0, 0, 0, 0);
+        int fe_ret_val = m_fileEncryptor->encryptFile(input_file, output_file, m_PASSPHRASE, encryption_time, &m_pause, &m_stop, m_mutex, m_waitCondition);
+        if (fe_ret_val < 0)
+        {
+            emit this->error("Cannot encrypt file: " + input_file);
+
+            this->setProgress((current_progress += thumbnail_number) / total_progress);
+            this->setErrors(m_errors + 1);
+
+            continue;
+        }
+
+        int encryption_time_milliseconds = encryption_time.hour() * 3600000 + encryption_time.minute() * 60000 + encryption_time.second() * 1000 + encryption_time.msec();
+
+        emit this->debug("encryption_time_milliseconds: " + QString::number(encryption_time_milliseconds));
+
+        // Check whether the process should be paused, resumed or stopped.
+        /*if (!this->processStateCheckpoint())
+        {
+            return;
+        }*/
+
+        break;
+
+        // ---------
 
         // Create the temporary directory for the thumbnails.
         QTemporaryDir temporary_directory;
@@ -1056,6 +1090,11 @@ void ThumbnailGeneratorImpl::onGenerateThumbnails()
     this->setCurrentInputFile(m_CURRENT_INPUT_FILE_NONE);
 
     this->debug("Thumbnails generated");
+}
+
+void ThumbnailGeneratorImpl::onUpdateState(Enums::State state)
+{
+    this->setState(state);
 }
 
 void ThumbnailGeneratorImpl::onStateChanged(Enums::State state)

@@ -43,7 +43,7 @@ public slots:
     void onIsDestinationPathUrlValid(bool *isDestinationPathUrlValid);
     void onUpdateEditText(const QString &editText);
     void onUpdateEditText(const QUrl &editText);
-    void onGenerateThumbnails();
+    void onEncryptFiles();
 
 private slots:
     void onEditTextChanged(const QString &editText);

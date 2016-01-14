@@ -4,7 +4,7 @@
 #include <QString>
 #include <QUrl>
 
-#include "thumbnailgeneratorimpl.h"
+#include "encryptionmanagerimpl.h"
 
 class Utils
 {

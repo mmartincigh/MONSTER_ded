@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
 
     qInstallMessageHandler(LogManager::messageHandler);
     qRegisterMetaType<Enums::State>("Enums::State");
-    qmlRegisterType<Enums>("MONSTER.ThumbnailGenerator_GUI", 1, 0, "Enums");
+    qmlRegisterType<Enums>("MONSTER.MONSTER_ded", 1, 0, "Enums");
     QApplication application(argc, argv);
     application.setOrganizationName(ApplicationUtils::COMPANY_NAME);
     application.setOrganizationDomain(ApplicationUtils::COMPANY_WEBSITE);
@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
     context->setContextProperty("applicationManager", &application_manager);
     context->setContextProperty("sourceManager", application_manager.sourceManager());
     context->setContextProperty("destinationManager", application_manager.destinationManager());
-    context->setContextProperty("thumbnailGenerator", application_manager.thumbnailGenerator());
+    context->setContextProperty("encryptionManager", application_manager.encryptionManager());
     context->setContextProperty("fileManager", application_manager.fileManager());
     context->setContextProperty("windowManager", application_manager.windowManager());
     component.loadUrl(QUrl("qrc:/qml/main.qml"));

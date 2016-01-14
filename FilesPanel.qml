@@ -1,6 +1,6 @@
 import QtQuick 2.5
 import QtQuick.Controls 1.4
-import MONSTER.ThumbnailGenerator_GUI 1.0
+import MONSTER.MONSTER_ded 1.0
 
 Item {
     id: main
@@ -36,7 +36,7 @@ Item {
         anchors.leftMargin: 80
 
         text: qsTr("reload")
-        enabled: thumbnailGenerator.isEnabled && (thumbnailGenerator.state === Enums.Idle || thumbnailGenerator.state === Enums.Stopped || thumbnailGenerator.state === Enums.Completed)
+        enabled: encryptionManager.isEnabled && (encryptionManager.state === Enums.Idle || encryptionManager.state === Enums.Stopped || encryptionManager.state === Enums.Completed)
 
         onClicked: { fileManager.onReloadVideoFiles() }
     }
@@ -59,7 +59,7 @@ Item {
         anchors.verticalCenter: reloadVideoFilesButton.verticalCenter
 
         checked: fileManager.overwriteOutputFiles
-        enabled: thumbnailGenerator.state === Enums.Idle || thumbnailGenerator.state === Enums.Stopped || thumbnailGenerator.state === Enums.Completed
+        enabled: sourceManager.state === Enums.Idle || sourceManager.state === Enums.Stopped || sourceManager.state === Enums.Completed
 
         Binding {
             target: fileManager

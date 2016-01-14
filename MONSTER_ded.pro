@@ -2,7 +2,7 @@ TARGET = MONSTER_ded
 
 TEMPLATE = app
 
-VERSION = 0.0.1
+VERSION = 1.0.0
 
 QT += \
     qml \
@@ -35,44 +35,18 @@ RCC_DIR = $${DESTDIR}/.rcc
 
 INCLUDEPATH += \
     "$$PWD/include"
-win32 {
-    INCLUDEPATH += \
-        "Z:/OpenCV/current/build/include"
-}
-unix {
-    INCLUDEPATH += \
-        "/opt/opencv/current/include"
-}
 
 win32 {
     LIBS += \
         -L"$$PWD\lib\win"
     CONFIG(debug, debug|release) {
         LIBS += \
-            -lcryptlibd \
-            -L"Z:/OpenCV/current/build/x86/vc10/lib/Debug" \
-            -lopencv_core300d \
-            -lopencv_highgui300d \
-            -lopencv_imgproc300d \
-            -lopencv_imgcodecs300d
+            -lcryptlibd
     }
     CONFIG(release, debug|release) {
         LIBS += \
-            -lcryptlib \
-            -L"Z:/OpenCV/current/build/x86/vc10/lib/Release" \
-            -lopencv_core300 \
-            -lopencv_highgui300 \
-            -lopencv_imgproc300 \
-            -lopencv_imgcodecs300
+            -lcryptlib
     }
-}
-unix {
-    LIBS += \
-        -L"/opencv/current/build/lib" \
-        -lopencv_core \
-        -lopencv_highgui \
-        -lopencv_imgproc \
-        -lopencv_imgcodecs
 }
 
 win32 {
@@ -91,16 +65,13 @@ HEADERS += \
     base.h \
     destinationmanager.h \
     encryptionmanager.h \
-    encryptionmanagerutils.h \
-    encryptionstates.h \
+    encryptionmanagerimpl.h \
     fileencryptor.h \
     enums.h \
     filemanager.h \
     logmanager.h \
     settingsmanager.h \
     sourcemanager.h \
-    thumbnailgenerator.h \
-    thumbnailgeneratorimpl.h \
     utils.h \
     windowmanager.h
 
@@ -110,15 +81,13 @@ SOURCES += \
     base.cpp \
     destinationmanager.cpp \
     encryptionmanager.cpp \
-    encryptionmanagerutils.cpp \
+    encryptionmanagerimpl.cpp \
     fileencryptor.cpp \
     filemanager.cpp \
     logmanager.cpp \
     main.cpp \
     settingsmanager.cpp \
     sourcemanager.cpp \
-    thumbnailgenerator.cpp \
-    thumbnailgeneratorimpl.cpp \
     utils.cpp \
     windowmanager.cpp
 
@@ -140,12 +109,7 @@ win32 {
             $(QTDIR)/bin/Qt5Networkd.dll \
             $(QTDIR)/bin/Qt5Qmld.dll \
             $(QTDIR)/bin/Qt5Quickd.dll \
-            $(QTDIR)/bin/Qt5Widgetsd.dll \
-            "Z:/OpenCV/current/build/x86/vc10/bin/Debug/opencv_core300d.dll" \
-            "Z:/OpenCV/current/build/x86/vc10/bin/Debug/opencv_highgui300d.dll" \
-            "Z:/OpenCV/current/build/x86/vc10/bin/Debug/opencv_imgcodecs300d.dll" \
-            "Z:/OpenCV/current/build/x86/vc10/bin/Debug/opencv_imgproc300d.dll" \
-            "Z:/OpenCV/current/build/x86/vc10/bin/Debug/opencv_videoio300d.dll"
+            $(QTDIR)/bin/Qt5Widgetsd.dll
     }
     CONFIG(release, debug|release) {
         OTHER_FILES += \
@@ -156,12 +120,7 @@ win32 {
             $(QTDIR)/bin/Qt5Network.dll \
             $(QTDIR)/bin/Qt5Qml.dll \
             $(QTDIR)/bin/Qt5Quick.dll \
-            $(QTDIR)/bin/Qt5Widgets.dll \
-            "Z:/OpenCV/current/build/x86/vc10/bin/Release/opencv_core300.dll" \
-            "Z:/OpenCV/current/build/x86/vc10/bin/Release/opencv_highgui300.dll" \
-            "Z:/OpenCV/current/build/x86/vc10/bin/Release/opencv_imgcodecs300.dll" \
-            "Z:/OpenCV/current/build/x86/vc10/bin/Release/opencv_imgproc300.dll" \
-            "Z:/OpenCV/current/build/x86/vc10/bin/Release/opencv_videoio300.dll"
+            $(QTDIR)/bin/Qt5Widgets.dll
     }
 }
 

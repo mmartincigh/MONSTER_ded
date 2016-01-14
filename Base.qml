@@ -36,22 +36,13 @@ Item {
         anchors.leftMargin: 20
     }
 
-    ThumbnailsPanel {
-        id: thumbnailsPanel
+    EncryptionPanel {
+        id: encryptionPanel
 
         anchors.top: filesPanel.bottom
         anchors.topMargin: 20
         anchors.left: parent.left
         anchors.leftMargin: 20
-        anchors.right: previewPanel.left
-        anchors.rightMargin: 20
-    }
-
-    PreviewPanel {
-        id: previewPanel
-
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 20
         anchors.right: parent.right
         anchors.rightMargin: 20
     }

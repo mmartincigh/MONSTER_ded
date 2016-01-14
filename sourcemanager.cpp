@@ -153,7 +153,7 @@ void SourceManager::onUpdateEditText(const QUrl &editText)
     this->setEditText(edit_text);
 }
 
-void SourceManager::onGenerateThumbnails()
+void SourceManager::onEncryptFiles()
 {
     // Do not change the model if the current path is invalid.
     if (!m_isSourcePathUrlValid)

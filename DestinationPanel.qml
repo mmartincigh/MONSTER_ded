@@ -2,12 +2,12 @@ import QtQuick 2.5
 import QtQuick.Controls 1.4
 import QtQuick.Controls.Styles 1.4
 import QtQuick.Dialogs 1.2
-import MONSTER.ThumbnailGenerator_GUI 1.0
+import MONSTER.MONSTER_ded 1.0
 
 Item {
     id: main
 
-    property bool enabled: thumbnailGenerator.state === Enums.Idle || thumbnailGenerator.state === Enums.Stopped || thumbnailGenerator.state === Enums.Completed
+    property bool enabled: encryptionManager.state === Enums.Idle || encryptionManager.state === Enums.Stopped || encryptionManager.state === Enums.Completed
 
     height: destinationPathComboBox.height
 

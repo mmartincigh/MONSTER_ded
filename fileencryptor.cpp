@@ -1,7 +1,7 @@
 #include "fileencryptor.h"
 
-const unsigned long long FileEncryptor::m_ENCRYPTION_THRESHOLD_SIZE(10485760);
-const unsigned long long FileEncryptor::m_ENCRYPTION_CHUNK_SIZE(10485760);
+const unsigned long long FileEncryptor::m_ENCRYPTION_THRESHOLD_SIZE(1048576);
+const unsigned long long FileEncryptor::m_ENCRYPTION_CHUNK_SIZE(1048576);
 
 FileEncryptor::FileEncryptor(QObject *parent) :
     Base("FE", parent)

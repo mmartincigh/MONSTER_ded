@@ -8,10 +8,10 @@ Window {
 
     x: (Screen.width - width) / 2
     y: (Screen.height - height) / 2
-    width: 800
-    height: 460
+    width: 650
+    height: 380
 
-    title: "MONSTER_tgg"
+    title: "MONSTER_ded"
     flags: windowManager.windowFlags
     minimumWidth: width
     minimumHeight: height

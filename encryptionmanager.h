@@ -1,103 +1,78 @@
 #ifndef ENCRYPTIONMANAGER_H
 #define ENCRYPTIONMANAGER_H
 
-#include <QObject>
-#include <QDir>
-#include <QMutex>
-#include <QWaitCondition>
-#include <QStateMachine>
-#include <QFinalState>
-#include <QDebug>
+#include <QThread>
+#include <QSharedPointer>
 
 #include "base.h"
-#include "fileencryptor.h"
-#include "encryptionstates.h"
-#include "encryptionmanagerutils.h"
+#include "encryptionmanagerimpl.h"
 
 class EncryptionManager : public Base
 {
     Q_OBJECT
+    Q_PROPERTY(bool isEnabled READ isEnabled NOTIFY isEnabledChanged)
+    Q_PROPERTY(Enums::State state READ state NOTIFY stateChanged)
+    Q_PROPERTY(QString stateDescription READ stateDescription NOTIFY stateDescriptionChanged)
+    Q_PROPERTY(float progress READ progress NOTIFY progressChanged)
+    Q_PROPERTY(QString progressString READ progressString NOTIFY progressStringChanged)
+    Q_PROPERTY(int errors READ errors NOTIFY errorsChanged)
+    Q_PROPERTY(int warnings READ warnings NOTIFY warningsChanged)
+    Q_PROPERTY(int skipped READ skipped NOTIFY skippedChanged)
+    Q_PROPERTY(int overwritten READ overwritten NOTIFY overwrittenChanged)
+    Q_PROPERTY(int processed READ processed NOTIFY processedChanged)
+    Q_PROPERTY(QString currentInputFile READ currentInputFile NOTIFY currentInputFileChanged)
 
 private:
-    static const QString m_ENCRYPTED_FILE_EXTENSION;
-    static const QString m_PASSPHRASE;
-    bool m_isEncrypting;
-    QStringList m_files;
-    QDir m_destination;
-    bool m_overwrite;
-    unsigned long long m_bytesToEncrypt;
-    unsigned long long m_bytesEncrypted;
-    double m_progress;
-    QTime m_encryptionTime;
-    EncryptionStates m_state;
-    bool *m_pause;
-    bool *m_stop;
-    QMutex *m_mutex;
-    QWaitCondition *m_waitCondition;
-    QStateMachine m_stateMachine;
-    QState *m_idle;
-    QState *m_encrypting;
-    QState *m_completed;
-    QFinalState *m_exit;
-    FileEncryptor *m_fileEncryptor;
+    QMutex m_mutex;
+    QWaitCondition m_waitCondition;
+    QThread m_encryptionManagerImplThread;
+    QSharedPointer<EncryptionManagerImpl> m_encryptionManagerImplSptr;
 
 public:
-    explicit EncryptionManager(bool *pause, bool *stop, QMutex *mutex, QWaitCondition *waitCondition, QObject *parent = NULL);
+    explicit EncryptionManager(QObject *parent = NULL);
     ~EncryptionManager();
 
-private:
-    void setIsEncrypting(bool isEncrypting);
-    void setFiles(const QStringList &files);
-    void setDestination(const QDir &destination);
-    void setOverwrite(bool overwrite);
-    void setBytesToEncrypt(unsigned long long bytesToEncrypt);
-    void setBytesEncrypted(unsigned long long bytesEncrypted);
-    void setProgress(double progress);
-    void setEncryptionTime(const QTime &encryptionTime);
-    void setState(EncryptionStates state);
-    void setPause(bool pause);
-    void setStop(bool stop);
-
-private slots:
-    void onStateChanged();
-    void onIdle();
-    void onEncrypt();
-    void onComplete();
-    void onExit();
-    void onBytesEncryptedChanged(unsigned long long bytesEncrypted);
-    void onStateChanged(EncryptionStates state);
-
 public:
-    bool isEncrypting() const;
-    double progress() const;
-    EncryptionStates state() const;
+    void initialize();
+    void uninitialize();
+    bool isEnabled() const;
+    Enums::State state() const;
+    QString stateDescription() const;
+    float progress() const;
+    QString progressString() const;
+    int errors() const;
+    int warnings() const;
+    int skipped() const;
+    int overwritten() const;
+    int processed() const;
+    QString currentInputFile() const;
 
 public slots:
-    void onStart(const QStringList &files);
+    void onIsSourcePathUrlValidChanged(bool isSourcePathUrlValid);
+    void onIsDestinationPathUrlValidChanged(bool isDestinationPathUrlValid);
+    void onEncryptFiles();
+    void onPause();
+    void onResume();
+    void onStop();
 
 signals:
-    void isEncryptingChanged(bool isEncrypting);
-    void filesChanged(const QStringList &files);
-    void destinationChanged(const QDir &destination);
-    void overwriteChanged(bool overwrite);
-    void bytesToEncryptChanged(unsigned long long bytesToEncrypt);
-    void bytesEncryptedChanged(unsigned long long bytesEncrypted);
-    void progressChanged(double progress);
-    void encryptionTimeChanged(const QTime &encryptionTime);
-    void stateChanged(EncryptionStates state);
-    void pauseChanged(bool pause);
-    void stopChanged(bool stop);
-    void encrypt();
-    void complete();
-    void exit();
-    void started();
-    void paused();
-    void resumed();
-    void stopped();
-    void completed();
-    void log(const QString &log);
-    void warning(const QString &warning);
-    void error(const QString &error, bool restartRequired = false);
+    void isEnabledChanged(bool isEnabled);
+    void stateChanged(Enums::State state);
+    void stateDescriptionChanged(const QString &stateDescription);
+    void progressChanged(float progress);
+    void progressStringChanged(const QString &progressString);
+    void errorsChanged(int errors);
+    void warningsChanged(int warnings);
+    void skippedChanged(int skipped);
+    void overwrittenChanged(int overwritten);
+    void processedChanged(int processed);
+    void currentInputFileChanged(const QString &currentInputFile);
+    void isSourcePathUrlValid(bool *isSourcePathUrlValid);
+    void isDestinationPathUrlValid(bool *isDestinationPathUrlValid);
+    void sourcePath(QString *sourcePath);
+    void destinationPath(QString *destinationPath);
+    void videoFiles(QStringList *videoFiles);
+    void overwriteOutputFiles(bool *overwriteOutputFiles);
 };
 
 #endif // ENCRYPTIONMANAGER_H

@@ -8,7 +8,7 @@
 #include "sourcemanager.h"
 #include "destinationmanager.h"
 #include "filemanager.h"
-#include "thumbnailgenerator.h"
+#include "encryptionmanager.h"
 #include "settingsmanager.h"
 #include "windowmanager.h"
 
@@ -20,7 +20,7 @@ private:
     SourceManager m_sourceManager;
     DestinationManager m_destinationManager;
     FileManager m_fileManager;
-    ThumbnailGenerator m_thumbnailGenerator;
+    EncryptionManager m_encryptionManager;
     SettingsManager m_settingsManager;
     WindowManager m_windowManager;
 
@@ -33,7 +33,7 @@ public:
     SourceManager *sourceManager();
     DestinationManager *destinationManager();
     FileManager *fileManager();
-    ThumbnailGenerator *thumbnailGenerator();
+    EncryptionManager *encryptionManager();
     WindowManager *windowManager();
 
 public slots:

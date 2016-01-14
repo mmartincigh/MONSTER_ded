@@ -148,7 +148,7 @@ void DestinationManager::onUpdateEditText(const QUrl &editText)
     this->setEditText(edit_text);
 }
 
-void DestinationManager::onGenerateThumbnails()
+void DestinationManager::onEncryptFiles()
 {
     // Do not change the model if the current path is invalid.
     if (!m_isDestinationPathUrlValid)

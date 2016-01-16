@@ -12,12 +12,17 @@
 #include <QImageReader>
 #include <QtMath>
 
+#include <default.h>
+#include <files.h>
+
 #include "encryptionmanagerimpl.h"
 #include "utils.h"
 
 const QString EncryptionManagerImpl::m_CURRENT_INPUT_FILE_NONE("none");
 const QString EncryptionManagerImpl::m_OUTPUT_FILE_EXTENSION(".mef");
 const QString EncryptionManagerImpl::m_PASSPHRASE("Let's pretend that this is a clever passphrase");
+const unsigned long long EncryptionManagerImpl::m_ENCRYPTION_THRESHOLD_SIZE(1048576);
+const unsigned long long EncryptionManagerImpl::m_ENCRYPTION_CHUNK_SIZE(1048576);
 
 EncryptionManagerImpl::EncryptionManagerImpl(QMutex *mutex, QWaitCondition *waitCondition, QObject *parent) :
     Base("EMI", parent),
@@ -26,6 +31,8 @@ EncryptionManagerImpl::EncryptionManagerImpl(QMutex *mutex, QWaitCondition *wait
     m_stateDescription(Utils::thumbnailGenerationStateToString(m_state)),
     m_pause(false),
     m_stop(false),
+    m_encryptedBytes(0),
+    m_bytesToEncrypt(0),
     m_progress(0),
     m_progressString(Utils::progressToString(m_progress)),
     m_errors(0),
@@ -35,14 +42,11 @@ EncryptionManagerImpl::EncryptionManagerImpl(QMutex *mutex, QWaitCondition *wait
     m_processed(0),
     m_currentInputFile(m_CURRENT_INPUT_FILE_NONE),
     m_mutex(mutex),
-    m_waitCondition(waitCondition),
-    m_fileEncryptor(new FileEncryptor(this))
+    m_waitCondition(waitCondition)
 {
     QObject::connect(this, SIGNAL(stateChanged(Enums::State)), this, SLOT(onStateChanged(Enums::State)));
+    QObject::connect(this, SIGNAL(encryptedBytesChanged(unsigned long long)), this, SLOT(onBytesEncryptedChanged(unsigned long long)));
     QObject::connect(this, SIGNAL(progressChanged(float)), this, SLOT(onProgressChanged(float)));
-
-    QObject::connect(m_fileEncryptor, SIGNAL(stateChanged(Enums::State)), this, SLOT(onUpdateState(Enums::State)));
-    //QObject::connect(m_fileEncryptor, SIGNAL(bytesEncryptedChanged(unsigned long long)), this, SLOT(onBytesEncryptedChanged(unsigned long long)));
 
     this->debug("Thumbnail generator implementation created");
 }
@@ -98,6 +102,16 @@ void EncryptionManagerImpl::setStop(bool stop)
     this->debug("Stop changed: " + QString(m_stop ? "true" : "false"));
 
     emit this->stopChanged(m_stop);
+}
+
+unsigned long long EncryptionManagerImpl::encryptedBytes() const
+{
+    return m_encryptedBytes;
+}
+
+unsigned long long EncryptionManagerImpl::bytesToEncrypt() const
+{
+    return m_bytesToEncrypt;
 }
 
 float EncryptionManagerImpl::progress() const
@@ -180,6 +194,34 @@ void EncryptionManagerImpl::setStateDescription(const QString &stateDescription)
     this->debug("State description changed: " + m_stateDescription);
 
     emit this->stateDescriptionChanged(m_stateDescription);
+}
+
+void EncryptionManagerImpl::setEncryptedBytes(unsigned long long encryptedBytes)
+{
+    if (m_encryptedBytes == encryptedBytes)
+    {
+        return;
+    }
+
+    m_encryptedBytes = encryptedBytes;
+
+    this->debug("Encrypted bytes changed: " + QString::number(m_encryptedBytes));
+
+    emit this->encryptedBytesChanged(m_encryptedBytes);
+}
+
+void EncryptionManagerImpl::setBytesToEncrypt(unsigned long long bytesToEncrypt)
+{
+    if (m_bytesToEncrypt == bytesToEncrypt)
+    {
+        return;
+    }
+
+    m_bytesToEncrypt = bytesToEncrypt;
+
+    this->debug("Bytes to encrypt changed: " + QString::number(m_bytesToEncrypt));
+
+    emit this->bytesToEncryptChanged(m_bytesToEncrypt);
 }
 
 void EncryptionManagerImpl::setProgress(float progress)
@@ -349,6 +391,67 @@ bool EncryptionManagerImpl::processStateCheckpoint()
     return true;
 }
 
+bool EncryptionManagerImpl::encryptFile(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, QTime &encryptionTime)
+{
+    this->debug("Encrypting file: " + inputFile + "[" + Utils::humanReadableFileSize(inputFileSize) + "]");
+
+    QTime time(0, 0, 0, 0);
+    time.start();
+
+    try
+    {
+        CryptoPP::FileSink *file_sink = new CryptoPP::FileSink(outputFile.toUtf8().constData());
+        CryptoPP::DefaultEncryptorWithMAC *encryptor = new CryptoPP::DefaultEncryptorWithMAC(m_PASSPHRASE.toUtf8().constData(), file_sink);
+        CryptoPP::FileSource file_source(inputFile.toUtf8().constData(), false, encryptor);
+
+        if (inputFileSize <= m_ENCRYPTION_THRESHOLD_SIZE)
+        {
+            file_source.PumpAll();
+
+            this->setEncryptedBytes(m_encryptedBytes + inputFileSize);
+        }
+        else
+        {
+            this->debug("File \"" + inputFile + "\" is bigger than " + Utils::humanReadableFileSize(m_ENCRYPTION_THRESHOLD_SIZE) + ", encrypting by pumping chunks of " + Utils::humanReadableFileSize(m_ENCRYPTION_CHUNK_SIZE) + "...");
+
+            unsigned long long total_encrypted_bytes = 0;
+            while (total_encrypted_bytes < inputFileSize)
+            {
+                // Check whether the encryption should be paused, resumed or stopped.
+                if (!this->processStateCheckpoint())
+                {
+                    this->warning("The encryption was stopped in the middle of the file \"" + inputFile + "\", the resulting file may be corrupted");
+
+                    int time_elapsed = time.elapsed();
+                    QTime encryption_time = QTime(0, 0, 0, 0).addMSecs(time_elapsed);
+                    encryptionTime.setHMS(encryption_time.hour(), encryption_time.minute(), encryption_time.second(), encryption_time.msec());
+
+                    return true;
+                }
+
+                long long encrypted_bytes = file_source.Pump(m_ENCRYPTION_CHUNK_SIZE);
+
+                this->setEncryptedBytes(m_encryptedBytes + encrypted_bytes);
+
+                total_encrypted_bytes += encrypted_bytes;
+            }
+            file_source.PumpAll();
+        }
+    }
+    catch (const std::exception &e)
+    {
+        this->error("Cannot encrypt file \"" + inputFile + "\": " + e.what());
+
+        return false;
+    }
+
+    int time_elapsed = time.elapsed();
+    QTime encryption_time = QTime(0, 0, 0, 0).addMSecs(time_elapsed);
+    encryptionTime.setHMS(encryption_time.hour(), encryption_time.minute(), encryption_time.second(), encryption_time.msec());
+
+    return true;
+}
+
 void EncryptionManagerImpl::onIsSourcePathUrlValidChanged(bool isSourcePathUrlValid)
 {
     this->debug("Is source path URL vaild: " + QString(isSourcePathUrlValid ? "true" : "false"));
@@ -388,6 +491,7 @@ void EncryptionManagerImpl::onEncryptFiles()
         return;
     }
 
+    // Get the source path.
     QString source_path;
     emit this->sourcePath(&source_path);
     this->debug("Source path: " + source_path);
@@ -405,6 +509,7 @@ void EncryptionManagerImpl::onEncryptFiles()
         return;
     }
 
+    // Get the destiantion path.
     QString destination_path;
     emit this->destinationPath(&destination_path);
     this->debug("Destination path: " + destination_path);
@@ -422,22 +527,33 @@ void EncryptionManagerImpl::onEncryptFiles()
         return;
     }
 
-    QStringList video_files;
-    emit this->videoFiles(&video_files);
-    if (video_files.size() == 0)
+    // Get the input files.
+    QStringList input_files;
+    emit this->inputFiles(&input_files);
+    if (input_files.size() == 0)
     {
-        this->error("The source path contains no video files");
+        this->error("The source path contains no input files");
 
         return;
     }
 
+    // Get the overwrite flag.
     bool overwrite_output_files = false;
     emit this->overwriteOutputFiles(&overwrite_output_files);
     this->debug("Overwrite output files: " + QString(overwrite_output_files ? "true" : "false"));
 
+    // Calculate the total size of the input files.
+    unsigned long long input_files_total_size = 0;
+    for (int i = 0; i < input_files.size(); i++)
+    {
+        QFileInfo input_file_info(source_directory.filePath(input_files.at(i)));
+        input_files_total_size += input_file_info.size();
+    }
+    this->debug("Input files total size: " + QString::number(input_files_total_size) + "B [" + Utils::humanReadableFileSize(input_files_total_size) + "]");
+
     // Encrypt the files.
-    float total_progress = video_files.size();
-    int current_progress = 0;
+    this->setEncryptedBytes(0);
+    this->setBytesToEncrypt(input_files_total_size);
     this->setProgress(0);
     this->setErrors(0);
     this->setWarnings(0);
@@ -446,7 +562,7 @@ void EncryptionManagerImpl::onEncryptFiles()
     this->setProcessed(0);
     this->setCurrentInputFile(m_CURRENT_INPUT_FILE_NONE);
     this->setState(Enums::Working);
-    for (int i = 0; i < video_files.size(); i++)
+    for (int i = 0; i < input_files.size(); i++)
     {
         // Check whether the process should be paused, resumed or stopped.
         if (!this->processStateCheckpoint())
@@ -455,7 +571,7 @@ void EncryptionManagerImpl::onEncryptFiles()
         }
 
         // Get the input file.
-        QFileInfo input_file_info(source_directory.filePath(video_files.at(i)));
+        QFileInfo input_file_info(source_directory.filePath(input_files.at(i)));
         QString input_file = input_file_info.absoluteFilePath();
         this->debug("Working on file " + input_file + " [" + QString::number(i + 1) + "]...");
         this->setCurrentInputFile(input_file_info.fileName());
@@ -465,7 +581,7 @@ void EncryptionManagerImpl::onEncryptFiles()
         {
             this->error("The input file \"" + input_file + "\" does not exist");
 
-            this->setProgress(++current_progress / total_progress);
+            this->setEncryptedBytes(m_encryptedBytes + input_file_info.size());
             this->setErrors(m_errors + 1);
 
             continue;
@@ -481,7 +597,7 @@ void EncryptionManagerImpl::onEncryptFiles()
             {
                 this->debug("The output file \"" + output_file_info.fileName() + "\" already exists, skipping...");
 
-                this->setProgress(++current_progress / total_progress);
+                this->setEncryptedBytes(m_encryptedBytes + input_file_info.size());
                 this->setSkipped(m_skipped + 1);
 
                 continue;
@@ -491,28 +607,18 @@ void EncryptionManagerImpl::onEncryptFiles()
 
         // Encrypt the file.
         QTime encryption_time(0, 0, 0, 0);
-        int fe_ret_val = m_fileEncryptor->encryptFile(input_file, output_file, m_PASSPHRASE, encryption_time, &m_pause, &m_stop, m_mutex, m_waitCondition);
-        if (fe_ret_val < 0)
+        bool ret_val = this->encryptFile(input_file, input_file_info.size(), output_file, encryption_time);
+        if (!ret_val)
         {
             emit this->error("Cannot encrypt file: " + input_file);
 
-            this->setProgress(++current_progress / total_progress);
             this->setErrors(m_errors + 1);
 
             continue;
         }
-
-        int encryption_time_milliseconds = encryption_time.hour() * 3600000 + encryption_time.minute() * 60000 + encryption_time.second() * 1000 + encryption_time.msec();
-
-        emit this->debug("encryption_time_milliseconds: " + QString::number(encryption_time_milliseconds));
-
-        // Check whether the process should be paused, resumed or stopped.
-        /*if (!this->processStateCheckpoint())
-        {
-            return;
-        }*/
-
-        break;
+        this->debug("File encrypted to: " + output_file + "[" + Utils::humanReadableFileSize(output_file_info.size()) + "]");
+        this->debug("Encryption time: " + encryption_time.toString("HH:mm:ss:zzz"));
+        this->setProcessed(m_processed + 1);
     }
     this->setProgress(1);
     this->setState(Enums::Completed);
@@ -534,4 +640,9 @@ void EncryptionManagerImpl::onStateChanged(Enums::State state)
 void EncryptionManagerImpl::onProgressChanged(float progress)
 {
     this->setProgressString(Utils::progressToString(progress));
+}
+
+void EncryptionManagerImpl::onBytesEncryptedChanged(unsigned long long bytesEncrypted)
+{
+    this->setProgress(bytesEncrypted / static_cast<float>(m_bytesToEncrypt));
 }

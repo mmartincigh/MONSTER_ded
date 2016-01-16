@@ -24,7 +24,7 @@ ApplicationManager::ApplicationManager(QObject *parent) :
     QObject::connect(&m_encryptionManager, SIGNAL(isDestinationPathUrlValid(bool*)), &m_destinationManager, SLOT(onIsDestinationPathUrlValid(bool*)));
     QObject::connect(&m_encryptionManager, SIGNAL(sourcePath(QString*)), &m_sourceManager, SLOT(onSourcePath(QString*)));
     QObject::connect(&m_encryptionManager, SIGNAL(destinationPath(QString*)), &m_destinationManager, SLOT(onDestinationPath(QString*)));
-    QObject::connect(&m_encryptionManager, SIGNAL(videoFiles(QStringList*)), &m_fileManager, SLOT(onVideoFiles(QStringList*)));
+    QObject::connect(&m_encryptionManager, SIGNAL(inputFiles(QStringList*)), &m_fileManager, SLOT(onInputFiles(QStringList*)));
     QObject::connect(&m_encryptionManager, SIGNAL(overwriteOutputFiles(bool*)), &m_fileManager, SLOT(onOverwriteOutputFiles(bool*)));
 
     this->debug("Application manager created");

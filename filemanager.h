@@ -8,16 +8,13 @@
 class FileManager : public Base
 {
     Q_OBJECT
-    Q_PROPERTY(int videoFilesCount READ videoFilesCount NOTIFY videoFilesCountChanged)
+    Q_PROPERTY(int inputFilesCount READ inputFilesCount NOTIFY inputFilesCountChanged)
     Q_PROPERTY(bool overwriteOutputFiles READ overwriteOutputFiles WRITE setOverwriteOutputFiles NOTIFY overwriteOutputFilesChanged)
 
 private:
-    static const QString m_MP4_NAME_FILTER;
-    static const QString m_AVI_NAME_FILTER;
-    static const QString m_WMV_NAME_FILTER;
     static const QStringList m_NAME_FILTERS;
-    QStringList m_videoFiles;
-    int m_videoFilesCount;
+    QStringList m_inputFiles;
+    int m_inputFilesCount;
     bool m_overwriteOutputFiles;
 
 public:
@@ -26,26 +23,26 @@ public:
 
 public:
     void initialize();
-    QStringList videoFiles() const;
-    int videoFilesCount() const;
+    QStringList inputFiles() const;
+    int inputFilesCount() const;
     bool overwriteOutputFiles() const;
     void setOverwriteOutputFiles(bool overwriteOutputFiles);
 
 private:
-    void setVideoFiles(const QStringList &videoFiles);
-    void setVideoFilesCount(int videoFilesCount);
+    void setInputFiles(const QStringList &inputFiles);
+    void setInputFilesCount(int inputFilesCount);
 
 public slots:
     void onSourcePathChanged(const QString &sourcePath);
-    void onVideoFiles(QStringList *videoFiles);
+    void onInputFiles(QStringList *inputFiles);
     void onOverwriteOutputFiles(bool *overwriteOutputFiles);
-    void onReloadVideoFiles();
-    void onReloadVideoFiles(const QString &sourcePath);
-    void onReloadVideoFiles(const QUrl &sourcePathUrl);
+    void onReloadInputFiles();
+    void onReloadInputFiles(const QString &sourcePath);
+    void onReloadInputFiles(const QUrl &sourcePathUrl);
 
 signals:
-    void videoFilesChanged(const QStringList &videofiles);
-    void videoFilesCountChanged(bool videoFilesCount);
+    void inputFilesChanged(const QStringList &inputfiles);
+    void inputFilesCountChanged(bool inputFilesCount);
     void overwriteOutputFilesChanged(bool overwriteOutputFiles);
     void sourcePath(QString *sourcePath);
 };

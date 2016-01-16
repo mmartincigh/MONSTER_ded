@@ -111,9 +111,31 @@ Item {
     }
 
     Text {
-        id: errorsLabel
+        id: encryptedBytesLabel
 
         anchors.top: pauseButton.bottom
+        anchors.topMargin: 20
+        anchors.left: parent.left
+        anchors.leftMargin: 20
+
+        text: qsTr("encrypted bytes:")
+    }
+
+    Text {
+        id: encryptedBytes
+
+        anchors.top: pauseButton.bottom
+        anchors.topMargin: 20
+        anchors.left: encryptedBytesLabel.right
+        anchors.leftMargin: 20
+
+        text: encryptionManager.encryptedBytes + " / " + encryptionManager.bytesToEncrypt
+    }
+
+    Text {
+        id: errorsLabel
+
+        anchors.top: encryptedBytesLabel.bottom
         anchors.topMargin: 20
         anchors.left: parent.left
         anchors.leftMargin: 20
@@ -124,7 +146,7 @@ Item {
     Text {
         id: errors
 
-        anchors.top: pauseButton.bottom
+        anchors.top: encryptedBytesLabel.bottom
         anchors.topMargin: 20
         anchors.left: skipped.left
 
@@ -135,7 +157,7 @@ Item {
     Text {
         id: warningsLabel
 
-        anchors.top: pauseButton.bottom
+        anchors.top: encryptedBytesLabel.bottom
         anchors.topMargin: 20
         anchors.left: parent.left
         anchors.leftMargin: 140
@@ -146,7 +168,7 @@ Item {
     Text {
         id: warnings
 
-        anchors.top: pauseButton.bottom
+        anchors.top: encryptedBytesLabel.bottom
         anchors.topMargin: 20
         anchors.left: overwritten.left
 

@@ -5,48 +5,48 @@ import MONSTER.MONSTER_ded 1.0
 Item {
     id: main
 
-    height: reloadVideoFilesButton.height
+    height: reloadInputFilesButton.height
 
     Text {
-        id: videoFilesCountLabel
+        id: inputFilesCountLabel
 
         anchors.left: parent.left
         anchors.leftMargin: 20
-        anchors.verticalCenter: reloadVideoFilesButton.verticalCenter
+        anchors.verticalCenter: reloadInputFilesButton.verticalCenter
 
-        text: qsTr("video files count:")
+        text: qsTr("input files count:")
     }
 
     Text {
-        id: videoFilesCount
+        id: inputFilesCount
 
-        anchors.left: videoFilesCountLabel.right
+        anchors.left: inputFilesCountLabel.right
         anchors.leftMargin: 20
-        anchors.verticalCenter: reloadVideoFilesButton.verticalCenter
+        anchors.verticalCenter: reloadInputFilesButton.verticalCenter
 
-        text: fileManager.videoFilesCount
+        text: fileManager.inputFilesCount
     }
 
     Button {
-        id: reloadVideoFilesButton
+        id: reloadInputFilesButton
 
         anchors.top: parent.top
         anchors.topMargin: 20
-        anchors.left: videoFilesCountLabel.right
+        anchors.left: inputFilesCountLabel.right
         anchors.leftMargin: 80
 
         text: qsTr("reload")
         enabled: encryptionManager.isEnabled && (encryptionManager.state === Enums.Idle || encryptionManager.state === Enums.Stopped || encryptionManager.state === Enums.Completed)
 
-        onClicked: { fileManager.onReloadVideoFiles() }
+        onClicked: { fileManager.onReloadInputFiles() }
     }
 
     Text {
         id: overwriteOutputFilesLabel
 
-        anchors.left: reloadVideoFilesButton.right
+        anchors.left: reloadInputFilesButton.right
         anchors.leftMargin: 20
-        anchors.verticalCenter: reloadVideoFilesButton.verticalCenter
+        anchors.verticalCenter: reloadInputFilesButton.verticalCenter
 
         text: qsTr("overwrite output files")
     }
@@ -56,7 +56,7 @@ Item {
 
         anchors.left: overwriteOutputFilesLabel.right
         anchors.leftMargin: 20
-        anchors.verticalCenter: reloadVideoFilesButton.verticalCenter
+        anchors.verticalCenter: reloadInputFilesButton.verticalCenter
 
         checked: fileManager.overwriteOutputFiles
         enabled: sourceManager.state === Enums.Idle || sourceManager.state === Enums.Stopped || sourceManager.state === Enums.Completed

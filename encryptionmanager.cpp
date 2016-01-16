@@ -7,22 +7,24 @@ EncryptionManager::EncryptionManager(QObject *parent) :
     m_encryptionManagerImplThread(this),
     m_encryptionManagerImplSptr(new EncryptionManagerImpl(&m_mutex, &m_waitCondition))
 {
-    QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(isEnabledChanged(bool)), this, SIGNAL(isEnabledChanged(bool)), Qt::BlockingQueuedConnection);
-    QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(stateChanged(Enums::State)), this, SIGNAL(stateChanged(Enums::State)), Qt::BlockingQueuedConnection);
-    QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(stateDescriptionChanged(QString)), this, SIGNAL(stateDescriptionChanged(QString)), Qt::BlockingQueuedConnection);
-    QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(progressChanged(float)), this, SIGNAL(progressChanged(float)), Qt::BlockingQueuedConnection);
-    QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(progressStringChanged(QString)), this, SIGNAL(progressStringChanged(QString)), Qt::BlockingQueuedConnection);
-    QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(errorsChanged(int)), this, SIGNAL(errorsChanged(int)), Qt::BlockingQueuedConnection);
-    QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(warningsChanged(int)), this, SIGNAL(warningsChanged(int)), Qt::BlockingQueuedConnection);
-    QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(skippedChanged(int)), this, SIGNAL(skippedChanged(int)), Qt::BlockingQueuedConnection);
-    QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(overwrittenChanged(int)), this, SIGNAL(overwrittenChanged(int)), Qt::BlockingQueuedConnection);
-    QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(processedChanged(int)), this, SIGNAL(processedChanged(int)), Qt::BlockingQueuedConnection);
-    QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(currentInputFileChanged(QString)), this, SIGNAL(currentInputFileChanged(QString)), Qt::BlockingQueuedConnection);
+    QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(isEnabledChanged(bool)), this, SIGNAL(isEnabledChanged(bool)));
+    QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(stateChanged(Enums::State)), this, SIGNAL(stateChanged(Enums::State)));
+    QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(stateDescriptionChanged(QString)), this, SIGNAL(stateDescriptionChanged(QString)));
+    QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(encryptedBytesChanged(unsigned long long)), this, SIGNAL(encryptedBytesChanged(unsigned long long)));
+    QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(bytesToEncryptChanged(unsigned long long)), this, SIGNAL(bytesToEncryptChanged(unsigned long long)));
+    QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(progressChanged(float)), this, SIGNAL(progressChanged(float)));
+    QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(progressStringChanged(QString)), this, SIGNAL(progressStringChanged(QString)));
+    QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(errorsChanged(int)), this, SIGNAL(errorsChanged(int)));
+    QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(warningsChanged(int)), this, SIGNAL(warningsChanged(int)));
+    QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(skippedChanged(int)), this, SIGNAL(skippedChanged(int)));
+    QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(overwrittenChanged(int)), this, SIGNAL(overwrittenChanged(int)));
+    QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(processedChanged(int)), this, SIGNAL(processedChanged(int)));
+    QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(currentInputFileChanged(QString)), this, SIGNAL(currentInputFileChanged(QString)));
     QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(isSourcePathUrlValid(bool*)), this, SIGNAL(isSourcePathUrlValid(bool*)), Qt::BlockingQueuedConnection);
     QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(isDestinationPathUrlValid(bool*)), this, SIGNAL(isDestinationPathUrlValid(bool*)), Qt::BlockingQueuedConnection);
     QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(sourcePath(QString*)), this, SIGNAL(sourcePath(QString*)), Qt::BlockingQueuedConnection);
     QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(destinationPath(QString*)), this, SIGNAL(destinationPath(QString*)), Qt::BlockingQueuedConnection);
-    QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(videoFiles(QStringList*)), this, SIGNAL(videoFiles(QStringList*)), Qt::BlockingQueuedConnection);
+    QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(inputFiles(QStringList*)), this, SIGNAL(inputFiles(QStringList*)), Qt::BlockingQueuedConnection);
     QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(overwriteOutputFiles(bool*)), this, SIGNAL(overwriteOutputFiles(bool*)), Qt::BlockingQueuedConnection);
 
     this->debug("Thumbnail generator created");
@@ -51,7 +53,7 @@ void EncryptionManager::initialize()
 
 void EncryptionManager::uninitialize()
 {
-    // Disconnect all the encryption manager implementation's signals to avoid deadlocks during shut down.
+    // Disconnect all the signals of the encryption manager implementation to avoid deadlocks during shut down.
     QObject::disconnect(m_encryptionManagerImplSptr.data(), NULL, NULL, NULL);
 
     this->debug("Uninitialized");
@@ -70,6 +72,16 @@ Enums::State EncryptionManager::state() const
 QString EncryptionManager::stateDescription() const
 {
     return m_encryptionManagerImplSptr.data()->stateDescription();
+}
+
+unsigned long long EncryptionManager::encryptedBytes() const
+{
+    return m_encryptionManagerImplSptr.data()->encryptedBytes();
+}
+
+unsigned long long EncryptionManager::bytesToEncrypt() const
+{
+    return m_encryptionManagerImplSptr.data()->bytesToEncrypt();
 }
 
 float EncryptionManager::progress() const

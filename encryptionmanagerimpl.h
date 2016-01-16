@@ -8,8 +8,6 @@
 #include "base.h"
 #include "enums.h"
 
-#include "fileencryptor.h"
-
 class EncryptionManagerImpl : public Base
 {
     Q_OBJECT
@@ -18,11 +16,15 @@ private:
     static const QString m_CURRENT_INPUT_FILE_NONE;
     static const QString m_OUTPUT_FILE_EXTENSION;
     static const QString m_PASSPHRASE;
+    static const unsigned long long m_ENCRYPTION_THRESHOLD_SIZE;
+    static const unsigned long long m_ENCRYPTION_CHUNK_SIZE;
     bool m_isEnabled;
     Enums::State m_state;
     QString m_stateDescription;
     bool m_pause;
     bool m_stop;
+    unsigned long long m_encryptedBytes;
+    unsigned long long m_bytesToEncrypt;
     float m_progress;
     QString m_progressString;
     int m_errors;
@@ -33,8 +35,6 @@ private:
     QString m_currentInputFile;
     QMutex *m_mutex;
     QWaitCondition *m_waitCondition;
-
-    FileEncryptor *m_fileEncryptor;
 
 public:
     explicit EncryptionManagerImpl(QMutex *mutex, QWaitCondition *waitCondition, QObject *parent = NULL);
@@ -47,6 +47,8 @@ public:
     QString stateDescription() const;
     void setPause(bool pause);
     void setStop(bool stop);
+    unsigned long long encryptedBytes() const;
+    unsigned long long bytesToEncrypt() const;
     float progress() const;
     QString progressString() const;
     int errors() const;
@@ -60,6 +62,8 @@ private:
     void setIsEnabled(bool isEnabled);
     void setState(Enums::State state);
     void setStateDescription(const QString &stateDescription);
+    void setEncryptedBytes(unsigned long long encryptedBytes);
+    void setBytesToEncrypt(unsigned long long bytesToEncrypt);
     void setProgress(float progress);
     void setProgressString(const QString &progressString);
     void setErrors(int errors);
@@ -70,6 +74,7 @@ private:
     void setCurrentInputFile(const QString &currentInputFile);
     bool checkIfEnabled();
     bool processStateCheckpoint();
+    bool encryptFile(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, QTime &encryptionTime);
 
 public slots:
     void onIsSourcePathUrlValidChanged(bool isSourcePathUrlValid);
@@ -80,6 +85,7 @@ private slots:
     void onUpdateState(Enums::State state);
     void onStateChanged(Enums::State state);
     void onProgressChanged(float progress);
+    void onBytesEncryptedChanged(unsigned long long bytesEncrypted);
 
 signals:
     void isEnabledChanged(bool isEnabled);
@@ -87,6 +93,8 @@ signals:
     void stateDescriptionChanged(const QString &stateDescription);
     void pauseChanged(bool pause);
     void stopChanged(bool stop);
+    void encryptedBytesChanged(unsigned long long encryptedBytes);
+    void bytesToEncryptChanged(unsigned long long bytesToEncrypt);
     void progressChanged(float progress);
     void progressStringChanged(const QString &progressString);
     void errorsChanged(int errors);
@@ -99,7 +107,7 @@ signals:
     void isDestinationPathUrlValid(bool *isDestinationPathUrlValid);
     void sourcePath(QString *sourcePath);
     void destinationPath(QString *destinationPath);
-    void videoFiles(QStringList *videoFiles);
+    void inputFiles(QStringList *inputFiles);
     void overwriteOutputFiles(bool *overwriteOutputFiles);
     void working();
     void paused();

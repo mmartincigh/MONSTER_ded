@@ -3,15 +3,12 @@
 #include "filemanager.h"
 #include "utils.h"
 
-const QString FileManager::m_MP4_NAME_FILTER("*.mp4");
-const QString FileManager::m_AVI_NAME_FILTER("*.avi");
-const QString FileManager::m_WMV_NAME_FILTER("*.wmv");
-const QStringList FileManager::m_NAME_FILTERS(QStringList() << m_MP4_NAME_FILTER << m_AVI_NAME_FILTER << m_WMV_NAME_FILTER);
+const QStringList FileManager::m_NAME_FILTERS("*");
 
 FileManager::FileManager(QObject *parent) :
     Base("FM", parent),
-    m_videoFiles(),
-    m_videoFilesCount(0),
+    m_inputFiles(),
+    m_inputFilesCount(0),
     m_overwriteOutputFiles(false)
 {
     this->debug("File manager created");
@@ -27,14 +24,14 @@ void FileManager::initialize()
     this->debug("Initialized");
 }
 
-QStringList FileManager::videoFiles() const
+QStringList FileManager::inputFiles() const
 {
-    return m_videoFiles;
+    return m_inputFiles;
 }
 
-int FileManager::videoFilesCount() const
+int FileManager::inputFilesCount() const
 {
-    return m_videoFilesCount;
+    return m_inputFilesCount;
 }
 
 bool FileManager::overwriteOutputFiles() const
@@ -56,27 +53,27 @@ void FileManager::setOverwriteOutputFiles(bool overwriteOutputFiles)
     emit this->overwriteOutputFilesChanged(m_overwriteOutputFiles);
 }
 
-void FileManager::setVideoFiles(const QStringList &videoFiles)
+void FileManager::setInputFiles(const QStringList &inputFiles)
 {
-    m_videoFiles = videoFiles;
+    m_inputFiles = inputFiles;
 
-    this->debug("Video files changed");
+    this->debug("Input files changed");
 
-    emit this->videoFilesChanged(m_videoFiles);
+    emit this->inputFilesChanged(m_inputFiles);
 }
 
-void FileManager::setVideoFilesCount(int videoFilesCount)
+void FileManager::setInputFilesCount(int inputFilesCount)
 {
-    if (m_videoFilesCount == videoFilesCount)
+    if (m_inputFilesCount == inputFilesCount)
     {
         return;
     }
 
-    m_videoFilesCount = videoFilesCount;
+    m_inputFilesCount = inputFilesCount;
 
-    this->debug("Video files count changed: " + QString::number(m_videoFilesCount));
+    this->debug("Input files count changed: " + QString::number(m_inputFilesCount));
 
-    emit this->videoFilesCountChanged(m_videoFilesCount);
+    emit this->inputFilesCountChanged(m_inputFilesCount);
 }
 
 void FileManager::onSourcePathChanged(const QString &sourcePath)
@@ -89,17 +86,17 @@ void FileManager::onSourcePathChanged(const QString &sourcePath)
         return;
     }
 
-    this->onReloadVideoFiles(sourcePath);
+    this->onReloadInputFiles(sourcePath);
 }
 
-void FileManager::onVideoFiles(QStringList *videoFiles)
+void FileManager::onInputFiles(QStringList *inputFiles)
 {
-    if (videoFiles == NULL)
+    if (inputFiles == NULL)
     {
         return;
     }
 
-    *videoFiles = m_videoFiles;
+    *inputFiles = m_inputFiles;
 }
 
 void FileManager::onOverwriteOutputFiles(bool *overwriteOutputFiles)
@@ -112,7 +109,7 @@ void FileManager::onOverwriteOutputFiles(bool *overwriteOutputFiles)
     *overwriteOutputFiles = m_overwriteOutputFiles;
 }
 
-void FileManager::onReloadVideoFiles()
+void FileManager::onReloadInputFiles()
 {
     QString source_path;
     emit this->sourcePath(&source_path);
@@ -124,10 +121,10 @@ void FileManager::onReloadVideoFiles()
         return;
     }
 
-    this->onReloadVideoFiles(source_path);
+    this->onReloadInputFiles(source_path);
 }
 
-void FileManager::onReloadVideoFiles(const QString &sourcePath)
+void FileManager::onReloadInputFiles(const QString &sourcePath)
 {
     if (sourcePath.isEmpty())
     {
@@ -142,18 +139,18 @@ void FileManager::onReloadVideoFiles(const QString &sourcePath)
     source_directory.setNameFilters(m_NAME_FILTERS);
     source_directory.setFilter(QDir::Files);
     source_directory.setSorting(QDir::Name);
-    this->setVideoFiles(source_directory.entryList());
-    this->setVideoFilesCount(m_videoFiles.size());
+    this->setInputFiles(source_directory.entryList());
+    this->setInputFilesCount(m_inputFiles.size());
 
-    if (m_videoFilesCount == 0)
+    if (m_inputFilesCount == 0)
     {
-        this->warning("The source path contains no video files");
+        this->warning("The source path contains no input files");
 
         return;
     }
 }
 
-void FileManager::onReloadVideoFiles(const QUrl &sourcePathUrl)
+void FileManager::onReloadInputFiles(const QUrl &sourcePathUrl)
 {
     if (sourcePathUrl.isEmpty())
     {
@@ -169,12 +166,12 @@ void FileManager::onReloadVideoFiles(const QUrl &sourcePathUrl)
     source_directory.setNameFilters(m_NAME_FILTERS);
     source_directory.setFilter(QDir::Files);
     source_directory.setSorting(QDir::Name);
-    this->setVideoFiles(source_directory.entryList());
-    this->setVideoFilesCount(m_videoFiles.size());
+    this->setInputFiles(source_directory.entryList());
+    this->setInputFilesCount(m_inputFiles.size());
 
-    if (m_videoFilesCount == 0)
+    if (m_inputFilesCount == 0)
     {
-        this->warning("The source path contains no video files");
+        this->warning("The source path contains no input files");
 
         return;
     }

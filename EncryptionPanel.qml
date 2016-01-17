@@ -129,7 +129,7 @@ Item {
         anchors.left: encryptedBytesLabel.right
         anchors.leftMargin: 20
 
-        text: encryptionManager.encryptedBytes + " / " + encryptionManager.bytesToEncrypt
+        text: encryptionManager.encryptedBytes + " [" + encryptionManager.encryptedBytesString + "] / " + encryptionManager.bytesToEncrypt + " [" + encryptionManager.bytesToEncryptString + "]"
     }
 
     Text {

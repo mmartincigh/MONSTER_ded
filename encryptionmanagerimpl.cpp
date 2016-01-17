@@ -32,7 +32,9 @@ EncryptionManagerImpl::EncryptionManagerImpl(QMutex *mutex, QWaitCondition *wait
     m_pause(false),
     m_stop(false),
     m_encryptedBytes(0),
+    m_encryptedBytesString(Utils::bytesToString(m_encryptedBytes)),
     m_bytesToEncrypt(0),
+    m_bytesToEncryptString(Utils::bytesToString(m_bytesToEncrypt)),
     m_progress(0),
     m_progressString(Utils::progressToString(m_progress)),
     m_errors(0),
@@ -46,6 +48,7 @@ EncryptionManagerImpl::EncryptionManagerImpl(QMutex *mutex, QWaitCondition *wait
 {
     QObject::connect(this, SIGNAL(stateChanged(Enums::State)), this, SLOT(onStateChanged(Enums::State)));
     QObject::connect(this, SIGNAL(encryptedBytesChanged(unsigned long long)), this, SLOT(onBytesEncryptedChanged(unsigned long long)));
+    QObject::connect(this, SIGNAL(bytesToEncryptChanged(unsigned long long)), this, SLOT(onBytesToEncryptChanged(unsigned long long)));
     QObject::connect(this, SIGNAL(progressChanged(float)), this, SLOT(onProgressChanged(float)));
 
     this->debug("Thumbnail generator implementation created");
@@ -109,9 +112,19 @@ unsigned long long EncryptionManagerImpl::encryptedBytes() const
     return m_encryptedBytes;
 }
 
+QString EncryptionManagerImpl::encryptedBytesString() const
+{
+    return m_encryptedBytesString;
+}
+
 unsigned long long EncryptionManagerImpl::bytesToEncrypt() const
 {
     return m_bytesToEncrypt;
+}
+
+QString EncryptionManagerImpl::bytesToEncryptString() const
+{
+    return m_bytesToEncryptString;
 }
 
 float EncryptionManagerImpl::progress() const
@@ -210,6 +223,20 @@ void EncryptionManagerImpl::setEncryptedBytes(unsigned long long encryptedBytes)
     emit this->encryptedBytesChanged(m_encryptedBytes);
 }
 
+void EncryptionManagerImpl::setEncryptedBytesString(const QString &encryptedBytesString)
+{
+    if (m_encryptedBytesString == encryptedBytesString)
+    {
+        return;
+    }
+
+    m_encryptedBytesString = encryptedBytesString;
+
+    this->debug("Encrypted bytes string changed: " + m_encryptedBytesString);
+
+    emit this->encryptedBytesStringChanged(m_encryptedBytesString);
+}
+
 void EncryptionManagerImpl::setBytesToEncrypt(unsigned long long bytesToEncrypt)
 {
     if (m_bytesToEncrypt == bytesToEncrypt)
@@ -222,6 +249,20 @@ void EncryptionManagerImpl::setBytesToEncrypt(unsigned long long bytesToEncrypt)
     this->debug("Bytes to encrypt changed: " + QString::number(m_bytesToEncrypt));
 
     emit this->bytesToEncryptChanged(m_bytesToEncrypt);
+}
+
+void EncryptionManagerImpl::setBytesToEncryptString(const QString &bytesToEncryptString)
+{
+    if (m_bytesToEncryptString == bytesToEncryptString)
+    {
+        return;
+    }
+
+    m_bytesToEncryptString = bytesToEncryptString;
+
+    this->debug("Bytes to encrypt string changed: " + m_bytesToEncryptString);
+
+    emit this->bytesToEncryptStringChanged(m_bytesToEncryptString);
 }
 
 void EncryptionManagerImpl::setProgress(float progress)
@@ -393,7 +434,7 @@ bool EncryptionManagerImpl::processStateCheckpoint()
 
 bool EncryptionManagerImpl::encryptFile(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, QTime &encryptionTime)
 {
-    this->debug("Encrypting file: " + inputFile + "[" + Utils::humanReadableFileSize(inputFileSize) + "]");
+    this->debug("Encrypting file: " + inputFile + " [" + Utils::bytesToString(inputFileSize) + "]");
 
     QTime time(0, 0, 0, 0);
     time.start();
@@ -412,7 +453,7 @@ bool EncryptionManagerImpl::encryptFile(const QString &inputFile, unsigned long 
         }
         else
         {
-            this->debug("File \"" + inputFile + "\" is bigger than " + Utils::humanReadableFileSize(m_ENCRYPTION_THRESHOLD_SIZE) + ", encrypting by pumping chunks of " + Utils::humanReadableFileSize(m_ENCRYPTION_CHUNK_SIZE) + "...");
+            this->debug("File \"" + inputFile + "\" is bigger than " + Utils::bytesToString(m_ENCRYPTION_THRESHOLD_SIZE) + ", encrypting by pumping chunks of " + Utils::bytesToString(m_ENCRYPTION_CHUNK_SIZE) + "...");
 
             unsigned long long total_encrypted_bytes = 0;
             while (total_encrypted_bytes < inputFileSize)
@@ -549,7 +590,7 @@ void EncryptionManagerImpl::onEncryptFiles()
         QFileInfo input_file_info(source_directory.filePath(input_files.at(i)));
         input_files_total_size += input_file_info.size();
     }
-    this->debug("Input files total size: " + QString::number(input_files_total_size) + "B [" + Utils::humanReadableFileSize(input_files_total_size) + "]");
+    this->debug("Input files total size: " + QString::number(input_files_total_size) + "B [" + Utils::bytesToString(input_files_total_size) + "]");
 
     // Encrypt the files.
     this->setEncryptedBytes(0);
@@ -616,7 +657,7 @@ void EncryptionManagerImpl::onEncryptFiles()
 
             continue;
         }
-        this->debug("File encrypted to: " + output_file + "[" + Utils::humanReadableFileSize(output_file_info.size()) + "]");
+        this->debug("File encrypted to: " + output_file + " [" + Utils::bytesToString(output_file_info.size()) + "]");
         this->debug("Encryption time: " + encryption_time.toString("HH:mm:ss:zzz"));
         this->setProcessed(m_processed + 1);
     }
@@ -644,5 +685,11 @@ void EncryptionManagerImpl::onProgressChanged(float progress)
 
 void EncryptionManagerImpl::onBytesEncryptedChanged(unsigned long long bytesEncrypted)
 {
+    this->setEncryptedBytesString(Utils::bytesToString(bytesEncrypted));
     this->setProgress(bytesEncrypted / static_cast<float>(m_bytesToEncrypt));
+}
+
+void EncryptionManagerImpl::onBytesToEncryptChanged(unsigned long long bytesToEncrypt)
+{
+    this->setBytesToEncryptString(Utils::bytesToString(bytesToEncrypt));
 }

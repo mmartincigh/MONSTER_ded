@@ -41,17 +41,17 @@ QString Utils::progressToString(float progress)
     return QString("%1 %").arg(progress * 100, 0, 'f', 1);
 }
 
-QString Utils::humanReadableFileSize(unsigned long long fileSize)
+QString Utils::bytesToString(unsigned long long bytes)
 {
     QStringListIterator i(m_FILE_SIZE_UNITS);
     QString size_unit(i.next());
-    float file_size = static_cast<float>(fileSize);
-    while (file_size >= m_KILOBYTE_SIZE
+    double bytes_double = static_cast<float>(bytes);
+    while (bytes_double >= m_KILOBYTE_SIZE
            && i.hasNext())
     {
         size_unit = i.next();
-        file_size /= m_KILOBYTE_SIZE;
+        bytes_double /= m_KILOBYTE_SIZE;
     }
 
-    return QString("%1%2").arg(file_size, 0, 'g', 5).arg(size_unit);
+    return QString("%1%2").arg(bytes_double, 0, 'g', 5).arg(size_unit);
 }

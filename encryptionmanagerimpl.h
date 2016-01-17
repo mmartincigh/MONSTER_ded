@@ -24,7 +24,9 @@ private:
     bool m_pause;
     bool m_stop;
     unsigned long long m_encryptedBytes;
+    QString m_encryptedBytesString;
     unsigned long long m_bytesToEncrypt;
+    QString m_bytesToEncryptString;
     float m_progress;
     QString m_progressString;
     int m_errors;
@@ -48,7 +50,9 @@ public:
     void setPause(bool pause);
     void setStop(bool stop);
     unsigned long long encryptedBytes() const;
+    QString encryptedBytesString() const;
     unsigned long long bytesToEncrypt() const;
+    QString bytesToEncryptString() const;
     float progress() const;
     QString progressString() const;
     int errors() const;
@@ -63,7 +67,9 @@ private:
     void setState(Enums::State state);
     void setStateDescription(const QString &stateDescription);
     void setEncryptedBytes(unsigned long long encryptedBytes);
+    void setEncryptedBytesString(const QString &encryptedBytesString);
     void setBytesToEncrypt(unsigned long long bytesToEncrypt);
+    void setBytesToEncryptString(const QString& bytesToEncryptString);
     void setProgress(float progress);
     void setProgressString(const QString &progressString);
     void setErrors(int errors);
@@ -86,6 +92,7 @@ private slots:
     void onStateChanged(Enums::State state);
     void onProgressChanged(float progress);
     void onBytesEncryptedChanged(unsigned long long bytesEncrypted);
+    void onBytesToEncryptChanged(unsigned long long bytesToEncrypt);
 
 signals:
     void isEnabledChanged(bool isEnabled);
@@ -94,7 +101,9 @@ signals:
     void pauseChanged(bool pause);
     void stopChanged(bool stop);
     void encryptedBytesChanged(unsigned long long encryptedBytes);
+    void encryptedBytesStringChanged(const QString &encryptedBytesString);
     void bytesToEncryptChanged(unsigned long long bytesToEncrypt);
+    void bytesToEncryptStringChanged(const QString &bytesToEncryptString);
     void progressChanged(float progress);
     void progressStringChanged(const QString &progressString);
     void errorsChanged(int errors);

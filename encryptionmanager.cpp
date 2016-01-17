@@ -11,7 +11,9 @@ EncryptionManager::EncryptionManager(QObject *parent) :
     QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(stateChanged(Enums::State)), this, SIGNAL(stateChanged(Enums::State)));
     QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(stateDescriptionChanged(QString)), this, SIGNAL(stateDescriptionChanged(QString)));
     QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(encryptedBytesChanged(unsigned long long)), this, SIGNAL(encryptedBytesChanged(unsigned long long)));
+    QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(encryptedBytesStringChanged(QString)), this, SIGNAL(encryptedBytesStringChanged(QString)));
     QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(bytesToEncryptChanged(unsigned long long)), this, SIGNAL(bytesToEncryptChanged(unsigned long long)));
+    QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(bytesToEncryptStringChanged(QString)), this, SIGNAL(bytesToEncryptStringChanged(QString)));
     QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(progressChanged(float)), this, SIGNAL(progressChanged(float)));
     QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(progressStringChanged(QString)), this, SIGNAL(progressStringChanged(QString)));
     QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(errorsChanged(int)), this, SIGNAL(errorsChanged(int)));
@@ -79,9 +81,19 @@ unsigned long long EncryptionManager::encryptedBytes() const
     return m_encryptionManagerImplSptr.data()->encryptedBytes();
 }
 
+QString EncryptionManager::encryptedBytesString() const
+{
+    return m_encryptionManagerImplSptr.data()->encryptedBytesString();
+}
+
 unsigned long long EncryptionManager::bytesToEncrypt() const
 {
     return m_encryptionManagerImplSptr.data()->bytesToEncrypt();
+}
+
+QString EncryptionManager::bytesToEncryptString() const
+{
+    return m_encryptionManagerImplSptr.data()->bytesToEncryptString();
 }
 
 float EncryptionManager::progress() const

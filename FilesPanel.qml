@@ -59,7 +59,7 @@ Item {
         anchors.verticalCenter: reloadInputFilesButton.verticalCenter
 
         checked: fileManager.overwriteOutputFiles
-        enabled: sourceManager.state === Enums.Idle || sourceManager.state === Enums.Stopped || sourceManager.state === Enums.Completed
+        enabled: encryptionManager.state === Enums.Idle || encryptionManager.state === Enums.Stopped || encryptionManager.state === Enums.Completed
 
         Binding {
             target: fileManager

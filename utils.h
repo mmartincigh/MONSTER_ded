@@ -21,7 +21,7 @@ public:
     static QString urlToString(const QUrl &url);
     static QString thumbnailGenerationStateToString(Enums::State state);
     static QString progressToString(float progress);
-    static QString humanReadableFileSize(unsigned long long fileSize);
+    static QString bytesToString(unsigned long long bytes);
 };
 
 #endif // UTILS_H

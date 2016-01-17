@@ -14,7 +14,9 @@ class EncryptionManager : public Base
     Q_PROPERTY(Enums::State state READ state NOTIFY stateChanged)
     Q_PROPERTY(QString stateDescription READ stateDescription NOTIFY stateDescriptionChanged)
     Q_PROPERTY(unsigned long long encryptedBytes READ encryptedBytes NOTIFY encryptedBytesChanged)
+    Q_PROPERTY(QString encryptedBytesString READ encryptedBytesString NOTIFY encryptedBytesStringChanged)
     Q_PROPERTY(unsigned long long bytesToEncrypt READ bytesToEncrypt NOTIFY bytesToEncryptChanged)
+    Q_PROPERTY(QString bytesToEncryptString READ bytesToEncryptString NOTIFY bytesToEncryptStringChanged)
     Q_PROPERTY(float progress READ progress NOTIFY progressChanged)
     Q_PROPERTY(QString progressString READ progressString NOTIFY progressStringChanged)
     Q_PROPERTY(int errors READ errors NOTIFY errorsChanged)
@@ -41,7 +43,9 @@ public:
     Enums::State state() const;
     QString stateDescription() const;
     unsigned long long encryptedBytes() const;
+    QString encryptedBytesString() const;
     unsigned long long bytesToEncrypt() const;
+    QString bytesToEncryptString() const;
     float progress() const;
     QString progressString() const;
     int errors() const;
@@ -64,7 +68,9 @@ signals:
     void stateChanged(Enums::State state);
     void stateDescriptionChanged(const QString &stateDescription);
     void encryptedBytesChanged(unsigned long long encryptedBytes);
+    void encryptedBytesStringChanged(const QString &encryptedBytesString);
     void bytesToEncryptChanged(unsigned long long bytesToEncrypt);
+    void bytesToEncryptStringChanged(const QString &bytesToEncryptString);
     void progressChanged(float progress);
     void progressStringChanged(const QString &progressString);
     void errorsChanged(int errors);

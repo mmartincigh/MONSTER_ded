@@ -80,7 +80,8 @@ private:
     void setCurrentInputFile(const QString &currentInputFile);
     bool checkIfEnabled();
     bool processStateCheckpoint();
-    bool encryptFile(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, QTime &encryptionTime);
+    bool encryptFileWithMac(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, QTime &encryptionTime);
+    bool encryptFileWithAes(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, QTime &encryptionTime);
 
 public slots:
     void onIsSourcePathUrlValidChanged(bool isSourcePathUrlValid);

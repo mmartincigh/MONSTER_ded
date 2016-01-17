@@ -4,6 +4,7 @@
 #define MAX_PATH 260
 #endif
 
+// Qt
 #include <QDir>
 #include <QTemporaryDir>
 #include <QThread>
@@ -12,9 +13,12 @@
 #include <QImageReader>
 #include <QtMath>
 
+// Crypto++
 #include <default.h>
 #include <files.h>
+#include <osrng.h>
 
+// Local
 #include "encryptionmanagerimpl.h"
 #include "utils.h"
 
@@ -432,19 +436,21 @@ bool EncryptionManagerImpl::processStateCheckpoint()
     return true;
 }
 
-bool EncryptionManagerImpl::encryptFile(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, QTime &encryptionTime)
+bool EncryptionManagerImpl::encryptFileWithMac(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, QTime &encryptionTime)
 {
-    this->debug("Encrypting file: " + inputFile + " [" + Utils::bytesToString(inputFileSize) + "]");
+    this->debug("Encrypting file with MAC: " + inputFile + " [" + Utils::bytesToString(inputFileSize) + "]");
 
     QTime time(0, 0, 0, 0);
     time.start();
 
     try
     {
+        // Construct the encryption machinery.
         CryptoPP::FileSink *file_sink = new CryptoPP::FileSink(outputFile.toUtf8().constData());
         CryptoPP::DefaultEncryptorWithMAC *encryptor = new CryptoPP::DefaultEncryptorWithMAC(m_PASSPHRASE.toUtf8().constData(), file_sink);
         CryptoPP::FileSource file_source(inputFile.toUtf8().constData(), false, encryptor);
 
+        // Encrypt the file.
         if (inputFileSize <= m_ENCRYPTION_THRESHOLD_SIZE)
         {
             file_source.PumpAll();
@@ -481,7 +487,78 @@ bool EncryptionManagerImpl::encryptFile(const QString &inputFile, unsigned long 
     }
     catch (const std::exception &e)
     {
-        this->error("Cannot encrypt file \"" + inputFile + "\": " + e.what());
+        this->error("Cannot encrypt file \"" + inputFile + "\" with MAC. " + e.what());
+
+        return false;
+    }
+
+    int time_elapsed = time.elapsed();
+    QTime encryption_time = QTime(0, 0, 0, 0).addMSecs(time_elapsed);
+    encryptionTime.setHMS(encryption_time.hour(), encryption_time.minute(), encryption_time.second(), encryption_time.msec());
+
+    return true;
+}
+
+bool EncryptionManagerImpl::encryptFileWithAes(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, QTime &encryptionTime)
+{
+    this->debug("Encrypting file with AES: " + inputFile + " [" + Utils::bytesToString(inputFileSize) + "]");
+
+    QTime time(0, 0, 0, 0);
+    time.start();
+
+    try
+    {
+        // Generate a random key and iv.
+        CryptoPP::SecByteBlock key(CryptoPP::AES::MAX_KEYLENGTH);
+        CryptoPP::AutoSeededRandomPool random_generator;
+        random_generator.GenerateBlock(key, key.size());
+        unsigned char iv[CryptoPP::AES::BLOCKSIZE];
+        random_generator.GenerateBlock(iv, CryptoPP::AES::BLOCKSIZE);
+
+        // Construct the encryption machinery.
+        CryptoPP::FileSink *file_sink = new CryptoPP::FileSink(outputFile.toUtf8().constData());
+        CryptoPP::CBC_Mode<CryptoPP::AES>::Encryption aes_encryptor(key, key.size(), iv);
+        CryptoPP::StreamTransformationFilter *stream_transformation_filter_sptr = new CryptoPP::StreamTransformationFilter(aes_encryptor, file_sink);
+        CryptoPP::FileSource file_source(inputFile.toUtf8().constData(), false, stream_transformation_filter_sptr);
+
+        // Encrypt the file.
+        if (inputFileSize <= m_ENCRYPTION_THRESHOLD_SIZE)
+        {
+            file_source.PumpAll();
+
+            this->setEncryptedBytes(m_encryptedBytes + inputFileSize);
+        }
+        else
+        {
+            this->debug("File \"" + inputFile + "\" is bigger than " + Utils::bytesToString(m_ENCRYPTION_THRESHOLD_SIZE) + ", encrypting by pumping chunks of " + Utils::bytesToString(m_ENCRYPTION_CHUNK_SIZE) + "...");
+
+            unsigned long long total_encrypted_bytes = 0;
+            while (total_encrypted_bytes < inputFileSize)
+            {
+                // Check whether the encryption should be paused, resumed or stopped.
+                if (!this->processStateCheckpoint())
+                {
+                    this->warning("The encryption was stopped in the middle of the file \"" + inputFile + "\", the resulting file may be corrupted");
+
+                    int time_elapsed = time.elapsed();
+                    QTime encryption_time = QTime(0, 0, 0, 0).addMSecs(time_elapsed);
+                    encryptionTime.setHMS(encryption_time.hour(), encryption_time.minute(), encryption_time.second(), encryption_time.msec());
+
+                    return true;
+                }
+
+                long long encrypted_bytes = file_source.Pump(m_ENCRYPTION_CHUNK_SIZE);
+
+                this->setEncryptedBytes(m_encryptedBytes + encrypted_bytes);
+
+                total_encrypted_bytes += encrypted_bytes;
+            }
+            file_source.PumpAll();
+        }
+    }
+    catch (const std::exception &e)
+    {
+        this->error("Cannot encrypt file \"" + inputFile + "\" with AES. " + e.what());
 
         return false;
     }
@@ -648,7 +725,8 @@ void EncryptionManagerImpl::onEncryptFiles()
 
         // Encrypt the file.
         QTime encryption_time(0, 0, 0, 0);
-        bool ret_val = this->encryptFile(input_file, input_file_info.size(), output_file, encryption_time);
+        //bool ret_val = this->encryptFileWithMac(input_file, input_file_info.size(), output_file, encryption_time);
+        bool ret_val = this->encryptFileWithAes(input_file, input_file_info.size(), output_file, encryption_time);
         if (!ret_val)
         {
             emit this->error("Cannot encrypt file: " + input_file);

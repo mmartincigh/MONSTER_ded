@@ -25,6 +25,8 @@
 const QString EncryptionManagerImpl::m_CURRENT_INPUT_FILE_NONE("none");
 const QString EncryptionManagerImpl::m_OUTPUT_FILE_EXTENSION(".mef");
 const QString EncryptionManagerImpl::m_PASSPHRASE("Let's pretend that this is a clever passphrase");
+const QString EncryptionManagerImpl::m_AES_KEY_FILE_NAME("AES_key.bin");
+const QString EncryptionManagerImpl::m_AES_IV_FILE_NAME("AES_iv.bin");
 const unsigned long long EncryptionManagerImpl::m_ENCRYPTION_THRESHOLD_SIZE(1048576);
 const unsigned long long EncryptionManagerImpl::m_ENCRYPTION_CHUNK_SIZE(1048576);
 
@@ -47,6 +49,8 @@ EncryptionManagerImpl::EncryptionManagerImpl(QMutex *mutex, QWaitCondition *wait
     m_overwritten(0),
     m_processed(0),
     m_currentInputFile(m_CURRENT_INPUT_FILE_NONE),
+    m_key(CryptoPP::AES::MAX_KEYLENGTH),
+    m_iv(),
     m_mutex(mutex),
     m_waitCondition(waitCondition)
 {
@@ -222,7 +226,7 @@ void EncryptionManagerImpl::setEncryptedBytes(unsigned long long encryptedBytes)
 
     m_encryptedBytes = encryptedBytes;
 
-    this->debug("Encrypted bytes changed: " + QString::number(m_encryptedBytes));
+    //this->debug("Encrypted bytes changed: " + QString::number(m_encryptedBytes));
 
     emit this->encryptedBytesChanged(m_encryptedBytes);
 }
@@ -236,7 +240,7 @@ void EncryptionManagerImpl::setEncryptedBytesString(const QString &encryptedByte
 
     m_encryptedBytesString = encryptedBytesString;
 
-    this->debug("Encrypted bytes string changed: " + m_encryptedBytesString);
+    //this->debug("Encrypted bytes string changed: " + m_encryptedBytesString);
 
     emit this->encryptedBytesStringChanged(m_encryptedBytesString);
 }
@@ -278,7 +282,7 @@ void EncryptionManagerImpl::setProgress(float progress)
 
     m_progress = progress;
 
-    this->debug("Progress changed: " + QString::number(m_progress));
+    //this->debug("Progress changed: " + QString::number(m_progress));
 
     emit this->progressChanged(m_progress);
 }
@@ -292,7 +296,7 @@ void EncryptionManagerImpl::setProgressString(const QString &progressString)
 
     m_progressString = progressString;
 
-    this->debug("Progress string changed: " + m_progressString);
+    //this->debug("Progress string changed: " + m_progressString);
 
     emit this->progressStringChanged(m_progressString);
 }
@@ -436,6 +440,81 @@ bool EncryptionManagerImpl::processStateCheckpoint()
     return true;
 }
 
+bool EncryptionManagerImpl::readKeyFromFile()
+{
+    QString key_file_name = QDir::current().filePath(m_AES_KEY_FILE_NAME);
+    QFile key_file(key_file_name);
+    if (!key_file.exists())
+    {
+        this->error("The key file \"" + key_file_name + "\" does not exist");
+
+        return false;
+    }
+    bool ret_val = key_file.open(QIODevice::ReadOnly);
+    if (!ret_val)
+    {
+        this->error("Cannot open the key file: " + key_file_name);
+
+        return false;
+    }
+    size_t key_size =  m_key.size();
+    memset(m_key.data(), 0, key_size);
+    long long bytes_read = key_file.read(reinterpret_cast<char *>(m_key.data()), key_size);
+    key_file.close();
+    if (bytes_read != key_size)
+    {
+        this->error("Wrong key size: expected " + Utils::bytesToString(key_size) + ", got " + Utils::bytesToString(bytes_read));
+
+        return false;
+    }
+    if (m_key.empty())
+    {
+        this->error("The encryption key is empty");
+
+        return false;
+    }
+
+    return true;
+}
+
+bool EncryptionManagerImpl::readIvFromFile()
+{
+    QString iv_file_name = QDir::current().filePath(m_AES_IV_FILE_NAME);
+    QFile iv_file(iv_file_name);
+    if (!iv_file.exists())
+    {
+        this->error("The IV file \"" + iv_file_name + "\" does not exist");
+
+        return false;
+    }
+    bool ret_val = iv_file.open(QIODevice::ReadOnly);
+    if (!ret_val)
+    {
+        this->error("Cannot open the IV file: " + iv_file_name);
+
+        return false;
+    }
+    size_t iv_size = sizeof(m_iv);
+    memset(m_iv, 0, iv_size);
+    long long bytes_read = iv_file.read(reinterpret_cast<char *>(m_iv), iv_size);
+    iv_file.close();
+    if (bytes_read != iv_size)
+    {
+        this->error("Wrong IV size: expected " + Utils::bytesToString(iv_size) + ", got " + Utils::bytesToString(bytes_read));
+
+        return false;
+    }
+    for (size_t i = 0; i < iv_size; i++)
+    {
+        if (m_iv[i] != 0)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 bool EncryptionManagerImpl::encryptFileWithMac(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, QTime &encryptionTime)
 {
     this->debug("Encrypting file with MAC: " + inputFile + " [" + Utils::bytesToString(inputFileSize) + "]");
@@ -508,16 +587,9 @@ bool EncryptionManagerImpl::encryptFileWithAes(const QString &inputFile, unsigne
 
     try
     {
-        // Generate a random key and iv.
-        CryptoPP::SecByteBlock key(CryptoPP::AES::MAX_KEYLENGTH);
-        CryptoPP::AutoSeededRandomPool random_generator;
-        random_generator.GenerateBlock(key, key.size());
-        unsigned char iv[CryptoPP::AES::BLOCKSIZE];
-        random_generator.GenerateBlock(iv, CryptoPP::AES::BLOCKSIZE);
-
         // Construct the encryption machinery.
         CryptoPP::FileSink *file_sink = new CryptoPP::FileSink(outputFile.toUtf8().constData());
-        CryptoPP::CBC_Mode<CryptoPP::AES>::Encryption aes_encryptor(key, key.size(), iv);
+        CryptoPP::CBC_Mode<CryptoPP::AES>::Encryption aes_encryptor(m_key, m_key.size(), m_iv);
         CryptoPP::StreamTransformationFilter *stream_transformation_filter_sptr = new CryptoPP::StreamTransformationFilter(aes_encryptor, file_sink);
         CryptoPP::FileSource file_source(inputFile.toUtf8().constData(), false, stream_transformation_filter_sptr);
 
@@ -609,10 +681,29 @@ void EncryptionManagerImpl::onEncryptFiles()
         return;
     }
 
+    // Get the encryption key from file.
+    bool ret_val = this->readKeyFromFile();
+    if (!ret_val)
+    {
+        this->error("Cannot get the encryption key from file");
+
+        return;
+    }
+    this->debug("Encryption key read from file");
+
+    // Get the initialization vector from file.
+    ret_val = this->readIvFromFile();
+    if (!ret_val)
+    {
+        this->error("Cannot get the initialization vector from file");
+
+        return;
+    }
+    this->debug("Initialization vector read from file");
+
     // Get the source path.
     QString source_path;
     emit this->sourcePath(&source_path);
-    this->debug("Source path: " + source_path);
     if (source_path.isEmpty())
     {
         this->error("Source path is empty");
@@ -626,11 +717,11 @@ void EncryptionManagerImpl::onEncryptFiles()
 
         return;
     }
+    this->debug("Source path: " + source_path);
 
     // Get the destiantion path.
     QString destination_path;
     emit this->destinationPath(&destination_path);
-    this->debug("Destination path: " + destination_path);
     if (destination_path.isEmpty())
     {
         this->error("Destination path is empty");
@@ -644,6 +735,7 @@ void EncryptionManagerImpl::onEncryptFiles()
 
         return;
     }
+    this->debug("Destination path: " + destination_path);
 
     // Get the input files.
     QStringList input_files;
@@ -725,7 +817,6 @@ void EncryptionManagerImpl::onEncryptFiles()
 
         // Encrypt the file.
         QTime encryption_time(0, 0, 0, 0);
-        //bool ret_val = this->encryptFileWithMac(input_file, input_file_info.size(), output_file, encryption_time);
         bool ret_val = this->encryptFileWithAes(input_file, input_file_info.size(), output_file, encryption_time);
         if (!ret_val)
         {

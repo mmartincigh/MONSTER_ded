@@ -2,7 +2,7 @@ TARGET = MONSTER_ded
 
 TEMPLATE = app
 
-VERSION = 1.2.0
+VERSION = 1.3.0
 
 QT += \
     qml \
@@ -52,7 +52,8 @@ win32 {
 win32 {
     QMAKE_CXXFLAGS += \
         /wd4100 \
-        /wd4189
+        /wd4189 \
+        /wd4351
 }
 
 win32 {

@@ -1,10 +1,15 @@
 #ifndef ENCRYPTIONMANAGERIMPL_H
 #define ENCRYPTIONMANAGERIMPL_H
 
+// Qt
 #include <QImage>
 #include <QUrl>
 #include <QWaitCondition>
 
+// Crypto++
+#include <osrng.h>
+
+// Local
 #include "base.h"
 #include "enums.h"
 
@@ -16,6 +21,8 @@ private:
     static const QString m_CURRENT_INPUT_FILE_NONE;
     static const QString m_OUTPUT_FILE_EXTENSION;
     static const QString m_PASSPHRASE;
+    static const QString m_AES_KEY_FILE_NAME;
+    static const QString m_AES_IV_FILE_NAME;
     static const unsigned long long m_ENCRYPTION_THRESHOLD_SIZE;
     static const unsigned long long m_ENCRYPTION_CHUNK_SIZE;
     bool m_isEnabled;
@@ -35,6 +42,8 @@ private:
     int m_overwritten;
     int m_processed;
     QString m_currentInputFile;
+    CryptoPP::SecByteBlock m_key;
+    unsigned char m_iv[CryptoPP::AES::BLOCKSIZE];
     QMutex *m_mutex;
     QWaitCondition *m_waitCondition;
 
@@ -80,6 +89,8 @@ private:
     void setCurrentInputFile(const QString &currentInputFile);
     bool checkIfEnabled();
     bool processStateCheckpoint();
+    bool readKeyFromFile();
+    bool readIvFromFile();
     bool encryptFileWithMac(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, QTime &encryptionTime);
     bool encryptFileWithAes(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, QTime &encryptionTime);
 

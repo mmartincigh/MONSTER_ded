@@ -38,7 +38,7 @@ INCLUDEPATH += \
 
 win32 {
     LIBS += \
-        -L"$$PWD\lib\win"
+        -L"$$PWD/lib/win"
     CONFIG(debug, debug|release) {
         LIBS += \
             -lcryptlibd
@@ -47,6 +47,19 @@ win32 {
         LIBS += \
             -lcryptlib
     }
+}
+unix {
+    contains(QMAKE_HOST.arch, x86_64) {
+        # Linux x64 (64bit)
+        LIBS += \
+            -L$$PWD/lib/linux/x64
+    } else {
+        # Linux x86 (32bit)
+        LIBS += \
+            -L$$PWD/lib/linux/x86
+    }
+    LIBS += \
+        -lcryptopp
 }
 
 win32 {

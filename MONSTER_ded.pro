@@ -2,7 +2,7 @@ TARGET = MONSTER_ded
 
 TEMPLATE = app
 
-VERSION = 1.3.1
+VERSION = 1.4.0
 
 QT += \
     qml \
@@ -37,16 +37,18 @@ INCLUDEPATH += \
     "$$PWD/include"
 
 win32 {
-    LIBS += \
-        -L"$$PWD/lib/win"
     CONFIG(debug, debug|release) {
+        # Windows x86 (32bit) debug
         LIBS += \
-            -lcryptlibd
+            -L"$$PWD/lib/win/x86/debug"
     }
     CONFIG(release, debug|release) {
+        # Windows x86 (32bit) release
         LIBS += \
-            -lcryptlib
+            -L"$$PWD/lib/win/x86/release"
     }
+    LIBS += \
+        -lcryptlib
 }
 unix {
     contains(QMAKE_HOST.arch, x86_64) {

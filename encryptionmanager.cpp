@@ -28,6 +28,7 @@ EncryptionManager::EncryptionManager(QObject *parent) :
     QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(destinationPath(QString*)), this, SIGNAL(destinationPath(QString*)), Qt::BlockingQueuedConnection);
     QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(inputFiles(QStringList*)), this, SIGNAL(inputFiles(QStringList*)), Qt::BlockingQueuedConnection);
     QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(overwriteOutputFiles(bool*)), this, SIGNAL(overwriteOutputFiles(bool*)), Qt::BlockingQueuedConnection);
+    QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(errorMessage(QString)), this, SIGNAL(errorMessage(QString)));
 
     this->debug("Thumbnail generator created");
 }

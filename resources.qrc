@@ -8,6 +8,8 @@
         <file>EncryptionPanel.qml</file>
         <file>FilesPanel.qml</file>
         <file>main.qml</file>
+        <file>Messages.qml</file>
+        <file>PanelArea.qml</file>
         <file>SourcePanel.qml</file>
     </qresource>
 </RCC>

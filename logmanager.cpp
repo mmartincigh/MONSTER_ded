@@ -87,7 +87,7 @@ void LogManager::error(const QString &errorMessage)
 {
     QMutexLocker mutex_locker(&m_mutex);
 
-    emit this->warningMessage(errorMessage);
+    emit this->errorMessage(errorMessage);
 
     qCritical().nospace() << qPrintable(m_logTag) << "> ERROR: " << qPrintable(errorMessage);
 }

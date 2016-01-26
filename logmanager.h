@@ -33,6 +33,7 @@ protected:
 signals:
     void debugMessage(const QString &debugMessage);
     void warningMessage(const QString &warningMessage);
+    void errorMessage(const QString &errorMessage);
 };
 
 #endif // LOGMANAGER_H

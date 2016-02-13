@@ -1,6 +1,7 @@
 #ifndef LOGMANAGER_H
 #define LOGMANAGER_H
 
+// Qt
 #include <QObject>
 #include <QMutex>
 #include <QDebug>

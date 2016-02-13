@@ -1,3 +1,4 @@
+// Local
 #include "applicationmanager.h"
 
 ApplicationManager::ApplicationManager(QObject *parent) :
@@ -6,6 +7,7 @@ ApplicationManager::ApplicationManager(QObject *parent) :
     m_destinationManager(this),
     m_fileManager(this),
     m_encryptionManager(this),
+    m_decryptionManager(this),
     m_settingsManager(this),
     m_windowManager(this)
 {
@@ -41,6 +43,7 @@ void ApplicationManager::initialize()
     m_destinationManager.initialize();
     m_fileManager.initialize();
     m_encryptionManager.initialize();
+    m_decryptionManager.initialize();
 
     this->debug("Initialized");
 }
@@ -63,6 +66,11 @@ FileManager *ApplicationManager::fileManager()
 EncryptionManager *ApplicationManager::encryptionManager()
 {
     return &m_encryptionManager;
+}
+
+DecryptionManager *ApplicationManager::decryptionManager()
+{
+    return &m_decryptionManager;
 }
 
 WindowManager *ApplicationManager::windowManager()

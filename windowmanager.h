@@ -1,8 +1,10 @@
 #ifndef WINDOWMANAGER_H
 #define WINDOWMANAGER_H
 
+// Qt
 #include <QObject>
 
+// Local
 #include "base.h"
 
 class WindowManager : public Base

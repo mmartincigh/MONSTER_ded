@@ -1,6 +1,7 @@
 #ifndef APPLICATIONUTILS_H
 #define APPLICATIONUTILS_H
 
+// Qt
 #include <QString>
 
 class ApplicationUtils

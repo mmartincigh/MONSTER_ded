@@ -1,5 +1,7 @@
+// Qt
 #include <QFileInfo>
 
+// Local
 #include "sourcemanager.h"
 #include "utils.h"
 

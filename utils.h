@@ -1,9 +1,11 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+// Qt
 #include <QString>
 #include <QUrl>
 
+// Local
 #include "encryptionmanagerimpl.h"
 
 class Utils
@@ -19,9 +21,11 @@ private:
 
 public:
     static QString urlToString(const QUrl &url);
-    static QString thumbnailGenerationStateToString(Enums::State state);
+    static QString stateToString(Enums::State state);
     static QString progressToString(float progress);
     static QString bytesToString(unsigned long long bytes);
+    static unsigned int levenshteinDistance(const std::string &from_string, const std::string &to_string);
+    static unsigned int levenshteinDistance(const QString &from_string, const QString &to_string);
 };
 
 #endif // UTILS_H

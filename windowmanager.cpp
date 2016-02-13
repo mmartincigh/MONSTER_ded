@@ -1,3 +1,4 @@
+// Local
 #include "windowmanager.h"
 
 WindowManager::WindowManager(QObject *parent) :

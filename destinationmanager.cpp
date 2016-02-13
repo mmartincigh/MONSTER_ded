@@ -1,5 +1,7 @@
+// Qt
 #include <QFileInfo>
 
+// Local
 #include "destinationmanager.h"
 #include "utils.h"
 

@@ -1,3 +1,4 @@
+// Qt
 #include <QApplication>
 #include <QPixmap>
 #include <QSplashScreen>
@@ -6,6 +7,7 @@
 #include <QQmlContext>
 #include <QFile>
 
+// Local
 #include "applicationmanager.h"
 #include "applicationutils.h"
 
@@ -48,6 +50,7 @@ int main(int argc, char *argv[])
     context->setContextProperty("sourceManager", application_manager.sourceManager());
     context->setContextProperty("destinationManager", application_manager.destinationManager());
     context->setContextProperty("encryptionManager", application_manager.encryptionManager());
+    context->setContextProperty("decryptionManager", application_manager.decryptionManager());
     context->setContextProperty("fileManager", application_manager.fileManager());
     context->setContextProperty("windowManager", application_manager.windowManager());
     component.loadUrl(QUrl("qrc:/qml/main.qml"));

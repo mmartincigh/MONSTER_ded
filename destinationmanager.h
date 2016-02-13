@@ -1,8 +1,10 @@
 #ifndef DESTINATIONMANAGER_H
 #define DESTINATIONMANAGER_H
 
+// Qt
 #include <QUrl>
 
+// Local
 #include "base.h"
 
 class DestinationManager : public Base

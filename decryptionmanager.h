@@ -1,5 +1,5 @@
-#ifndef ENCRYPTIONMANAGER_H
-#define ENCRYPTIONMANAGER_H
+#ifndef DECRYPTIONMANAGER_H
+#define DECRYPTIONMANAGER_H
 
 // Qt
 #include <QThread>
@@ -7,18 +7,18 @@
 
 // Local
 #include "base.h"
-#include "encryptionmanagerimpl.h"
+#include "decryptionmanagerimpl.h"
 
-class EncryptionManager : public Base
+class DecryptionManager : public Base
 {
     Q_OBJECT
     Q_PROPERTY(bool isEnabled READ isEnabled NOTIFY isEnabledChanged)
     Q_PROPERTY(Enums::State state READ state NOTIFY stateChanged)
     Q_PROPERTY(QString stateDescription READ stateDescription NOTIFY stateDescriptionChanged)
-    Q_PROPERTY(unsigned long long encryptedBytes READ encryptedBytes NOTIFY encryptedBytesChanged)
-    Q_PROPERTY(QString encryptedBytesString READ encryptedBytesString NOTIFY encryptedBytesStringChanged)
-    Q_PROPERTY(unsigned long long bytesToEncrypt READ bytesToEncrypt NOTIFY bytesToEncryptChanged)
-    Q_PROPERTY(QString bytesToEncryptString READ bytesToEncryptString NOTIFY bytesToEncryptStringChanged)
+    Q_PROPERTY(unsigned long long decryptedBytes READ decryptedBytes NOTIFY decryptedBytesChanged)
+    Q_PROPERTY(QString decryptedBytesString READ decryptedBytesString NOTIFY decryptedBytesStringChanged)
+    Q_PROPERTY(unsigned long long bytesToDecrypt READ bytesToDecrypt NOTIFY bytesToDecryptChanged)
+    Q_PROPERTY(QString bytesToDecryptString READ bytesToDecryptString NOTIFY bytesToDecryptStringChanged)
     Q_PROPERTY(float progress READ progress NOTIFY progressChanged)
     Q_PROPERTY(QString progressString READ progressString NOTIFY progressStringChanged)
     Q_PROPERTY(int errors READ errors NOTIFY errorsChanged)
@@ -31,12 +31,12 @@ class EncryptionManager : public Base
 private:
     QMutex m_mutex;
     QWaitCondition m_waitCondition;
-    QThread m_encryptionManagerImplThread;
-    QSharedPointer<EncryptionManagerImpl> m_encryptionManagerImplSptr;
+    QThread m_decryptionManagerImplThread;
+    QSharedPointer<DecryptionManagerImpl> m_decryptionManagerImplSptr;
 
 public:
-    explicit EncryptionManager(QObject *parent = NULL);
-    ~EncryptionManager();
+    explicit DecryptionManager(QObject *parent = NULL);
+    ~DecryptionManager();
 
 public:
     void initialize();
@@ -44,10 +44,10 @@ public:
     bool isEnabled() const;
     Enums::State state() const;
     QString stateDescription() const;
-    unsigned long long encryptedBytes() const;
-    QString encryptedBytesString() const;
-    unsigned long long bytesToEncrypt() const;
-    QString bytesToEncryptString() const;
+    unsigned long long decryptedBytes() const;
+    QString decryptedBytesString() const;
+    unsigned long long bytesToDecrypt() const;
+    QString bytesToDecryptString() const;
     float progress() const;
     QString progressString() const;
     int errors() const;
@@ -60,7 +60,7 @@ public:
 public slots:
     void onIsSourcePathUrlValidChanged(bool isSourcePathUrlValid);
     void onIsDestinationPathUrlValidChanged(bool isDestinationPathUrlValid);
-    void onEncryptFiles();
+    void onDecryptFiles();
     void onPause();
     void onResume();
     void onStop();
@@ -69,10 +69,10 @@ signals:
     void isEnabledChanged(bool isEnabled);
     void stateChanged(Enums::State state);
     void stateDescriptionChanged(const QString &stateDescription);
-    void encryptedBytesChanged(unsigned long long encryptedBytes);
-    void encryptedBytesStringChanged(const QString &encryptedBytesString);
-    void bytesToEncryptChanged(unsigned long long bytesToEncrypt);
-    void bytesToEncryptStringChanged(const QString &bytesToEncryptString);
+    void decryptedBytesChanged(unsigned long long decryptedBytes);
+    void decryptedBytesStringChanged(const QString &decryptedBytesString);
+    void bytesToDecryptChanged(unsigned long long bytesToDecrypt);
+    void bytesToDecryptStringChanged(const QString &bytesToDecryptString);
     void progressChanged(float progress);
     void progressStringChanged(const QString &progressString);
     void errorsChanged(int errors);
@@ -89,4 +89,4 @@ signals:
     void overwriteOutputFiles(bool *overwriteOutputFiles);
 };
 
-#endif // ENCRYPTIONMANAGER_H
+#endif // DECRYPTIONMANAGER_H

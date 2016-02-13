@@ -1,8 +1,11 @@
+// Std
 #include <iostream>
 
+// Qt
 #include <QDateTime>
 #include <QFile>
 
+// Local
 #include "logmanager.h"
 #include "applicationutils.h"
 

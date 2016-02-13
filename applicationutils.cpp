@@ -1,3 +1,4 @@
+// Local
 #include "applicationutils.h"
 
 const QString ApplicationUtils::COMPANY_NAME("MONSTER_company");

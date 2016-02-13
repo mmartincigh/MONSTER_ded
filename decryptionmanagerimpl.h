@@ -1,5 +1,5 @@
-#ifndef ENCRYPTIONMANAGERIMPL_H
-#define ENCRYPTIONMANAGERIMPL_H
+#ifndef DECRYPTIONMANAGERIMPL_H
+#define DECRYPTIONMANAGERIMPL_H
 
 // Qt
 #include <QWaitCondition>
@@ -11,7 +11,7 @@
 #include "base.h"
 #include "enums.h"
 
-class EncryptionManagerImpl : public Base
+class DecryptionManagerImpl : public Base
 {
     Q_OBJECT
 
@@ -21,17 +21,17 @@ private:
     static const QString m_PASSPHRASE;
     static const QString m_AES_KEY_FILE_NAME;
     static const QString m_AES_IV_FILE_NAME;
-    static const unsigned long long m_ENCRYPTION_THRESHOLD_SIZE;
-    static const unsigned long long m_ENCRYPTION_CHUNK_SIZE;
+    static const unsigned long long m_DECRYPTION_THRESHOLD_SIZE;
+    static const unsigned long long m_DECRYPTION_CHUNK_SIZE;
     bool m_isEnabled;
     Enums::State m_state;
     QString m_stateDescription;
     bool m_pause;
     bool m_stop;
-    unsigned long long m_encryptedBytes;
-    QString m_encryptedBytesString;
-    unsigned long long m_bytesToEncrypt;
-    QString m_bytesToEncryptString;
+    unsigned long long m_decryptedBytes;
+    QString m_decryptedBytesString;
+    unsigned long long m_bytesToDecrypt;
+    QString m_bytesToDecryptString;
     float m_progress;
     QString m_progressString;
     int m_errors;
@@ -46,8 +46,8 @@ private:
     QWaitCondition *m_waitCondition;
 
 public:
-    explicit EncryptionManagerImpl(QMutex *mutex, QWaitCondition *waitCondition, QObject *parent = NULL);
-    ~EncryptionManagerImpl();
+    explicit DecryptionManagerImpl(QMutex *mutex, QWaitCondition *waitCondition, QObject *parent = NULL);
+    ~DecryptionManagerImpl();
 
 public:
     void initialize();
@@ -56,10 +56,10 @@ public:
     QString stateDescription() const;
     void setPause(bool pause);
     void setStop(bool stop);
-    unsigned long long encryptedBytes() const;
-    QString encryptedBytesString() const;
-    unsigned long long bytesToEncrypt() const;
-    QString bytesToEncryptString() const;
+    unsigned long long decryptedBytes() const;
+    QString decryptedBytesString() const;
+    unsigned long long bytesToDecrypt() const;
+    QString bytesToDecryptString() const;
     float progress() const;
     QString progressString() const;
     int errors() const;
@@ -73,10 +73,10 @@ private:
     void setIsEnabled(bool isEnabled);
     void setState(Enums::State state);
     void setStateDescription(const QString &stateDescription);
-    void setEncryptedBytes(unsigned long long encryptedBytes);
-    void setEncryptedBytesString(const QString &encryptedBytesString);
-    void setBytesToEncrypt(unsigned long long bytesToEncrypt);
-    void setBytesToEncryptString(const QString& bytesToEncryptString);
+    void setDecryptedBytes(unsigned long long decryptedBytes);
+    void setDecryptedBytesString(const QString &decryptedBytesString);
+    void setBytesToDecrypt(unsigned long long bytesToDecrypt);
+    void setBytesToDecryptString(const QString& bytesToDecryptString);
     void setProgress(float progress);
     void setProgressString(const QString &progressString);
     void setErrors(int errors);
@@ -89,20 +89,20 @@ private:
     bool processStateCheckpoint();
     bool readKeyFromFile();
     bool readIvFromFile();
-    bool encryptFileWithMac(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, QTime &encryptionTime);
-    bool encryptFileWithAes(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, QTime &encryptionTime);
+    bool decryptFileWithMac(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, QTime &decryptionTime);
+    bool decryptFileWithAes(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, QTime &decryptionTime);
 
 public slots:
     void onIsSourcePathUrlValidChanged(bool isSourcePathUrlValid);
     void onIsDestinationPathUrlValidChanged(bool isDestinationPathUrlValid);
-    void onEncryptFiles();
+    void onDecryptFiles();
 
 private slots:
     void onUpdateState(Enums::State state);
     void onStateChanged(Enums::State state);
     void onProgressChanged(float progress);
-    void onBytesEncryptedChanged(unsigned long long bytesEncrypted);
-    void onBytesToEncryptChanged(unsigned long long bytesToEncrypt);
+    void onBytesDecryptedChanged(unsigned long long bytesDecrypted);
+    void onBytesToDecryptChanged(unsigned long long bytesToDecrypt);
 
 signals:
     void isEnabledChanged(bool isEnabled);
@@ -110,10 +110,10 @@ signals:
     void stateDescriptionChanged(const QString &stateDescription);
     void pauseChanged(bool pause);
     void stopChanged(bool stop);
-    void encryptedBytesChanged(unsigned long long encryptedBytes);
-    void encryptedBytesStringChanged(const QString &encryptedBytesString);
-    void bytesToEncryptChanged(unsigned long long bytesToEncrypt);
-    void bytesToEncryptStringChanged(const QString &bytesToEncryptString);
+    void decryptedBytesChanged(unsigned long long decryptedBytes);
+    void decryptedBytesStringChanged(const QString &decryptedBytesString);
+    void bytesToDecryptChanged(unsigned long long bytesToDecrypt);
+    void bytesToDecryptStringChanged(const QString &bytesToDecryptString);
     void progressChanged(float progress);
     void progressStringChanged(const QString &progressString);
     void errorsChanged(int errors);
@@ -133,4 +133,4 @@ signals:
     void stopped();
 };
 
-#endif // ENCRYPTIONMANAGERIMPL_H
+#endif // DECRYPTIONMANAGERIMPL_H

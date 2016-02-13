@@ -1,6 +1,7 @@
 #ifndef BASE_H
 #define BASE_H
 
+// Local
 #include "logmanager.h"
 
 class Base : public LogManager

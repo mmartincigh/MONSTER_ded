@@ -1,14 +1,17 @@
 #ifndef APPLICATIONMANAGER_H
 #define APPLICATIONMANAGER_H
 
+// Qt
 #include <QObject>
 #include <QDebug>
 
+// Local
 #include "base.h"
 #include "sourcemanager.h"
 #include "destinationmanager.h"
 #include "filemanager.h"
 #include "encryptionmanager.h"
+#include "decryptionmanager.h"
 #include "settingsmanager.h"
 #include "windowmanager.h"
 
@@ -21,6 +24,7 @@ private:
     DestinationManager m_destinationManager;
     FileManager m_fileManager;
     EncryptionManager m_encryptionManager;
+    DecryptionManager m_decryptionManager;
     SettingsManager m_settingsManager;
     WindowManager m_windowManager;
 
@@ -34,6 +38,7 @@ public:
     DestinationManager *destinationManager();
     FileManager *fileManager();
     EncryptionManager *encryptionManager();
+    DecryptionManager *decryptionManager();
     WindowManager *windowManager();
 
 public slots:

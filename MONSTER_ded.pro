@@ -2,7 +2,7 @@ TARGET = MONSTER_ded
 
 TEMPLATE = app
 
-VERSION = 1.4.0
+VERSION = 1.5.0
 
 QT += \
     qml \
@@ -79,6 +79,8 @@ HEADERS += \
     applicationmanager.h \
     applicationutils.h \
     base.h \
+    decryptionmanager.h \
+    decryptionmanagerimpl.h \
     destinationmanager.h \
     encryptionmanager.h \
     encryptionmanagerimpl.h \
@@ -95,6 +97,8 @@ SOURCES += \
     applicationmanager.cpp \
     applicationutils.cpp \
     base.cpp \
+    decryptionmanager.cpp \
+    decryptionmanagerimpl.cpp \
     destinationmanager.cpp \
     encryptionmanager.cpp \
     encryptionmanagerimpl.cpp \

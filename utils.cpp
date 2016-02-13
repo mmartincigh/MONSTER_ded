@@ -1,3 +1,4 @@
+// Local
 #include "utils.h"
 
 const QUrl::FormattingOptions Utils::m_URL_CONVERSION_FLAGS(QUrl::PrettyDecoded | QUrl::PreferLocalFile);
@@ -17,9 +18,9 @@ QString Utils::urlToString(const QUrl &url)
     return string;
 }
 
-QString Utils::thumbnailGenerationStateToString(Enums::State thumbnailGenerationState)
+QString Utils::stateToString(Enums::State state)
 {
-    switch (thumbnailGenerationState)
+    switch (state)
     {
     case Enums::Idle:
         return "idle";
@@ -54,4 +55,33 @@ QString Utils::bytesToString(unsigned long long bytes)
     }
 
     return QString("%1%2").arg(bytes_double, 0, 'g', 5).arg(size_unit);
+}
+
+unsigned int Utils::levenshteinDistance(const std::string &from_string, const std::string &to_string)
+{
+    const size_t from_string_size = from_string.size();
+    const size_t to_string_size = to_string.size();
+
+    std::vector<unsigned int> column(to_string_size + 1);
+    std::vector<unsigned int> previous_column(to_string_size + 1);
+
+    for (unsigned int i = 0; i < previous_column.size(); i++)
+    {
+        previous_column[i] = i;
+    }
+    for (unsigned int i = 0; i < from_string_size; i++)
+    {
+        column[0] = i + 1;
+        for (unsigned int j = 0; j < to_string_size; j++)
+        {
+            column[j + 1] = std::min(previous_column[j + 1] + 1, std::min(column[j] + 1, previous_column[j] + (from_string[i] == to_string[j] ? 0 : 1)));
+        }
+        column.swap(previous_column);
+    }
+
+    return previous_column[to_string_size];
+}
+unsigned int Utils::levenshteinDistance(const QString &from_string, const QString &to_string)
+{
+    return levenshteinDistance(from_string.toStdString(), to_string.toStdString());
 }

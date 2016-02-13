@@ -1,3 +1,4 @@
+// Local
 #include "base.h"
 
 Base::Base(const QString &logTag, QObject *parent) :

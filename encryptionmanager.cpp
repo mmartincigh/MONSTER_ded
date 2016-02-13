@@ -1,3 +1,4 @@
+// Local
 #include "encryptionmanager.h"
 
 EncryptionManager::EncryptionManager(QObject *parent) :

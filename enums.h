@@ -1,6 +1,7 @@
 #ifndef ENUMS
 #define ENUMS
 
+// Qt
 #include <QObject>
 
 class Enums : public QObject

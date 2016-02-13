@@ -1,6 +1,7 @@
 #ifndef FILEENCRYPTOR_H
 #define FILEENCRYPTOR_H
 
+// Qt
 #include <QObject>
 #include <QFileInfo>
 #include <QTime>
@@ -8,9 +9,11 @@
 #include <QWaitCondition>
 #include <QDebug>
 
+// Crypto++
 #include <default.h>
 #include <files.h>
 
+// Local
 #include "base.h"
 #include "enums.h"
 

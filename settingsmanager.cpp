@@ -1,6 +1,8 @@
+// Qt
 #include <QStandardPaths>
 #include <QUrl>
 
+// Local
 #include "settingsmanager.h"
 
 const QString SettingsManager::m_SOURCE_PATH_MODEL_KEY("sourceManager/sourcePathModel");

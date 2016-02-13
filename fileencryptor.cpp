@@ -1,3 +1,4 @@
+// Local
 #include "fileencryptor.h"
 
 const unsigned long long FileEncryptor::m_ENCRYPTION_THRESHOLD_SIZE(1048576);

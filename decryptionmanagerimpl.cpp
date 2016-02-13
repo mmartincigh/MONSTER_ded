@@ -14,28 +14,28 @@
 #include <osrng.h>
 
 // Local
-#include "encryptionmanagerimpl.h"
+#include "decryptionmanagerimpl.h"
 #include "utils.h"
 
-const QString EncryptionManagerImpl::m_CURRENT_INPUT_FILE_NONE("none");
-const QString EncryptionManagerImpl::m_OUTPUT_FILE_EXTENSION(".mef");
-const QString EncryptionManagerImpl::m_PASSPHRASE("Let's pretend that this is a clever passphrase");
-const QString EncryptionManagerImpl::m_AES_KEY_FILE_NAME("AES_key.bin");
-const QString EncryptionManagerImpl::m_AES_IV_FILE_NAME("AES_iv.bin");
-const unsigned long long EncryptionManagerImpl::m_ENCRYPTION_THRESHOLD_SIZE(10485760);
-const unsigned long long EncryptionManagerImpl::m_ENCRYPTION_CHUNK_SIZE(1048576);
+const QString DecryptionManagerImpl::m_CURRENT_INPUT_FILE_NONE("none");
+const QString DecryptionManagerImpl::m_OUTPUT_FILE_EXTENSION(".mef");
+const QString DecryptionManagerImpl::m_PASSPHRASE("Let's pretend that this is a clever passphrase");
+const QString DecryptionManagerImpl::m_AES_KEY_FILE_NAME("AES_key.bin");
+const QString DecryptionManagerImpl::m_AES_IV_FILE_NAME("AES_iv.bin");
+const unsigned long long DecryptionManagerImpl::m_DECRYPTION_THRESHOLD_SIZE(10485760);
+const unsigned long long DecryptionManagerImpl::m_DECRYPTION_CHUNK_SIZE(1048576);
 
-EncryptionManagerImpl::EncryptionManagerImpl(QMutex *mutex, QWaitCondition *waitCondition, QObject *parent) :
-    Base("EMI", parent),
+DecryptionManagerImpl::DecryptionManagerImpl(QMutex *mutex, QWaitCondition *waitCondition, QObject *parent) :
+    Base("DMI", parent),
     m_isEnabled(false),
     m_state(Enums::Idle),
     m_stateDescription(Utils::stateToString(m_state)),
     m_pause(false),
     m_stop(false),
-    m_encryptedBytes(0),
-    m_encryptedBytesString(Utils::bytesToString(m_encryptedBytes)),
-    m_bytesToEncrypt(0),
-    m_bytesToEncryptString(Utils::bytesToString(m_bytesToEncrypt)),
+    m_decryptedBytes(0),
+    m_decryptedBytesString(Utils::bytesToString(m_decryptedBytes)),
+    m_bytesToDecrypt(0),
+    m_bytesToDecryptString(Utils::bytesToString(m_bytesToDecrypt)),
     m_progress(0),
     m_progressString(Utils::progressToString(m_progress)),
     m_errors(0),
@@ -50,39 +50,39 @@ EncryptionManagerImpl::EncryptionManagerImpl(QMutex *mutex, QWaitCondition *wait
     m_waitCondition(waitCondition)
 {
     QObject::connect(this, SIGNAL(stateChanged(Enums::State)), this, SLOT(onStateChanged(Enums::State)));
-    QObject::connect(this, SIGNAL(encryptedBytesChanged(unsigned long long)), this, SLOT(onBytesEncryptedChanged(unsigned long long)));
-    QObject::connect(this, SIGNAL(bytesToEncryptChanged(unsigned long long)), this, SLOT(onBytesToEncryptChanged(unsigned long long)));
+    QObject::connect(this, SIGNAL(decryptedBytesChanged(unsigned long long)), this, SLOT(onBytesDecryptedChanged(unsigned long long)));
+    QObject::connect(this, SIGNAL(bytesToDecryptChanged(unsigned long long)), this, SLOT(onBytesToDecryptChanged(unsigned long long)));
     QObject::connect(this, SIGNAL(progressChanged(float)), this, SLOT(onProgressChanged(float)));
 
-    this->debug("Encryption manager implementation created");
+    this->debug("Decryption manager implementation created");
 }
 
-EncryptionManagerImpl::~EncryptionManagerImpl()
+DecryptionManagerImpl::~DecryptionManagerImpl()
 {
-    this->debug("Encryption manager implementation disposed of");
+    this->debug("Decryption manager implementation disposed of");
 }
 
-void EncryptionManagerImpl::initialize()
+void DecryptionManagerImpl::initialize()
 {
     this->debug("Initialized");
 }
 
-bool EncryptionManagerImpl::isEnabled() const
+bool DecryptionManagerImpl::isEnabled() const
 {
     return m_isEnabled;
 }
 
-Enums::State EncryptionManagerImpl::state() const
+Enums::State DecryptionManagerImpl::state() const
 {
     return m_state;
 }
 
-QString EncryptionManagerImpl::stateDescription() const
+QString DecryptionManagerImpl::stateDescription() const
 {
     return m_stateDescription;
 }
 
-void EncryptionManagerImpl::setPause(bool pause)
+void DecryptionManagerImpl::setPause(bool pause)
 {
     if (m_pause == pause)
     {
@@ -96,7 +96,7 @@ void EncryptionManagerImpl::setPause(bool pause)
     emit this->pauseChanged(m_pause);
 }
 
-void EncryptionManagerImpl::setStop(bool stop)
+void DecryptionManagerImpl::setStop(bool stop)
 {
     if (m_stop == stop)
     {
@@ -110,67 +110,67 @@ void EncryptionManagerImpl::setStop(bool stop)
     emit this->stopChanged(m_stop);
 }
 
-unsigned long long EncryptionManagerImpl::encryptedBytes() const
+unsigned long long DecryptionManagerImpl::decryptedBytes() const
 {
-    return m_encryptedBytes;
+    return m_decryptedBytes;
 }
 
-QString EncryptionManagerImpl::encryptedBytesString() const
+QString DecryptionManagerImpl::decryptedBytesString() const
 {
-    return m_encryptedBytesString;
+    return m_decryptedBytesString;
 }
 
-unsigned long long EncryptionManagerImpl::bytesToEncrypt() const
+unsigned long long DecryptionManagerImpl::bytesToDecrypt() const
 {
-    return m_bytesToEncrypt;
+    return m_bytesToDecrypt;
 }
 
-QString EncryptionManagerImpl::bytesToEncryptString() const
+QString DecryptionManagerImpl::bytesToDecryptString() const
 {
-    return m_bytesToEncryptString;
+    return m_bytesToDecryptString;
 }
 
-float EncryptionManagerImpl::progress() const
+float DecryptionManagerImpl::progress() const
 {
     return m_progress;
 }
 
-QString EncryptionManagerImpl::progressString() const
+QString DecryptionManagerImpl::progressString() const
 {
     return m_progressString;
 }
 
-int EncryptionManagerImpl::errors() const
+int DecryptionManagerImpl::errors() const
 {
     return m_errors;
 }
 
-int EncryptionManagerImpl::warnings() const
+int DecryptionManagerImpl::warnings() const
 {
     return m_warnings;
 }
 
-int EncryptionManagerImpl::skipped() const
+int DecryptionManagerImpl::skipped() const
 {
     return m_skipped;
 }
 
-int EncryptionManagerImpl::overwritten() const
+int DecryptionManagerImpl::overwritten() const
 {
     return m_overwritten;
 }
 
-int EncryptionManagerImpl::processed() const
+int DecryptionManagerImpl::processed() const
 {
     return m_processed;
 }
 
-QString EncryptionManagerImpl::currentInputFile() const
+QString DecryptionManagerImpl::currentInputFile() const
 {
     return m_currentInputFile;
 }
 
-void EncryptionManagerImpl::setIsEnabled(bool isEnabled)
+void DecryptionManagerImpl::setIsEnabled(bool isEnabled)
 {
     if (m_isEnabled == isEnabled)
     {
@@ -184,7 +184,7 @@ void EncryptionManagerImpl::setIsEnabled(bool isEnabled)
     emit this->isEnabledChanged(m_isEnabled);
 }
 
-void EncryptionManagerImpl::setState(Enums::State state)
+void DecryptionManagerImpl::setState(Enums::State state)
 {
     if (m_state == state)
     {
@@ -198,7 +198,7 @@ void EncryptionManagerImpl::setState(Enums::State state)
     emit this->stateChanged(m_state);
 }
 
-void EncryptionManagerImpl::setStateDescription(const QString &stateDescription)
+void DecryptionManagerImpl::setStateDescription(const QString &stateDescription)
 {
     if (m_stateDescription == stateDescription)
     {
@@ -212,63 +212,63 @@ void EncryptionManagerImpl::setStateDescription(const QString &stateDescription)
     emit this->stateDescriptionChanged(m_stateDescription);
 }
 
-void EncryptionManagerImpl::setEncryptedBytes(unsigned long long encryptedBytes)
+void DecryptionManagerImpl::setDecryptedBytes(unsigned long long decryptedBytes)
 {
-    if (m_encryptedBytes == encryptedBytes)
+    if (m_decryptedBytes == decryptedBytes)
     {
         return;
     }
 
-    m_encryptedBytes = encryptedBytes;
+    m_decryptedBytes = decryptedBytes;
 
-    //this->debug("Encrypted bytes changed: " + QString::number(m_encryptedBytes));
+    //this->debug("Decrypted bytes changed: " + QString::number(m_decryptedBytes));
 
-    emit this->encryptedBytesChanged(m_encryptedBytes);
+    emit this->decryptedBytesChanged(m_decryptedBytes);
 }
 
-void EncryptionManagerImpl::setEncryptedBytesString(const QString &encryptedBytesString)
+void DecryptionManagerImpl::setDecryptedBytesString(const QString &decryptedBytesString)
 {
-    if (m_encryptedBytesString == encryptedBytesString)
+    if (m_decryptedBytesString == decryptedBytesString)
     {
         return;
     }
 
-    m_encryptedBytesString = encryptedBytesString;
+    m_decryptedBytesString = decryptedBytesString;
 
-    //this->debug("Encrypted bytes string changed: " + m_encryptedBytesString);
+    //this->debug("Decrypted bytes string changed: " + m_decryptedBytesString);
 
-    emit this->encryptedBytesStringChanged(m_encryptedBytesString);
+    emit this->decryptedBytesStringChanged(m_decryptedBytesString);
 }
 
-void EncryptionManagerImpl::setBytesToEncrypt(unsigned long long bytesToEncrypt)
+void DecryptionManagerImpl::setBytesToDecrypt(unsigned long long bytesToDecrypt)
 {
-    if (m_bytesToEncrypt == bytesToEncrypt)
+    if (m_bytesToDecrypt == bytesToDecrypt)
     {
         return;
     }
 
-    m_bytesToEncrypt = bytesToEncrypt;
+    m_bytesToDecrypt = bytesToDecrypt;
 
-    this->debug("Bytes to encrypt changed: " + QString::number(m_bytesToEncrypt));
+    this->debug("Bytes to decrypt changed: " + QString::number(m_bytesToDecrypt));
 
-    emit this->bytesToEncryptChanged(m_bytesToEncrypt);
+    emit this->bytesToDecryptChanged(m_bytesToDecrypt);
 }
 
-void EncryptionManagerImpl::setBytesToEncryptString(const QString &bytesToEncryptString)
+void DecryptionManagerImpl::setBytesToDecryptString(const QString &bytesToDecryptString)
 {
-    if (m_bytesToEncryptString == bytesToEncryptString)
+    if (m_bytesToDecryptString == bytesToDecryptString)
     {
         return;
     }
 
-    m_bytesToEncryptString = bytesToEncryptString;
+    m_bytesToDecryptString = bytesToDecryptString;
 
-    this->debug("Bytes to encrypt string changed: " + m_bytesToEncryptString);
+    this->debug("Bytes to decrypt string changed: " + m_bytesToDecryptString);
 
-    emit this->bytesToEncryptStringChanged(m_bytesToEncryptString);
+    emit this->bytesToDecryptStringChanged(m_bytesToDecryptString);
 }
 
-void EncryptionManagerImpl::setProgress(float progress)
+void DecryptionManagerImpl::setProgress(float progress)
 {
     if (m_progress == progress)
     {
@@ -282,7 +282,7 @@ void EncryptionManagerImpl::setProgress(float progress)
     emit this->progressChanged(m_progress);
 }
 
-void EncryptionManagerImpl::setProgressString(const QString &progressString)
+void DecryptionManagerImpl::setProgressString(const QString &progressString)
 {
     if (m_progressString == progressString)
     {
@@ -296,7 +296,7 @@ void EncryptionManagerImpl::setProgressString(const QString &progressString)
     emit this->progressStringChanged(m_progressString);
 }
 
-void EncryptionManagerImpl::setErrors(int errors)
+void DecryptionManagerImpl::setErrors(int errors)
 {
     if (m_errors == errors)
     {
@@ -310,7 +310,7 @@ void EncryptionManagerImpl::setErrors(int errors)
     emit this->errorsChanged(m_errors);
 }
 
-void EncryptionManagerImpl::setWarnings(int warnings)
+void DecryptionManagerImpl::setWarnings(int warnings)
 {
     if (m_warnings == warnings)
     {
@@ -324,7 +324,7 @@ void EncryptionManagerImpl::setWarnings(int warnings)
     emit this->warningsChanged(m_warnings);
 }
 
-void EncryptionManagerImpl::setSkipped(int skipped)
+void DecryptionManagerImpl::setSkipped(int skipped)
 {
     if (m_skipped == skipped)
     {
@@ -338,7 +338,7 @@ void EncryptionManagerImpl::setSkipped(int skipped)
     emit this->skippedChanged(m_skipped);
 }
 
-void EncryptionManagerImpl::setOverwritten(int overwritten)
+void DecryptionManagerImpl::setOverwritten(int overwritten)
 {
     if (m_overwritten == overwritten)
     {
@@ -352,7 +352,7 @@ void EncryptionManagerImpl::setOverwritten(int overwritten)
     emit this->overwrittenChanged(m_overwritten);
 }
 
-void EncryptionManagerImpl::setProcessed(int processed)
+void DecryptionManagerImpl::setProcessed(int processed)
 {
     if (m_processed == processed)
     {
@@ -366,7 +366,7 @@ void EncryptionManagerImpl::setProcessed(int processed)
     emit this->processedChanged(m_processed);
 }
 
-void EncryptionManagerImpl::setCurrentInputFile(const QString &currentInputFile)
+void DecryptionManagerImpl::setCurrentInputFile(const QString &currentInputFile)
 {
     if (m_currentInputFile == currentInputFile)
     {
@@ -380,7 +380,7 @@ void EncryptionManagerImpl::setCurrentInputFile(const QString &currentInputFile)
     emit this->currentInputFileChanged(m_currentInputFile);
 }
 
-bool EncryptionManagerImpl::checkIfEnabled()
+bool DecryptionManagerImpl::checkIfEnabled()
 {
     bool is_source_url_path_valid = false;
     emit this->isSourcePathUrlValid(&is_source_url_path_valid);
@@ -399,7 +399,7 @@ bool EncryptionManagerImpl::checkIfEnabled()
     return true;
 }
 
-bool EncryptionManagerImpl::processStateCheckpoint()
+bool DecryptionManagerImpl::processStateCheckpoint()
 {
     QMutexLocker mutex_locker(m_mutex);
     Q_UNUSED(mutex_locker)
@@ -435,7 +435,7 @@ bool EncryptionManagerImpl::processStateCheckpoint()
     return true;
 }
 
-bool EncryptionManagerImpl::readKeyFromFile()
+bool DecryptionManagerImpl::readKeyFromFile()
 {
     QString key_file_name = QDir::current().filePath(m_AES_KEY_FILE_NAME);
     QFile key_file(key_file_name);
@@ -464,7 +464,7 @@ bool EncryptionManagerImpl::readKeyFromFile()
     }
     if (m_key.empty())
     {
-        this->error("The encryption key is empty");
+        this->error("The decryption key is empty");
 
         return false;
     }
@@ -472,7 +472,7 @@ bool EncryptionManagerImpl::readKeyFromFile()
     return true;
 }
 
-bool EncryptionManagerImpl::readIvFromFile()
+bool DecryptionManagerImpl::readIvFromFile()
 {
     QString iv_file_name = QDir::current().filePath(m_AES_IV_FILE_NAME);
     QFile iv_file(iv_file_name);
@@ -510,134 +510,134 @@ bool EncryptionManagerImpl::readIvFromFile()
     return false;
 }
 
-bool EncryptionManagerImpl::encryptFileWithMac(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, QTime &encryptionTime)
+bool DecryptionManagerImpl::decryptFileWithMac(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, QTime &decryptionTime)
 {
-    this->debug("Encrypting file with MAC: " + inputFile + " [" + Utils::bytesToString(inputFileSize) + "]");
+    this->debug("Decrypting file with MAC: " + inputFile + " [" + Utils::bytesToString(inputFileSize) + "]");
 
     QTime time(0, 0, 0, 0);
     time.start();
 
     try
     {
-        // Construct the encryption machinery.
+        // Construct the decryption machinery.
         CryptoPP::FileSink *file_sink = new CryptoPP::FileSink(outputFile.toUtf8().constData());
-        CryptoPP::DefaultEncryptorWithMAC *encryptor = new CryptoPP::DefaultEncryptorWithMAC(m_PASSPHRASE.toUtf8().constData(), file_sink);
-        CryptoPP::FileSource file_source(inputFile.toUtf8().constData(), false, encryptor);
+        CryptoPP::DefaultDecryptorWithMAC *decryptor = new CryptoPP::DefaultDecryptorWithMAC(m_PASSPHRASE.toUtf8().constData(), file_sink);
+        CryptoPP::FileSource file_source(inputFile.toUtf8().constData(), false, decryptor);
 
-        // Encrypt the file.
-        if (inputFileSize <= m_ENCRYPTION_THRESHOLD_SIZE)
+        // Decrypt the file.
+        if (inputFileSize <= m_DECRYPTION_THRESHOLD_SIZE)
         {
             file_source.PumpAll();
 
-            this->setEncryptedBytes(m_encryptedBytes + inputFileSize);
+            this->setDecryptedBytes(m_decryptedBytes + inputFileSize);
         }
         else
         {
-            this->debug("File \"" + inputFile + "\" is bigger than " + Utils::bytesToString(m_ENCRYPTION_THRESHOLD_SIZE) + ", encrypting by pumping chunks of " + Utils::bytesToString(m_ENCRYPTION_CHUNK_SIZE) + "...");
+            this->debug("File \"" + inputFile + "\" is bigger than " + Utils::bytesToString(m_DECRYPTION_THRESHOLD_SIZE) + ", decrypting by pumping chunks of " + Utils::bytesToString(m_DECRYPTION_CHUNK_SIZE) + "...");
 
-            unsigned long long total_encrypted_bytes = 0;
-            while (total_encrypted_bytes < inputFileSize)
+            unsigned long long total_decrypted_bytes = 0;
+            while (total_decrypted_bytes < inputFileSize)
             {
-                // Check whether the encryption should be paused, resumed or stopped.
+                // Check whether the decryption should be paused, resumed or stopped.
                 if (!this->processStateCheckpoint())
                 {
-                    this->warning("The encryption was stopped in the middle of the file \"" + inputFile + "\", the resulting file may be corrupted");
+                    this->warning("The decryption was stopped in the middle of the file \"" + inputFile + "\", the resulting file may be corrupted");
 
                     int time_elapsed = time.elapsed();
-                    QTime encryption_time = QTime(0, 0, 0, 0).addMSecs(time_elapsed);
-                    encryptionTime.setHMS(encryption_time.hour(), encryption_time.minute(), encryption_time.second(), encryption_time.msec());
+                    QTime decryption_time = QTime(0, 0, 0, 0).addMSecs(time_elapsed);
+                    decryptionTime.setHMS(decryption_time.hour(), decryption_time.minute(), decryption_time.second(), decryption_time.msec());
 
                     return true;
                 }
 
-                long long encrypted_bytes = file_source.Pump(m_ENCRYPTION_CHUNK_SIZE);
+                long long decrypted_bytes = file_source.Pump(m_DECRYPTION_CHUNK_SIZE);
 
-                this->setEncryptedBytes(m_encryptedBytes + encrypted_bytes);
+                this->setDecryptedBytes(m_decryptedBytes + decrypted_bytes);
 
-                total_encrypted_bytes += encrypted_bytes;
+                total_decrypted_bytes += decrypted_bytes;
             }
             file_source.PumpAll();
         }
     }
     catch (const std::exception &e)
     {
-        this->error("Cannot encrypt file \"" + inputFile + "\" with MAC. " + e.what());
+        this->error("Cannot decrypt file \"" + inputFile + "\" with MAC. " + e.what());
 
         return false;
     }
 
     int time_elapsed = time.elapsed();
-    QTime encryption_time = QTime(0, 0, 0, 0).addMSecs(time_elapsed);
-    encryptionTime.setHMS(encryption_time.hour(), encryption_time.minute(), encryption_time.second(), encryption_time.msec());
+    QTime decryption_time = QTime(0, 0, 0, 0).addMSecs(time_elapsed);
+    decryptionTime.setHMS(decryption_time.hour(), decryption_time.minute(), decryption_time.second(), decryption_time.msec());
 
     return true;
 }
 
-bool EncryptionManagerImpl::encryptFileWithAes(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, QTime &encryptionTime)
+bool DecryptionManagerImpl::decryptFileWithAes(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, QTime &decryptionTime)
 {
-    this->debug("Encrypting file with AES: " + inputFile + " [" + Utils::bytesToString(inputFileSize) + "]");
+    this->debug("Decrypting file with AES: " + inputFile + " [" + Utils::bytesToString(inputFileSize) + "]");
 
     QTime time(0, 0, 0, 0);
     time.start();
 
     try
     {
-        // Construct the encryption machinery.
+        // Construct the decryption machinery.
         CryptoPP::FileSink *file_sink = new CryptoPP::FileSink(outputFile.toUtf8().constData());
-        CryptoPP::CBC_Mode<CryptoPP::AES>::Encryption aes_encryptor(m_key, m_key.size(), m_iv);
-        CryptoPP::StreamTransformationFilter *stream_transformation_filter_sptr = new CryptoPP::StreamTransformationFilter(aes_encryptor, file_sink);
+        CryptoPP::CBC_Mode<CryptoPP::AES>::Decryption aes_decryptor(m_key, m_key.size(), m_iv);
+        CryptoPP::StreamTransformationFilter *stream_transformation_filter_sptr = new CryptoPP::StreamTransformationFilter(aes_decryptor, file_sink);
         CryptoPP::FileSource file_source(inputFile.toUtf8().constData(), false, stream_transformation_filter_sptr);
 
-        // Encrypt the file.
-        if (inputFileSize <= m_ENCRYPTION_THRESHOLD_SIZE)
+        // Decrypt the file.
+        if (inputFileSize <= m_DECRYPTION_THRESHOLD_SIZE)
         {
             file_source.PumpAll();
 
-            this->setEncryptedBytes(m_encryptedBytes + inputFileSize);
+            this->setDecryptedBytes(m_decryptedBytes + inputFileSize);
         }
         else
         {
-            this->debug("File \"" + inputFile + "\" is bigger than " + Utils::bytesToString(m_ENCRYPTION_THRESHOLD_SIZE) + ", encrypting by pumping chunks of " + Utils::bytesToString(m_ENCRYPTION_CHUNK_SIZE) + "...");
+            this->debug("File \"" + inputFile + "\" is bigger than " + Utils::bytesToString(m_DECRYPTION_THRESHOLD_SIZE) + ", decrypting by pumping chunks of " + Utils::bytesToString(m_DECRYPTION_CHUNK_SIZE) + "...");
 
-            unsigned long long total_encrypted_bytes = 0;
-            while (total_encrypted_bytes < inputFileSize)
+            unsigned long long total_decrypted_bytes = 0;
+            while (total_decrypted_bytes < inputFileSize)
             {
-                // Check whether the encryption should be paused, resumed or stopped.
+                // Check whether the decryption should be paused, resumed or stopped.
                 if (!this->processStateCheckpoint())
                 {
-                    this->warning("The encryption was stopped in the middle of the file \"" + inputFile + "\", the resulting file may be corrupted");
+                    this->warning("The decryption was stopped in the middle of the file \"" + inputFile + "\", the resulting file may be corrupted");
 
                     int time_elapsed = time.elapsed();
-                    QTime encryption_time = QTime(0, 0, 0, 0).addMSecs(time_elapsed);
-                    encryptionTime.setHMS(encryption_time.hour(), encryption_time.minute(), encryption_time.second(), encryption_time.msec());
+                    QTime decryption_time = QTime(0, 0, 0, 0).addMSecs(time_elapsed);
+                    decryptionTime.setHMS(decryption_time.hour(), decryption_time.minute(), decryption_time.second(), decryption_time.msec());
 
                     return true;
                 }
 
-                long long encrypted_bytes = file_source.Pump(m_ENCRYPTION_CHUNK_SIZE);
+                long long decrypted_bytes = file_source.Pump(m_DECRYPTION_CHUNK_SIZE);
 
-                this->setEncryptedBytes(m_encryptedBytes + encrypted_bytes);
+                this->setDecryptedBytes(m_decryptedBytes + decrypted_bytes);
 
-                total_encrypted_bytes += encrypted_bytes;
+                total_decrypted_bytes += decrypted_bytes;
             }
             file_source.PumpAll();
         }
     }
     catch (const std::exception &e)
     {
-        this->error("Cannot encrypt file \"" + inputFile + "\" with AES. " + e.what());
+        this->error("Cannot decrypt file \"" + inputFile + "\" with AES. " + e.what());
 
         return false;
     }
 
     int time_elapsed = time.elapsed();
-    QTime encryption_time = QTime(0, 0, 0, 0).addMSecs(time_elapsed);
-    encryptionTime.setHMS(encryption_time.hour(), encryption_time.minute(), encryption_time.second(), encryption_time.msec());
+    QTime decryption_time = QTime(0, 0, 0, 0).addMSecs(time_elapsed);
+    decryptionTime.setHMS(decryption_time.hour(), decryption_time.minute(), decryption_time.second(), decryption_time.msec());
 
     return true;
 }
 
-void EncryptionManagerImpl::onIsSourcePathUrlValidChanged(bool isSourcePathUrlValid)
+void DecryptionManagerImpl::onIsSourcePathUrlValidChanged(bool isSourcePathUrlValid)
 {
     this->debug("Is source path URL vaild: " + QString(isSourcePathUrlValid ? "true" : "false"));
 
@@ -651,7 +651,7 @@ void EncryptionManagerImpl::onIsSourcePathUrlValidChanged(bool isSourcePathUrlVa
     this->setIsEnabled(this->checkIfEnabled());
 }
 
-void EncryptionManagerImpl::onIsDestinationPathUrlValidChanged(bool isDestinationPathUrlValid)
+void DecryptionManagerImpl::onIsDestinationPathUrlValidChanged(bool isDestinationPathUrlValid)
 {
     this->debug("Is destination path URL vaild: " + QString(isDestinationPathUrlValid ? "true" : "false"));
 
@@ -665,26 +665,26 @@ void EncryptionManagerImpl::onIsDestinationPathUrlValidChanged(bool isDestinatio
     this->setIsEnabled(this->checkIfEnabled());
 }
 
-void EncryptionManagerImpl::onEncryptFiles()
+void DecryptionManagerImpl::onDecryptFiles()
 {
-    this->debug("Encrypting files...");
+    this->debug("Decrypting files...");
 
     if (!m_isEnabled)
     {
-        this->error("File encryption not enabled");
+        this->error("File Decryption not enabled");
 
         return;
     }
 
-    // Get the encryption key from file.
+    // Get the decryption key from file.
     bool ret_val = this->readKeyFromFile();
     if (!ret_val)
     {
-        this->error("Cannot get the encryption key from file");
+        this->error("Cannot get the decryption key from file");
 
         return;
     }
-    this->debug("Encryption key read from file");
+    this->debug("Decryption key read from file");
 
     // Get the initialization vector from file.
     ret_val = this->readIvFromFile();
@@ -756,9 +756,9 @@ void EncryptionManagerImpl::onEncryptFiles()
     }
     this->debug("Input files total size: " + QString::number(input_files_total_size) + "B [" + Utils::bytesToString(input_files_total_size) + "]");
 
-    // Encrypt the files.
-    this->setEncryptedBytes(0);
-    this->setBytesToEncrypt(input_files_total_size);
+    // Decrypt the files.
+    this->setDecryptedBytes(0);
+    this->setBytesToDecrypt(input_files_total_size);
     this->setProgress(0);
     this->setErrors(0);
     this->setWarnings(0);
@@ -786,7 +786,7 @@ void EncryptionManagerImpl::onEncryptFiles()
         {
             this->error("The input file \"" + input_file + "\" does not exist");
 
-            this->setEncryptedBytes(m_encryptedBytes + input_file_info.size());
+            this->setDecryptedBytes(m_decryptedBytes + input_file_info.size());
             this->setErrors(m_errors + 1);
 
             continue;
@@ -802,7 +802,7 @@ void EncryptionManagerImpl::onEncryptFiles()
             {
                 this->debug("The output file \"" + output_file_info.fileName() + "\" already exists, skipping...");
 
-                this->setEncryptedBytes(m_encryptedBytes + input_file_info.size());
+                this->setDecryptedBytes(m_decryptedBytes + input_file_info.size());
                 this->setSkipped(m_skipped + 1);
 
                 continue;
@@ -810,50 +810,50 @@ void EncryptionManagerImpl::onEncryptFiles()
         }
         QString output_file = output_file_info.absoluteFilePath();
 
-        // Encrypt the file.
-        QTime encryption_time(0, 0, 0, 0);
-        bool ret_val = this->encryptFileWithAes(input_file, input_file_info.size(), output_file, encryption_time);
+        // Decrypt the file.
+        QTime decryption_time(0, 0, 0, 0);
+        bool ret_val = this->decryptFileWithAes(input_file, input_file_info.size(), output_file, decryption_time);
         if (!ret_val)
         {
-            emit this->error("Cannot encrypt file: " + input_file);
+            emit this->error("Cannot decrypt file: " + input_file);
 
             this->setErrors(m_errors + 1);
 
             continue;
         }
-        this->debug("File encrypted to: " + output_file + " [" + Utils::bytesToString(output_file_info.size()) + "]");
-        this->debug("Encryption time: " + encryption_time.toString("HH:mm:ss:zzz"));
+        this->debug("File decrypted to: " + output_file + " [" + Utils::bytesToString(output_file_info.size()) + "]");
+        this->debug("Decryption time: " + decryption_time.toString("HH:mm:ss:zzz"));
         this->setProcessed(m_processed + 1);
     }
     this->setProgress(1);
     this->setState(Enums::Completed);
     this->setCurrentInputFile(m_CURRENT_INPUT_FILE_NONE);
 
-    this->debug("Files encrypted");
+    this->debug("Files decrypted");
 }
 
-void EncryptionManagerImpl::onUpdateState(Enums::State state)
+void DecryptionManagerImpl::onUpdateState(Enums::State state)
 {
     this->setState(state);
 }
 
-void EncryptionManagerImpl::onStateChanged(Enums::State state)
+void DecryptionManagerImpl::onStateChanged(Enums::State state)
 {
     this->setStateDescription(Utils::stateToString(state));
 }
 
-void EncryptionManagerImpl::onProgressChanged(float progress)
+void DecryptionManagerImpl::onProgressChanged(float progress)
 {
     this->setProgressString(Utils::progressToString(progress));
 }
 
-void EncryptionManagerImpl::onBytesEncryptedChanged(unsigned long long bytesEncrypted)
+void DecryptionManagerImpl::onBytesDecryptedChanged(unsigned long long bytesDecrypted)
 {
-    this->setEncryptedBytesString(Utils::bytesToString(bytesEncrypted));
-    this->setProgress(bytesEncrypted / static_cast<float>(m_bytesToEncrypt));
+    this->setDecryptedBytesString(Utils::bytesToString(bytesDecrypted));
+    this->setProgress(bytesDecrypted / static_cast<float>(m_bytesToDecrypt));
 }
 
-void EncryptionManagerImpl::onBytesToEncryptChanged(unsigned long long bytesToEncrypt)
+void DecryptionManagerImpl::onBytesToDecryptChanged(unsigned long long bytesToDecrypt)
 {
-    this->setBytesToEncryptString(Utils::bytesToString(bytesToEncrypt));
+    this->setBytesToDecryptString(Utils::bytesToString(bytesToDecrypt));
 }

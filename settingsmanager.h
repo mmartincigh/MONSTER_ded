@@ -1,8 +1,10 @@
 #ifndef SETTINGSMANAGER_H
 #define SETTINGSMANAGER_H
 
+// Qt
 #include <QSettings>
 
+// Local
 #include "base.h"
 
 class SettingsManager : public Base

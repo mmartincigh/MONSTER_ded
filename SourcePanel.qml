@@ -1,15 +1,17 @@
 import QtQuick 2.5
 import QtQuick.Controls 1.4
-import QtQuick.Controls.Styles 1.4
 import QtQuick.Dialogs 1.2
 import MONSTER.MONSTER_ded 1.0
 
-Item {
+Rectangle {
     id: main
 
-    property bool enabled: encryptionManager.state === Enums.Idle || encryptionManager.state === Enums.Stopped || encryptionManager.state === Enums.Completed
+    border.color: "red"
 
-    height: sourcePathComboBox.height
+    property bool enabled: encryptionManager.state === Enums.ProcessState_Idle || encryptionManager.state === Enums.ProcessState_Stopped || encryptionManager.state === Enums.ProcessState_Completed
+
+    width: childrenRect.width
+    height: childrenRect.height
 
     Connections {
         target: sourceManager
@@ -20,7 +22,6 @@ Item {
         id: sourcePathLabel
 
         anchors.left: parent.left
-        anchors.leftMargin: 20
         anchors.verticalCenter: sourcePathComboBox.verticalCenter
 
         text: qsTr("source path")
@@ -31,7 +32,6 @@ Item {
 
         height: 25
         anchors.top: parent.top
-        anchors.topMargin: 20
         anchors.left: sourcePathLabel.right
         anchors.leftMargin: 20
         anchors.right: sourcePathBrowseButton.left
@@ -62,7 +62,6 @@ Item {
         id: sourcePathBrowseButton
 
         anchors.right: parent.right
-        anchors.rightMargin: 20
         anchors.verticalCenter: sourcePathComboBox.verticalCenter
 
         text: qsTr("browse")

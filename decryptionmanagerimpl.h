@@ -16,6 +16,14 @@ class DecryptionManagerImpl : public Base
     Q_OBJECT
 
 private:
+    enum DecryptionState
+    {
+        DecryptionState_Success,
+        DecryptionState_Warning,
+        DecryptionState_Error
+    };
+
+private:
     static const QString m_CURRENT_INPUT_FILE_NONE;
     static const QString m_OUTPUT_FILE_EXTENSION;
     static const QString m_PASSPHRASE;
@@ -24,7 +32,7 @@ private:
     static const unsigned long long m_DECRYPTION_THRESHOLD_SIZE;
     static const unsigned long long m_DECRYPTION_CHUNK_SIZE;
     bool m_isEnabled;
-    Enums::State m_state;
+    Enums::ProcessState m_state;
     QString m_stateDescription;
     bool m_pause;
     bool m_stop;
@@ -52,7 +60,7 @@ public:
 public:
     void initialize();
     bool isEnabled() const;
-    Enums::State state() const;
+    Enums::ProcessState state() const;
     QString stateDescription() const;
     void setPause(bool pause);
     void setStop(bool stop);
@@ -71,7 +79,7 @@ public:
 
 private:
     void setIsEnabled(bool isEnabled);
-    void setState(Enums::State state);
+    void setState(Enums::ProcessState state);
     void setStateDescription(const QString &stateDescription);
     void setDecryptedBytes(unsigned long long decryptedBytes);
     void setDecryptedBytesString(const QString &decryptedBytesString);
@@ -89,24 +97,24 @@ private:
     bool processStateCheckpoint();
     bool readKeyFromFile();
     bool readIvFromFile();
-    bool decryptFileWithMac(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, QTime &decryptionTime);
-    bool decryptFileWithAes(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, QTime &decryptionTime);
+    DecryptionState decryptFileWithMac(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, QTime &decryptionTime);
+    DecryptionState decryptFileWithAes(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, QTime &decryptionTime);
 
 public slots:
-    void onIsSourcePathUrlValidChanged(bool isSourcePathUrlValid);
+    void onIsSecurePathUrlValidChanged(bool isSecurePathUrlValid);
     void onIsDestinationPathUrlValidChanged(bool isDestinationPathUrlValid);
     void onDecryptFiles();
 
 private slots:
-    void onUpdateState(Enums::State state);
-    void onStateChanged(Enums::State state);
+    void onUpdateState(Enums::ProcessState state);
+    void onStateChanged(Enums::ProcessState state);
     void onProgressChanged(float progress);
     void onBytesDecryptedChanged(unsigned long long bytesDecrypted);
     void onBytesToDecryptChanged(unsigned long long bytesToDecrypt);
 
 signals:
     void isEnabledChanged(bool isEnabled);
-    void stateChanged(Enums::State state);
+    void stateChanged(Enums::ProcessState state);
     void stateDescriptionChanged(const QString &stateDescription);
     void pauseChanged(bool pause);
     void stopChanged(bool stop);
@@ -122,9 +130,9 @@ signals:
     void overwrittenChanged(int overwritten);
     void processedChanged(int processed);
     void currentInputFileChanged(const QString &currentInputFile);
-    void isSourcePathUrlValid(bool *isSourcePathUrlValid);
+    void isSecurePathUrlValid(bool *isSecurePathUrlValid);
     void isDestinationPathUrlValid(bool *isDestinationPathUrlValid);
-    void sourcePath(QString *sourcePath);
+    void securePath(QString *securePath);
     void destinationPath(QString *destinationPath);
     void inputFiles(QStringList *inputFiles);
     void overwriteOutputFiles(bool *overwriteOutputFiles);

@@ -4,12 +4,16 @@
     </qresource>
     <qresource prefix="/qml">
         <file>Base.qml</file>
+        <file>DecryptionPanel.qml</file>
         <file>DestinationPanel.qml</file>
         <file>EncryptionPanel.qml</file>
         <file>FilesPanel.qml</file>
         <file>main.qml</file>
         <file>Messages.qml</file>
         <file>PanelArea.qml</file>
+        <file>ProcessPanel.qml</file>
+        <file>SecurePanel.qml</file>
         <file>SourcePanel.qml</file>
+        <file>StatsPanel.qml</file>
     </qresource>
 </RCC>

@@ -18,20 +18,35 @@ QString Utils::urlToString(const QUrl &url)
     return string;
 }
 
-QString Utils::stateToString(Enums::State state)
+QString Utils::processStateToString(Enums::ProcessState state)
 {
     switch (state)
     {
-    case Enums::Idle:
+    case Enums::ProcessState_Idle:
         return "idle";
-    case Enums::Working:
+    case Enums::ProcessState_Working:
         return "working";
-    case Enums::Paused:
+    case Enums::ProcessState_Paused:
         return "paused";
-    case Enums::Stopped:
+    case Enums::ProcessState_Stopped:
         return "stopped";
-    case Enums::Completed:
+    case Enums::ProcessState_Completed:
         return "completed";
+    default:
+        return "unknown";
+    }
+}
+
+QString Utils::processTypeToString(Enums::ProcessType type)
+{
+    switch (type)
+    {
+    case Enums::ProcessType_None:
+        return "none";
+    case Enums::ProcessType_Encryption:
+        return "encryption";
+    case Enums::ProcessType_Decryption:
+        return "decryption";
     default:
         return "unknown";
     }

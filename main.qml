@@ -9,7 +9,7 @@ Window {
     x: (Screen.width - width) / 2
     y: (Screen.height - height) / 2
     width: 650
-    height: 400
+    height: 450
 
     title: "MONSTER_ded"
     flags: windowManager.windowFlags

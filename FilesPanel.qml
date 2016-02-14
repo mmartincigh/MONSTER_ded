@@ -2,16 +2,18 @@ import QtQuick 2.5
 import QtQuick.Controls 1.4
 import MONSTER.MONSTER_ded 1.0
 
-Item {
+Rectangle {
     id: main
 
-    height: reloadInputFilesButton.height
+    border.color: "red"
+
+    width: childrenRect.width
+    height: childrenRect.height
 
     Text {
         id: inputFilesCountLabel
 
         anchors.left: parent.left
-        anchors.leftMargin: 20
         anchors.verticalCenter: reloadInputFilesButton.verticalCenter
 
         text: qsTr("input files count:")
@@ -31,12 +33,11 @@ Item {
         id: reloadInputFilesButton
 
         anchors.top: parent.top
-        anchors.topMargin: 20
         anchors.left: inputFilesCountLabel.right
         anchors.leftMargin: 80
 
         text: qsTr("reload")
-        enabled: encryptionManager.isEnabled && (encryptionManager.state === Enums.Idle || encryptionManager.state === Enums.Stopped || encryptionManager.state === Enums.Completed)
+        enabled: encryptionManager.isEnabled && (encryptionManager.state === Enums.ProcessState_Idle || encryptionManager.state === Enums.ProcessState_Stopped || encryptionManager.state === Enums.ProcessState_Completed)
 
         onClicked: { fileManager.onReloadInputFiles() }
     }
@@ -59,7 +60,7 @@ Item {
         anchors.verticalCenter: reloadInputFilesButton.verticalCenter
 
         checked: fileManager.overwriteOutputFiles
-        enabled: encryptionManager.state === Enums.Idle || encryptionManager.state === Enums.Stopped || encryptionManager.state === Enums.Completed
+        enabled: encryptionManager.state === Enums.ProcessState_Idle || encryptionManager.state === Enums.ProcessState_Stopped || encryptionManager.state === Enums.ProcessState_Completed
 
         Binding {
             target: fileManager

@@ -39,6 +39,7 @@ private:
     void setSourcePath(const QString &sourcePath);
     void setSourcePathUrl(const QUrl &sourcePathUrl);
     void setIsSourcePathUrlValid(bool isSourcePathUrlValid);
+    void updateSourcePathModel();
 
 public slots:
     void onSourcePath(QString *sourcePath);
@@ -46,6 +47,7 @@ public slots:
     void onUpdateEditText(const QString &editText);
     void onUpdateEditText(const QUrl &editText);
     void onEncryptFiles();
+    void onDecryptFiles();
 
 private slots:
     void onEditTextChanged(const QString &editText);

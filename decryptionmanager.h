@@ -13,7 +13,7 @@ class DecryptionManager : public Base
 {
     Q_OBJECT
     Q_PROPERTY(bool isEnabled READ isEnabled NOTIFY isEnabledChanged)
-    Q_PROPERTY(Enums::State state READ state NOTIFY stateChanged)
+    Q_PROPERTY(Enums::ProcessState state READ state NOTIFY stateChanged)
     Q_PROPERTY(QString stateDescription READ stateDescription NOTIFY stateDescriptionChanged)
     Q_PROPERTY(unsigned long long decryptedBytes READ decryptedBytes NOTIFY decryptedBytesChanged)
     Q_PROPERTY(QString decryptedBytesString READ decryptedBytesString NOTIFY decryptedBytesStringChanged)
@@ -42,7 +42,7 @@ public:
     void initialize();
     void uninitialize();
     bool isEnabled() const;
-    Enums::State state() const;
+    Enums::ProcessState state() const;
     QString stateDescription() const;
     unsigned long long decryptedBytes() const;
     QString decryptedBytesString() const;
@@ -58,7 +58,7 @@ public:
     QString currentInputFile() const;
 
 public slots:
-    void onIsSourcePathUrlValidChanged(bool isSourcePathUrlValid);
+    void onIsSecurePathUrlValidChanged(bool isSecurePathUrlValid);
     void onIsDestinationPathUrlValidChanged(bool isDestinationPathUrlValid);
     void onDecryptFiles();
     void onPause();
@@ -67,7 +67,7 @@ public slots:
 
 signals:
     void isEnabledChanged(bool isEnabled);
-    void stateChanged(Enums::State state);
+    void stateChanged(Enums::ProcessState state);
     void stateDescriptionChanged(const QString &stateDescription);
     void decryptedBytesChanged(unsigned long long decryptedBytes);
     void decryptedBytesStringChanged(const QString &decryptedBytesString);
@@ -81,9 +81,9 @@ signals:
     void overwrittenChanged(int overwritten);
     void processedChanged(int processed);
     void currentInputFileChanged(const QString &currentInputFile);
-    void isSourcePathUrlValid(bool *isSourcePathUrlValid);
+    void isSecurePathUrlValid(bool *isSecurePathUrlValid);
     void isDestinationPathUrlValid(bool *isDestinationPathUrlValid);
-    void sourcePath(QString *sourcePath);
+    void securePath(QString *securePath);
     void destinationPath(QString *destinationPath);
     void inputFiles(QStringList *inputFiles);
     void overwriteOutputFiles(bool *overwriteOutputFiles);

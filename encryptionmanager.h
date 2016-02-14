@@ -13,7 +13,7 @@ class EncryptionManager : public Base
 {
     Q_OBJECT
     Q_PROPERTY(bool isEnabled READ isEnabled NOTIFY isEnabledChanged)
-    Q_PROPERTY(Enums::State state READ state NOTIFY stateChanged)
+    Q_PROPERTY(Enums::ProcessState state READ state NOTIFY stateChanged)
     Q_PROPERTY(QString stateDescription READ stateDescription NOTIFY stateDescriptionChanged)
     Q_PROPERTY(unsigned long long encryptedBytes READ encryptedBytes NOTIFY encryptedBytesChanged)
     Q_PROPERTY(QString encryptedBytesString READ encryptedBytesString NOTIFY encryptedBytesStringChanged)
@@ -42,7 +42,7 @@ public:
     void initialize();
     void uninitialize();
     bool isEnabled() const;
-    Enums::State state() const;
+    Enums::ProcessState state() const;
     QString stateDescription() const;
     unsigned long long encryptedBytes() const;
     QString encryptedBytesString() const;
@@ -67,7 +67,7 @@ public slots:
 
 signals:
     void isEnabledChanged(bool isEnabled);
-    void stateChanged(Enums::State state);
+    void stateChanged(Enums::ProcessState state);
     void stateDescriptionChanged(const QString &stateDescription);
     void encryptedBytesChanged(unsigned long long encryptedBytes);
     void encryptedBytesStringChanged(const QString &encryptedBytesString);

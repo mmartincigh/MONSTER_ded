@@ -18,7 +18,8 @@ int main(int argc, char *argv[])
 #endif
 
     qInstallMessageHandler(LogManager::messageHandler);
-    qRegisterMetaType<Enums::State>("Enums::State");
+    qRegisterMetaType<Enums::ProcessState>("Enums::ProcessType");
+    qRegisterMetaType<Enums::ProcessState>("Enums::ProcessState");
     qmlRegisterType<Enums>("MONSTER.MONSTER_ded", 1, 0, "Enums");
     QApplication application(argc, argv);
     application.setOrganizationName(ApplicationUtils::COMPANY_NAME);
@@ -48,10 +49,12 @@ int main(int argc, char *argv[])
     context->setContextProperty("application", &application);
     context->setContextProperty("applicationManager", &application_manager);
     context->setContextProperty("sourceManager", application_manager.sourceManager());
+    context->setContextProperty("secureManager", application_manager.secureManager());
     context->setContextProperty("destinationManager", application_manager.destinationManager());
+    context->setContextProperty("fileManager", application_manager.fileManager());
     context->setContextProperty("encryptionManager", application_manager.encryptionManager());
     context->setContextProperty("decryptionManager", application_manager.decryptionManager());
-    context->setContextProperty("fileManager", application_manager.fileManager());
+    context->setContextProperty("processManager", application_manager.processManager());
     context->setContextProperty("windowManager", application_manager.windowManager());
     component.loadUrl(QUrl("qrc:/qml/main.qml"));
     if (!component.isReady())

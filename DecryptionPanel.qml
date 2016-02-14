@@ -11,19 +11,19 @@ Rectangle {
     height: childrenRect.height
 
     Button {
-        id: encryptFilesButton
+        id: decryptFilesButton
 
         anchors.left: parent.left
         anchors.verticalCenter: progressBar.verticalCenter
 
-        text: qsTr("encrypt files")
-        enabled: encryptionManager.isEnabled && (processManager.state === Enums.ProcessState_Idle || processManager.state === Enums.ProcessState_Stopped || processManager.state === Enums.ProcessState_Completed)
+        text: qsTr("decrypt files")
+        enabled: decryptionManager.isEnabled && (processManager.state === Enums.ProcessState_Idle || processManager.state === Enums.ProcessState_Stopped || processManager.state === Enums.ProcessState_Completed)
 
         onClicked: {
-            sourceManager.onEncryptFiles();
-            secureManager.onEncryptFiles();
-            destinationManager.onEncryptFiles();
-            encryptionManager.onEncryptFiles();
+            sourceManager.onDecryptFiles();
+            secureManager.onDecryptFiles();
+            destinationManager.onDecryptFiles();
+            decryptionManager.onDecryptFiles();
         }
     }
 
@@ -31,16 +31,16 @@ Rectangle {
         id: progressBar
 
         anchors.top: parent.top
-        anchors.left: encryptFilesButton.right
+        anchors.left: decryptFilesButton.right
         anchors.leftMargin: 20
-        anchors.right: encryptionManagerStatus.left
+        anchors.right: decryptionManagerStatus.left
         anchors.rightMargin: 20
 
-        value: encryptionManager.progress
+        value: decryptionManager.progress
     }
 
     Text {
-        id: encryptionManagerStatus
+        id: decryptionManagerStatus
 
         width: 50
 

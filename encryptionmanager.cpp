@@ -9,7 +9,7 @@ EncryptionManager::EncryptionManager(QObject *parent) :
     m_encryptionManagerImplSptr(new EncryptionManagerImpl(&m_mutex, &m_waitCondition))
 {
     QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(isEnabledChanged(bool)), this, SIGNAL(isEnabledChanged(bool)));
-    QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(stateChanged(Enums::State)), this, SIGNAL(stateChanged(Enums::State)));
+    QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(stateChanged(Enums::ProcessState)), this, SIGNAL(stateChanged(Enums::ProcessState)));
     QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(stateDescriptionChanged(QString)), this, SIGNAL(stateDescriptionChanged(QString)));
     QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(encryptedBytesChanged(unsigned long long)), this, SIGNAL(encryptedBytesChanged(unsigned long long)));
     QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(encryptedBytesStringChanged(QString)), this, SIGNAL(encryptedBytesStringChanged(QString)));
@@ -31,7 +31,7 @@ EncryptionManager::EncryptionManager(QObject *parent) :
     QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(overwriteOutputFiles(bool*)), this, SIGNAL(overwriteOutputFiles(bool*)), Qt::BlockingQueuedConnection);
     QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(errorMessage(QString)), this, SIGNAL(errorMessage(QString)));
 
-    this->debug("Thumbnail generator created");
+    this->debug("Encryption manager created");
 }
 
 EncryptionManager::~EncryptionManager()
@@ -68,7 +68,7 @@ bool EncryptionManager::isEnabled() const
     return m_encryptionManagerImplSptr.data()->isEnabled();
 }
 
-Enums::State EncryptionManager::state() const
+Enums::ProcessState EncryptionManager::state() const
 {
     return m_encryptionManagerImplSptr.data()->state();
 }

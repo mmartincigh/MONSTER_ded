@@ -28,8 +28,8 @@ const unsigned long long DecryptionManagerImpl::m_DECRYPTION_CHUNK_SIZE(1048576)
 DecryptionManagerImpl::DecryptionManagerImpl(QMutex *mutex, QWaitCondition *waitCondition, QObject *parent) :
     Base("DMI", parent),
     m_isEnabled(false),
-    m_state(Enums::Idle),
-    m_stateDescription(Utils::stateToString(m_state)),
+    m_state(Enums::ProcessState_Idle),
+    m_stateDescription(Utils::processStateToString(m_state)),
     m_pause(false),
     m_stop(false),
     m_decryptedBytes(0),
@@ -49,7 +49,7 @@ DecryptionManagerImpl::DecryptionManagerImpl(QMutex *mutex, QWaitCondition *wait
     m_mutex(mutex),
     m_waitCondition(waitCondition)
 {
-    QObject::connect(this, SIGNAL(stateChanged(Enums::State)), this, SLOT(onStateChanged(Enums::State)));
+    QObject::connect(this, SIGNAL(stateChanged(Enums::ProcessState)), this, SLOT(onStateChanged(Enums::ProcessState)));
     QObject::connect(this, SIGNAL(decryptedBytesChanged(unsigned long long)), this, SLOT(onBytesDecryptedChanged(unsigned long long)));
     QObject::connect(this, SIGNAL(bytesToDecryptChanged(unsigned long long)), this, SLOT(onBytesToDecryptChanged(unsigned long long)));
     QObject::connect(this, SIGNAL(progressChanged(float)), this, SLOT(onProgressChanged(float)));
@@ -72,7 +72,7 @@ bool DecryptionManagerImpl::isEnabled() const
     return m_isEnabled;
 }
 
-Enums::State DecryptionManagerImpl::state() const
+Enums::ProcessState DecryptionManagerImpl::state() const
 {
     return m_state;
 }
@@ -184,7 +184,7 @@ void DecryptionManagerImpl::setIsEnabled(bool isEnabled)
     emit this->isEnabledChanged(m_isEnabled);
 }
 
-void DecryptionManagerImpl::setState(Enums::State state)
+void DecryptionManagerImpl::setState(Enums::ProcessState state)
 {
     if (m_state == state)
     {
@@ -382,9 +382,9 @@ void DecryptionManagerImpl::setCurrentInputFile(const QString &currentInputFile)
 
 bool DecryptionManagerImpl::checkIfEnabled()
 {
-    bool is_source_url_path_valid = false;
-    emit this->isSourcePathUrlValid(&is_source_url_path_valid);
-    if (!is_source_url_path_valid)
+    bool is_secure_url_path_valid = false;
+    emit this->isSecurePathUrlValid(&is_secure_url_path_valid);
+    if (!is_secure_url_path_valid)
     {
         return false;
     }
@@ -408,14 +408,14 @@ bool DecryptionManagerImpl::processStateCheckpoint()
     if (m_pause)
     {
         // The process should be paused.
-        this->setState(Enums::Paused);
+        this->setState(Enums::ProcessState_Paused);
         emit this->paused();
         m_waitCondition->wait(m_mutex);
 
         if (!m_stop)
         {
             // The process has been resumed.
-            this->setState(Enums::Working);
+            this->setState(Enums::ProcessState_Working);
             emit this->working();
         }
     }
@@ -423,9 +423,8 @@ bool DecryptionManagerImpl::processStateCheckpoint()
     if (m_stop)
     {
         // The process should be stopped.
-        this->setState(Enums::Stopped);
+        this->setState(Enums::ProcessState_Stopped);
         emit this->stopped();
-        this->setStop(false);
 
         this->setProgress(0);
 
@@ -510,7 +509,7 @@ bool DecryptionManagerImpl::readIvFromFile()
     return false;
 }
 
-bool DecryptionManagerImpl::decryptFileWithMac(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, QTime &decryptionTime)
+DecryptionManagerImpl::DecryptionState DecryptionManagerImpl::decryptFileWithMac(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, QTime &decryptionTime)
 {
     this->debug("Decrypting file with MAC: " + inputFile + " [" + Utils::bytesToString(inputFileSize) + "]");
 
@@ -547,7 +546,7 @@ bool DecryptionManagerImpl::decryptFileWithMac(const QString &inputFile, unsigne
                     QTime decryption_time = QTime(0, 0, 0, 0).addMSecs(time_elapsed);
                     decryptionTime.setHMS(decryption_time.hour(), decryption_time.minute(), decryption_time.second(), decryption_time.msec());
 
-                    return true;
+                    return DecryptionState_Warning;
                 }
 
                 long long decrypted_bytes = file_source.Pump(m_DECRYPTION_CHUNK_SIZE);
@@ -563,17 +562,17 @@ bool DecryptionManagerImpl::decryptFileWithMac(const QString &inputFile, unsigne
     {
         this->error("Cannot decrypt file \"" + inputFile + "\" with MAC. " + e.what());
 
-        return false;
+        return DecryptionState_Error;
     }
 
     int time_elapsed = time.elapsed();
     QTime decryption_time = QTime(0, 0, 0, 0).addMSecs(time_elapsed);
     decryptionTime.setHMS(decryption_time.hour(), decryption_time.minute(), decryption_time.second(), decryption_time.msec());
 
-    return true;
+    return DecryptionState_Success;
 }
 
-bool DecryptionManagerImpl::decryptFileWithAes(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, QTime &decryptionTime)
+DecryptionManagerImpl::DecryptionState DecryptionManagerImpl::decryptFileWithAes(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, QTime &decryptionTime)
 {
     this->debug("Decrypting file with AES: " + inputFile + " [" + Utils::bytesToString(inputFileSize) + "]");
 
@@ -611,7 +610,7 @@ bool DecryptionManagerImpl::decryptFileWithAes(const QString &inputFile, unsigne
                     QTime decryption_time = QTime(0, 0, 0, 0).addMSecs(time_elapsed);
                     decryptionTime.setHMS(decryption_time.hour(), decryption_time.minute(), decryption_time.second(), decryption_time.msec());
 
-                    return true;
+                    return DecryptionState_Warning;
                 }
 
                 long long decrypted_bytes = file_source.Pump(m_DECRYPTION_CHUNK_SIZE);
@@ -627,21 +626,21 @@ bool DecryptionManagerImpl::decryptFileWithAes(const QString &inputFile, unsigne
     {
         this->error("Cannot decrypt file \"" + inputFile + "\" with AES. " + e.what());
 
-        return false;
+        return DecryptionState_Error;
     }
 
     int time_elapsed = time.elapsed();
     QTime decryption_time = QTime(0, 0, 0, 0).addMSecs(time_elapsed);
     decryptionTime.setHMS(decryption_time.hour(), decryption_time.minute(), decryption_time.second(), decryption_time.msec());
 
-    return true;
+    return DecryptionState_Success;
 }
 
-void DecryptionManagerImpl::onIsSourcePathUrlValidChanged(bool isSourcePathUrlValid)
+void DecryptionManagerImpl::onIsSecurePathUrlValidChanged(bool isSecurePathUrlValid)
 {
-    this->debug("Is source path URL vaild: " + QString(isSourcePathUrlValid ? "true" : "false"));
+    this->debug("Is secure path URL vaild: " + QString(isSecurePathUrlValid ? "true" : "false"));
 
-    if (!isSourcePathUrlValid)
+    if (!isSecurePathUrlValid)
     {
         this->setIsEnabled(false);
 
@@ -668,6 +667,8 @@ void DecryptionManagerImpl::onIsDestinationPathUrlValidChanged(bool isDestinatio
 void DecryptionManagerImpl::onDecryptFiles()
 {
     this->debug("Decrypting files...");
+
+    return;
 
     if (!m_isEnabled)
     {
@@ -696,23 +697,23 @@ void DecryptionManagerImpl::onDecryptFiles()
     }
     this->debug("Initialization vector read from file");
 
-    // Get the source path.
-    QString source_path;
-    emit this->sourcePath(&source_path);
-    if (source_path.isEmpty())
+    // Get the secure path.
+    QString secure_path;
+    emit this->securePath(&secure_path);
+    if (secure_path.isEmpty())
     {
-        this->error("Source path is empty");
+        this->error("Secure path is empty");
 
         return;
     }
-    QDir source_directory(source_path);
-    if (!source_directory.exists())
+    QDir secure_directory(secure_path);
+    if (!secure_directory.exists())
     {
-        this->error("The source directory does not exist: " + source_directory.path());
+        this->error("The secure directory does not exist: " + secure_directory.path());
 
         return;
     }
-    this->debug("Source path: " + source_path);
+    this->debug("Secure path: " + secure_path);
 
     // Get the destiantion path.
     QString destination_path;
@@ -737,7 +738,7 @@ void DecryptionManagerImpl::onDecryptFiles()
     emit this->inputFiles(&input_files);
     if (input_files.size() == 0)
     {
-        this->error("The source path contains no input files");
+        this->error("The secure path contains no input files");
 
         return;
     }
@@ -751,7 +752,7 @@ void DecryptionManagerImpl::onDecryptFiles()
     unsigned long long input_files_total_size = 0;
     for (int i = 0; i < input_files.size(); i++)
     {
-        QFileInfo input_file_info(source_directory.filePath(input_files.at(i)));
+        QFileInfo input_file_info(secure_directory.filePath(input_files.at(i)));
         input_files_total_size += input_file_info.size();
     }
     this->debug("Input files total size: " + QString::number(input_files_total_size) + "B [" + Utils::bytesToString(input_files_total_size) + "]");
@@ -766,7 +767,7 @@ void DecryptionManagerImpl::onDecryptFiles()
     this->setOverwritten(0);
     this->setProcessed(0);
     this->setCurrentInputFile(m_CURRENT_INPUT_FILE_NONE);
-    this->setState(Enums::Working);
+    this->setState(Enums::ProcessState_Working);
     for (int i = 0; i < input_files.size(); i++)
     {
         // Check whether the process should be paused, resumed or stopped.
@@ -776,7 +777,7 @@ void DecryptionManagerImpl::onDecryptFiles()
         }
 
         // Get the input file.
-        QFileInfo input_file_info(source_directory.filePath(input_files.at(i)));
+        QFileInfo input_file_info(secure_directory.filePath(input_files.at(i)));
         QString input_file = input_file_info.absoluteFilePath();
         this->debug("Working on file " + input_file + " [" + QString::number(i + 1) + "]...");
         this->setCurrentInputFile(input_file_info.fileName());
@@ -812,34 +813,54 @@ void DecryptionManagerImpl::onDecryptFiles()
 
         // Decrypt the file.
         QTime decryption_time(0, 0, 0, 0);
-        bool ret_val = this->decryptFileWithAes(input_file, input_file_info.size(), output_file, decryption_time);
-        if (!ret_val)
+        DecryptionState ret_val = this->decryptFileWithAes(input_file, input_file_info.size(), output_file, decryption_time);
+        switch (ret_val)
         {
-            emit this->error("Cannot decrypt file: " + input_file);
+        case DecryptionState_Success:
+            break;
+        case DecryptionState_Warning:
+            this->setWarnings(m_warnings + 1);
 
-            this->setErrors(m_errors + 1);
+            // Check whether the process should be paused, resumed or stopped.
+            if (!this->processStateCheckpoint())
+            {
+                return;
+            }
 
             continue;
+        case DecryptionState_Error:
+            this->setErrors(m_errors + 1);
+
+            // Check whether the process should be paused, resumed or stopped.
+            if (!this->processStateCheckpoint())
+            {
+                return;
+            }
+
+            continue;
+        default:
+            this->error("Unknown decryption state");
+            return;
         }
         this->debug("File decrypted to: " + output_file + " [" + Utils::bytesToString(output_file_info.size()) + "]");
         this->debug("Decryption time: " + decryption_time.toString("HH:mm:ss:zzz"));
         this->setProcessed(m_processed + 1);
     }
     this->setProgress(1);
-    this->setState(Enums::Completed);
+    this->setState(Enums::ProcessState_Completed);
     this->setCurrentInputFile(m_CURRENT_INPUT_FILE_NONE);
 
     this->debug("Files decrypted");
 }
 
-void DecryptionManagerImpl::onUpdateState(Enums::State state)
+void DecryptionManagerImpl::onUpdateState(Enums::ProcessState state)
 {
     this->setState(state);
 }
 
-void DecryptionManagerImpl::onStateChanged(Enums::State state)
+void DecryptionManagerImpl::onStateChanged(Enums::ProcessState state)
 {
-    this->setStateDescription(Utils::stateToString(state));
+    this->setStateDescription(Utils::processStateToString(state));
 }
 
 void DecryptionManagerImpl::onProgressChanged(float progress)

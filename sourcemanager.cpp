@@ -124,6 +124,40 @@ void SourceManager::setIsSourcePathUrlValid(bool isSourcePathUrlValid)
     emit this->isSourcePathUrlValidChanged(m_isSourcePathUrlValid);
 }
 
+void SourceManager::updateSourcePathModel()
+{
+    // Do not change the model if the current path is invalid.
+    if (!m_isSourcePathUrlValid)
+    {
+        return;
+    }
+
+    // Get the source path model.
+    QStringList source_path_model = m_sourcePathModel;
+
+    // Check whether the model already contains the current path.
+    if (source_path_model.contains(m_editText))
+    {
+        // Move the current path to the top.
+        source_path_model.removeAll(m_editText);
+        source_path_model.prepend(m_editText);
+        this->setSourcePathModel(source_path_model);
+
+        return;
+    }
+
+    // Make room for another entry if necessary.
+    while (source_path_model.size() >= m_MAX_MODEL_SIZE)
+    {
+        // Remove the oldest (last) entry from the model.
+        source_path_model.removeLast();
+    }
+
+    // Prepend the current path to the model.
+    source_path_model.prepend(m_editText);
+    this->setSourcePathModel(source_path_model);
+}
+
 void SourceManager::onSourcePath(QString *sourcePath)
 {
     if (sourcePath == NULL)
@@ -157,36 +191,12 @@ void SourceManager::onUpdateEditText(const QUrl &editText)
 
 void SourceManager::onEncryptFiles()
 {
-    // Do not change the model if the current path is invalid.
-    if (!m_isSourcePathUrlValid)
-    {
-        return;
-    }
+    this->updateSourcePathModel();
+}
 
-    // Get the source path model.
-    QStringList source_path_model = m_sourcePathModel;
-
-    // Check whether the model already contains the current path.
-    if (source_path_model.contains(m_editText))
-    {
-        // Move the current path to the top.
-        source_path_model.removeAll(m_editText);
-        source_path_model.prepend(m_editText);
-        this->setSourcePathModel(source_path_model);
-
-        return;
-    }
-
-    // Make room for another entry if necessary.
-    while (source_path_model.size() >= m_MAX_MODEL_SIZE)
-    {
-        // Remove the oldest (last) entry from the model.
-        source_path_model.removeLast();
-    }
-
-    // Prepend the current path to the model.
-    source_path_model.prepend(m_editText);
-    this->setSourcePathModel(source_path_model);
+void SourceManager::onDecryptFiles()
+{
+    this->updateSourcePathModel();
 }
 
 void SourceManager::onEditTextChanged(const QString &editText)

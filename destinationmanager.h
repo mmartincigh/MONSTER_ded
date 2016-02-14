@@ -39,6 +39,7 @@ private:
     void setDestinationPath(const QString &destinationPath);
     void setDestinationPathUrl(const QUrl &destinationPathUrl);
     void setIsDestinationPathUrlValid(bool isDestinationPathUrlValid);
+    void updateDestinationPathModel();
 
 public slots:
     void onDestinationPath(QString *destinationPath);
@@ -46,6 +47,7 @@ public slots:
     void onUpdateEditText(const QString &editText);
     void onUpdateEditText(const QUrl &editText);
     void onEncryptFiles();
+    void onDecryptFiles();
 
 private slots:
     void onEditTextChanged(const QString &editText);

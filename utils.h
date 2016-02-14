@@ -21,7 +21,8 @@ private:
 
 public:
     static QString urlToString(const QUrl &url);
-    static QString stateToString(Enums::State state);
+    static QString processStateToString(Enums::ProcessState state);
+    static QString processTypeToString(Enums::ProcessType type);
     static QString progressToString(float progress);
     static QString bytesToString(unsigned long long bytes);
     static unsigned int levenshteinDistance(const std::string &from_string, const std::string &to_string);

@@ -74,7 +74,7 @@ void LogManager::debug(const QString &debugMessage)
 
     emit this->debugMessage(debugMessage);
 
-    qDebug().nospace() << qPrintable(m_logTag.leftJustified(4, ' ')) << "> " << qPrintable(debugMessage);
+    qDebug().nospace() << qPrintable(m_logTag.leftJustified(5, ' ')) << "> " << qPrintable(debugMessage);
 }
 
 void LogManager::warning(const QString &warningMessage)

@@ -125,7 +125,6 @@ void FileManager::onReloadInputFiles()
 
     this->onReloadInputFiles(source_path);
 }
-
 void FileManager::onReloadInputFiles(const QString &sourcePath)
 {
     if (sourcePath.isEmpty())
@@ -151,30 +150,8 @@ void FileManager::onReloadInputFiles(const QString &sourcePath)
         return;
     }
 }
-
 void FileManager::onReloadInputFiles(const QUrl &sourcePathUrl)
 {
-    if (sourcePathUrl.isEmpty())
-    {
-        this->error("Source path URL is empty");
-
-        return;
-    }
-
-    // Enumerate the contents of the source path.
     QString source_path = Utils::urlToString(sourcePathUrl);
-    this->debug("Source path: " + source_path);
-    QDir source_directory(source_path);
-    source_directory.setNameFilters(m_NAME_FILTERS);
-    source_directory.setFilter(QDir::Files);
-    source_directory.setSorting(QDir::Name);
-    this->setInputFiles(source_directory.entryList());
-    this->setInputFilesCount(m_inputFiles.size());
-
-    if (m_inputFilesCount == 0)
-    {
-        this->warning("The source path contains no input files");
-
-        return;
-    }
+    this->onReloadInputFiles(source_path);
 }

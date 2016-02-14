@@ -119,6 +119,40 @@ void DestinationManager::setIsDestinationPathUrlValid(bool isDestinationPathUrlV
     this->debug("Is destination path URL valid changed: " + QString(m_isDestinationPathUrlValid ? "true" : "false"));
 }
 
+void DestinationManager::updateDestinationPathModel()
+{
+    // Do not change the model if the current path is invalid.
+    if (!m_isDestinationPathUrlValid)
+    {
+        return;
+    }
+
+    // Get the destination path model.
+    QStringList destination_path_model = m_destinationPathModel;
+
+    // Check whether the model already contains the current path.
+    if (destination_path_model.contains(m_editText))
+    {
+        // Move the current path to the top.
+        destination_path_model.removeAll(m_editText);
+        destination_path_model.prepend(m_editText);
+        this->setDestinationPathModel(destination_path_model);
+
+        return;
+    }
+
+    // Make room for another entry if necessary.
+    while (destination_path_model.size() >= m_MAX_MODEL_SIZE)
+    {
+        // Remove the oldest (last) entry from the model.
+        destination_path_model.removeLast();
+    }
+
+    // Prepend the current path to the model.
+    destination_path_model.prepend(m_editText);
+    this->setDestinationPathModel(destination_path_model);
+}
+
 void DestinationManager::onDestinationPath(QString *destinationPath)
 {
     if (destinationPath == NULL)
@@ -152,36 +186,12 @@ void DestinationManager::onUpdateEditText(const QUrl &editText)
 
 void DestinationManager::onEncryptFiles()
 {
-    // Do not change the model if the current path is invalid.
-    if (!m_isDestinationPathUrlValid)
-    {
-        return;
-    }
+    this->updateDestinationPathModel();
+}
 
-    // Get the destination path model.
-    QStringList destination_path_model = m_destinationPathModel;
-
-    // Check whether the model already contains the current path.
-    if (destination_path_model.contains(m_editText))
-    {
-        // Move the current path to the top.
-        destination_path_model.removeAll(m_editText);
-        destination_path_model.prepend(m_editText);
-        this->setDestinationPathModel(destination_path_model);
-
-        return;
-    }
-
-    // Make room for another entry if necessary.
-    while (destination_path_model.size() >= m_MAX_MODEL_SIZE)
-    {
-        // Remove the oldest (last) entry from the model.
-        destination_path_model.removeLast();
-    }
-
-    // Prepend the current path to the model.
-    destination_path_model.prepend(m_editText);
-    this->setDestinationPathModel(destination_path_model);
+void DestinationManager::onDecryptFiles()
+{
+    this->updateDestinationPathModel();
 }
 
 void DestinationManager::onEditTextChanged(const QString &editText)

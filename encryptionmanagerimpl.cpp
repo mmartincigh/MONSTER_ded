@@ -28,8 +28,8 @@ const unsigned long long EncryptionManagerImpl::m_ENCRYPTION_CHUNK_SIZE(1048576)
 EncryptionManagerImpl::EncryptionManagerImpl(QMutex *mutex, QWaitCondition *waitCondition, QObject *parent) :
     Base("EMI", parent),
     m_isEnabled(false),
-    m_state(Enums::Idle),
-    m_stateDescription(Utils::stateToString(m_state)),
+    m_state(Enums::ProcessState_Idle),
+    m_stateDescription(Utils::processStateToString(m_state)),
     m_pause(false),
     m_stop(false),
     m_encryptedBytes(0),
@@ -49,7 +49,7 @@ EncryptionManagerImpl::EncryptionManagerImpl(QMutex *mutex, QWaitCondition *wait
     m_mutex(mutex),
     m_waitCondition(waitCondition)
 {
-    QObject::connect(this, SIGNAL(stateChanged(Enums::State)), this, SLOT(onStateChanged(Enums::State)));
+    QObject::connect(this, SIGNAL(stateChanged(Enums::ProcessState)), this, SLOT(onStateChanged(Enums::ProcessState)));
     QObject::connect(this, SIGNAL(encryptedBytesChanged(unsigned long long)), this, SLOT(onBytesEncryptedChanged(unsigned long long)));
     QObject::connect(this, SIGNAL(bytesToEncryptChanged(unsigned long long)), this, SLOT(onBytesToEncryptChanged(unsigned long long)));
     QObject::connect(this, SIGNAL(progressChanged(float)), this, SLOT(onProgressChanged(float)));
@@ -72,7 +72,7 @@ bool EncryptionManagerImpl::isEnabled() const
     return m_isEnabled;
 }
 
-Enums::State EncryptionManagerImpl::state() const
+Enums::ProcessState EncryptionManagerImpl::state() const
 {
     return m_state;
 }
@@ -184,7 +184,7 @@ void EncryptionManagerImpl::setIsEnabled(bool isEnabled)
     emit this->isEnabledChanged(m_isEnabled);
 }
 
-void EncryptionManagerImpl::setState(Enums::State state)
+void EncryptionManagerImpl::setState(Enums::ProcessState state)
 {
     if (m_state == state)
     {
@@ -408,14 +408,14 @@ bool EncryptionManagerImpl::processStateCheckpoint()
     if (m_pause)
     {
         // The process should be paused.
-        this->setState(Enums::Paused);
+        this->setState(Enums::ProcessState_Paused);
         emit this->paused();
         m_waitCondition->wait(m_mutex);
 
         if (!m_stop)
         {
             // The process has been resumed.
-            this->setState(Enums::Working);
+            this->setState(Enums::ProcessState_Working);
             emit this->working();
         }
     }
@@ -423,9 +423,8 @@ bool EncryptionManagerImpl::processStateCheckpoint()
     if (m_stop)
     {
         // The process should be stopped.
-        this->setState(Enums::Stopped);
+        this->setState(Enums::ProcessState_Stopped);
         emit this->stopped();
-        this->setStop(false);
 
         this->setProgress(0);
 
@@ -510,7 +509,7 @@ bool EncryptionManagerImpl::readIvFromFile()
     return false;
 }
 
-bool EncryptionManagerImpl::encryptFileWithMac(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, QTime &encryptionTime)
+EncryptionManagerImpl::EncryptionState EncryptionManagerImpl::encryptFileWithMac(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, QTime &encryptionTime)
 {
     this->debug("Encrypting file with MAC: " + inputFile + " [" + Utils::bytesToString(inputFileSize) + "]");
 
@@ -547,7 +546,7 @@ bool EncryptionManagerImpl::encryptFileWithMac(const QString &inputFile, unsigne
                     QTime encryption_time = QTime(0, 0, 0, 0).addMSecs(time_elapsed);
                     encryptionTime.setHMS(encryption_time.hour(), encryption_time.minute(), encryption_time.second(), encryption_time.msec());
 
-                    return true;
+                    return EncryptionState_Warning;
                 }
 
                 long long encrypted_bytes = file_source.Pump(m_ENCRYPTION_CHUNK_SIZE);
@@ -563,17 +562,17 @@ bool EncryptionManagerImpl::encryptFileWithMac(const QString &inputFile, unsigne
     {
         this->error("Cannot encrypt file \"" + inputFile + "\" with MAC. " + e.what());
 
-        return false;
+        return EncryptionState_Error;
     }
 
     int time_elapsed = time.elapsed();
     QTime encryption_time = QTime(0, 0, 0, 0).addMSecs(time_elapsed);
     encryptionTime.setHMS(encryption_time.hour(), encryption_time.minute(), encryption_time.second(), encryption_time.msec());
 
-    return true;
+    return EncryptionState_Success;
 }
 
-bool EncryptionManagerImpl::encryptFileWithAes(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, QTime &encryptionTime)
+EncryptionManagerImpl::EncryptionState EncryptionManagerImpl::encryptFileWithAes(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, QTime &encryptionTime)
 {
     this->debug("Encrypting file with AES: " + inputFile + " [" + Utils::bytesToString(inputFileSize) + "]");
 
@@ -611,7 +610,7 @@ bool EncryptionManagerImpl::encryptFileWithAes(const QString &inputFile, unsigne
                     QTime encryption_time = QTime(0, 0, 0, 0).addMSecs(time_elapsed);
                     encryptionTime.setHMS(encryption_time.hour(), encryption_time.minute(), encryption_time.second(), encryption_time.msec());
 
-                    return true;
+                    return EncryptionState_Warning;
                 }
 
                 long long encrypted_bytes = file_source.Pump(m_ENCRYPTION_CHUNK_SIZE);
@@ -627,14 +626,14 @@ bool EncryptionManagerImpl::encryptFileWithAes(const QString &inputFile, unsigne
     {
         this->error("Cannot encrypt file \"" + inputFile + "\" with AES. " + e.what());
 
-        return false;
+        return EncryptionState_Error;
     }
 
     int time_elapsed = time.elapsed();
     QTime encryption_time = QTime(0, 0, 0, 0).addMSecs(time_elapsed);
     encryptionTime.setHMS(encryption_time.hour(), encryption_time.minute(), encryption_time.second(), encryption_time.msec());
 
-    return true;
+    return EncryptionState_Success;
 }
 
 void EncryptionManagerImpl::onIsSourcePathUrlValidChanged(bool isSourcePathUrlValid)
@@ -757,6 +756,8 @@ void EncryptionManagerImpl::onEncryptFiles()
     this->debug("Input files total size: " + QString::number(input_files_total_size) + "B [" + Utils::bytesToString(input_files_total_size) + "]");
 
     // Encrypt the files.
+    this->setPause(false);
+    this->setStop(false);
     this->setEncryptedBytes(0);
     this->setBytesToEncrypt(input_files_total_size);
     this->setProgress(0);
@@ -766,7 +767,7 @@ void EncryptionManagerImpl::onEncryptFiles()
     this->setOverwritten(0);
     this->setProcessed(0);
     this->setCurrentInputFile(m_CURRENT_INPUT_FILE_NONE);
-    this->setState(Enums::Working);
+    this->setState(Enums::ProcessState_Working);
     for (int i = 0; i < input_files.size(); i++)
     {
         // Check whether the process should be paused, resumed or stopped.
@@ -812,34 +813,54 @@ void EncryptionManagerImpl::onEncryptFiles()
 
         // Encrypt the file.
         QTime encryption_time(0, 0, 0, 0);
-        bool ret_val = this->encryptFileWithAes(input_file, input_file_info.size(), output_file, encryption_time);
-        if (!ret_val)
+        EncryptionState ret_val = this->encryptFileWithAes(input_file, input_file_info.size(), output_file, encryption_time);
+        switch (ret_val)
         {
-            emit this->error("Cannot encrypt file: " + input_file);
+        case EncryptionState_Success:
+            break;
+        case EncryptionState_Warning:
+            this->setWarnings(m_warnings + 1);
 
-            this->setErrors(m_errors + 1);
+            // Check whether the process should be paused, resumed or stopped.
+            if (!this->processStateCheckpoint())
+            {
+                return;
+            }
 
             continue;
+        case EncryptionState_Error:
+            this->setErrors(m_errors + 1);
+
+            // Check whether the process should be paused, resumed or stopped.
+            if (!this->processStateCheckpoint())
+            {
+                return;
+            }
+
+            continue;
+        default:
+            this->error("Unknown encryption state");
+            return;
         }
         this->debug("File encrypted to: " + output_file + " [" + Utils::bytesToString(output_file_info.size()) + "]");
         this->debug("Encryption time: " + encryption_time.toString("HH:mm:ss:zzz"));
         this->setProcessed(m_processed + 1);
     }
     this->setProgress(1);
-    this->setState(Enums::Completed);
+    this->setState(Enums::ProcessState_Completed);
     this->setCurrentInputFile(m_CURRENT_INPUT_FILE_NONE);
 
     this->debug("Files encrypted");
 }
 
-void EncryptionManagerImpl::onUpdateState(Enums::State state)
+void EncryptionManagerImpl::onUpdateState(Enums::ProcessState state)
 {
     this->setState(state);
 }
 
-void EncryptionManagerImpl::onStateChanged(Enums::State state)
+void EncryptionManagerImpl::onStateChanged(Enums::ProcessState state)
 {
-    this->setStateDescription(Utils::stateToString(state));
+    this->setStateDescription(Utils::processStateToString(state));
 }
 
 void EncryptionManagerImpl::onProgressChanged(float progress)

@@ -1,4 +1,4 @@
-import QtQuick 2.0
+import QtQuick 2.5
 
 Rectangle {
     id: main
@@ -14,10 +14,21 @@ Rectangle {
         anchors.rightMargin: 20
     }
 
+    SecurePanel {
+        id: securePanel
+
+        anchors.top: sourcePanel.bottom
+        anchors.topMargin: 20
+        anchors.left: parent.left
+        anchors.leftMargin: 20
+        anchors.right: parent.right
+        anchors.rightMargin: 20
+    }
+
     DestinationPanel {
         id: destinationPanel
 
-        anchors.top: sourcePanel.bottom
+        anchors.top: securePanel.bottom
         anchors.topMargin: 20
         anchors.left: parent.left
         anchors.leftMargin: 20
@@ -43,6 +54,35 @@ Rectangle {
         anchors.leftMargin: 20
         anchors.right: parent.right
         anchors.rightMargin: 20
+    }
+
+    DecryptionPanel {
+        id: decryptionPanel
+
+        anchors.top: encryptionPanel.bottom
+        anchors.topMargin: 20
+        anchors.left: parent.left
+        anchors.leftMargin: 20
+        anchors.right: parent.right
+        anchors.rightMargin: 20
+    }
+
+    ProcessPanel {
+        id: processPanel
+
+        anchors.top: decryptionPanel.bottom
+        anchors.topMargin: 20
+        anchors.left: parent.left
+        anchors.leftMargin: 20
+    }
+
+    StatsPanel {
+        id: statsPanel
+
+        anchors.top: processPanel.bottom
+        anchors.topMargin: 20
+        anchors.left: parent.left
+        anchors.leftMargin: 20
     }
 
     Text {

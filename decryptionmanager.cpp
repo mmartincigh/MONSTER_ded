@@ -9,7 +9,7 @@ DecryptionManager::DecryptionManager(QObject *parent) :
     m_decryptionManagerImplSptr(new DecryptionManagerImpl(&m_mutex, &m_waitCondition))
 {
     QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(isEnabledChanged(bool)), this, SIGNAL(isEnabledChanged(bool)));
-    QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(stateChanged(Enums::State)), this, SIGNAL(stateChanged(Enums::State)));
+    QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(stateChanged(Enums::ProcessState)), this, SIGNAL(stateChanged(Enums::ProcessState)));
     QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(stateDescriptionChanged(QString)), this, SIGNAL(stateDescriptionChanged(QString)));
     QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(decryptedBytesChanged(unsigned long long)), this, SIGNAL(decryptedBytesChanged(unsigned long long)));
     QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(decryptedBytesStringChanged(QString)), this, SIGNAL(decryptedBytesStringChanged(QString)));
@@ -23,9 +23,9 @@ DecryptionManager::DecryptionManager(QObject *parent) :
     QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(overwrittenChanged(int)), this, SIGNAL(overwrittenChanged(int)));
     QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(processedChanged(int)), this, SIGNAL(processedChanged(int)));
     QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(currentInputFileChanged(QString)), this, SIGNAL(currentInputFileChanged(QString)));
-    QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(isSourcePathUrlValid(bool*)), this, SIGNAL(isSourcePathUrlValid(bool*)), Qt::BlockingQueuedConnection);
+    QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(isSecurePathUrlValid(bool*)), this, SIGNAL(isSecurePathUrlValid(bool*)), Qt::BlockingQueuedConnection);
     QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(isDestinationPathUrlValid(bool*)), this, SIGNAL(isDestinationPathUrlValid(bool*)), Qt::BlockingQueuedConnection);
-    QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(sourcePath(QString*)), this, SIGNAL(sourcePath(QString*)), Qt::BlockingQueuedConnection);
+    QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(securePath(QString*)), this, SIGNAL(securePath(QString*)), Qt::BlockingQueuedConnection);
     QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(destinationPath(QString*)), this, SIGNAL(destinationPath(QString*)), Qt::BlockingQueuedConnection);
     QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(inputFiles(QStringList*)), this, SIGNAL(inputFiles(QStringList*)), Qt::BlockingQueuedConnection);
     QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(overwriteOutputFiles(bool*)), this, SIGNAL(overwriteOutputFiles(bool*)), Qt::BlockingQueuedConnection);
@@ -68,7 +68,7 @@ bool DecryptionManager::isEnabled() const
     return m_decryptionManagerImplSptr.data()->isEnabled();
 }
 
-Enums::State DecryptionManager::state() const
+Enums::ProcessState DecryptionManager::state() const
 {
     return m_decryptionManagerImplSptr.data()->state();
 }
@@ -138,9 +138,9 @@ QString DecryptionManager::currentInputFile() const
     return m_decryptionManagerImplSptr.data()->currentInputFile();
 }
 
-void DecryptionManager::onIsSourcePathUrlValidChanged(bool isSourcePathUrlValid)
+void DecryptionManager::onIsSecurePathUrlValidChanged(bool isSecurePathUrlValid)
 {
-    QMetaObject::invokeMethod(m_decryptionManagerImplSptr.data(), "onIsSourcePathUrlValidChanged", Qt::QueuedConnection, Q_ARG(bool, isSourcePathUrlValid));
+    QMetaObject::invokeMethod(m_decryptionManagerImplSptr.data(), "onIsSecurePathUrlValidChanged", Qt::QueuedConnection, Q_ARG(bool, isSecurePathUrlValid));
 }
 
 void DecryptionManager::onIsDestinationPathUrlValidChanged(bool isDestinationPathUrlValid)

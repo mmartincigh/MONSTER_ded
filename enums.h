@@ -7,16 +7,24 @@
 class Enums : public QObject
 {
     Q_OBJECT
-    Q_ENUMS(State)
+    Q_ENUMS(ProcessType)
+    Q_ENUMS(ProcessState)
 
 public:
-    enum State
+    enum ProcessType
     {
-        Idle,
-        Working,
-        Paused,
-        Stopped,
-        Completed
+        ProcessType_None,
+        ProcessType_Encryption,
+        ProcessType_Decryption,
+    };
+
+    enum ProcessState
+    {
+        ProcessState_Idle,
+        ProcessState_Working,
+        ProcessState_Paused,
+        ProcessState_Stopped,
+        ProcessState_Completed
     };
 };
 

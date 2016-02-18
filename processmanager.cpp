@@ -8,10 +8,13 @@ ProcessManager::ProcessManager(QObject *parent) :
     m_type(Enums::ProcessType_None),
     m_typeDescription(Utils::processTypeToString(m_type)),
     m_state(Enums::ProcessState_Idle),
-    m_stateDescription(Utils::processStateToString(m_state))
+    m_stateDescription(Utils::processStateToString(m_state)),
+    m_progress(0),
+    m_progressString(Utils::progressToString(m_progress))
 {
     QObject::connect(this, SIGNAL(typeChanged(Enums::ProcessType)), this, SLOT(onTypeChanged(Enums::ProcessType)));
     QObject::connect(this, SIGNAL(stateChanged(Enums::ProcessState)), this, SLOT(onStateChanged(Enums::ProcessState)));
+    QObject::connect(this, SIGNAL(progressChanged(float)), this, SLOT(onProgressChanged(float)));
 
     this->debug("Process manager created");
 }
@@ -19,11 +22,6 @@ ProcessManager::ProcessManager(QObject *parent) :
 ProcessManager::~ProcessManager()
 {
     this->debug("Process manager disposed of");
-}
-
-void ProcessManager::initialize()
-{
-    this->debug("Initialized");
 }
 
 bool ProcessManager::isEnabled() const
@@ -49,6 +47,16 @@ Enums::ProcessState ProcessManager::state() const
 QString ProcessManager::stateDescription() const
 {
     return m_stateDescription;
+}
+
+float ProcessManager::progress() const
+{
+    return m_progress;
+}
+
+QString ProcessManager::progressString() const
+{
+    return m_progressString;
 }
 
 void ProcessManager::setIsEnabled(bool isEnabled)
@@ -121,6 +129,34 @@ void ProcessManager::setStateDescription(const QString &stateDescription)
     emit this->stateDescriptionChanged(m_stateDescription);
 }
 
+void ProcessManager::setProgress(float progress)
+{
+    if (m_progress == progress)
+    {
+        return;
+    }
+
+    m_progress = progress;
+
+    //this->debug("Progress changed: " + QString::number(m_progress));
+
+    emit this->progressChanged(m_progress);
+}
+
+void ProcessManager::setProgressString(const QString &progressString)
+{
+    if (m_progressString == progressString)
+    {
+        return;
+    }
+
+    m_progressString = progressString;
+
+    //this->debug("Progress string changed: " + m_progressString);
+
+    emit this->progressStringChanged(m_progressString);
+}
+
 void ProcessManager::onEncryptionStateChanged(Enums::ProcessState encryptionState)
 {
     switch (m_type)
@@ -151,16 +187,58 @@ void ProcessManager::onDecryptionStateChanged(Enums::ProcessState decryptionStat
         break;
     case Enums::ProcessType_Encryption:
         this->error("Conflicting process types");
-        break;
+        return;
     case Enums::ProcessType_Decryption:
         // Already an decryption process.
-        return;
+        break;
     default:
         this->error("Unknown process type");
         return;
     }
 
     this->setState(decryptionState);
+}
+
+void ProcessManager::onEncryptionProgressChanged(float encryptionProgress)
+{
+    switch (m_type)
+    {
+    case Enums::ProcessType_None:
+        this->setType(Enums::ProcessType_Encryption);
+        break;
+    case Enums::ProcessType_Encryption:
+        // Already an encryption process.
+        break;
+    case Enums::ProcessType_Decryption:
+        this->error("Conflicting process types");
+        return;
+    default:
+        this->error("Unknown process type");
+        return;
+    }
+
+    this->setProgress(encryptionProgress);
+}
+
+void ProcessManager::onDecryptionProgressChanged(float decryptionProgress)
+{
+    switch (m_type)
+    {
+    case Enums::ProcessType_None:
+        this->setType(Enums::ProcessType_Decryption);
+        break;
+    case Enums::ProcessType_Encryption:
+        this->error("Conflicting process types");
+        return;
+    case Enums::ProcessType_Decryption:
+        // Already an decryption process.
+        break;
+    default:
+        this->error("Unknown process type");
+        return;
+    }
+
+    this->setProgress(decryptionProgress);
 }
 
 void ProcessManager::onPause()
@@ -248,4 +326,9 @@ void ProcessManager::onTypeChanged(Enums::ProcessType type)
 void ProcessManager::onStateChanged(Enums::ProcessState state)
 {
     this->setStateDescription(Utils::processStateToString(state));
+}
+
+void ProcessManager::onProgressChanged(float progress)
+{
+    this->setProgressString(Utils::progressToString(progress));
 }

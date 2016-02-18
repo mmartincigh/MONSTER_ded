@@ -2,7 +2,7 @@
 #include "decryptionmanager.h"
 
 DecryptionManager::DecryptionManager(QObject *parent) :
-    Base("DM", parent),
+    IProcess("DM", parent),
     m_mutex(),
     m_waitCondition(),
     m_decryptionManagerImplThread(this),
@@ -11,12 +11,12 @@ DecryptionManager::DecryptionManager(QObject *parent) :
     QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(isEnabledChanged(bool)), this, SIGNAL(isEnabledChanged(bool)));
     QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(stateChanged(Enums::ProcessState)), this, SIGNAL(stateChanged(Enums::ProcessState)));
     QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(stateDescriptionChanged(QString)), this, SIGNAL(stateDescriptionChanged(QString)));
-    QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(decryptedBytesChanged(unsigned long long)), this, SIGNAL(decryptedBytesChanged(unsigned long long)));
-    QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(decryptedBytesStringChanged(QString)), this, SIGNAL(decryptedBytesStringChanged(QString)));
-    QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(bytesToDecryptChanged(unsigned long long)), this, SIGNAL(bytesToDecryptChanged(unsigned long long)));
-    QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(bytesToDecryptStringChanged(QString)), this, SIGNAL(bytesToDecryptStringChanged(QString)));
     QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(progressChanged(float)), this, SIGNAL(progressChanged(float)));
     QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(progressStringChanged(QString)), this, SIGNAL(progressStringChanged(QString)));
+    QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(processedBytesChanged(unsigned long long)), this, SIGNAL(processedBytesChanged(unsigned long long)));
+    QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(processedBytesStringChanged(QString)), this, SIGNAL(processedBytesStringChanged(QString)));
+    QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(bytesToProcessChanged(unsigned long long)), this, SIGNAL(bytesToProcessChanged(unsigned long long)));
+    QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(bytesToProcessStringChanged(QString)), this, SIGNAL(bytesToProcessStringChanged(QString)));
     QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(errorsChanged(int)), this, SIGNAL(errorsChanged(int)));
     QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(warningsChanged(int)), this, SIGNAL(warningsChanged(int)));
     QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(skippedChanged(int)), this, SIGNAL(skippedChanged(int)));
@@ -29,7 +29,6 @@ DecryptionManager::DecryptionManager(QObject *parent) :
     QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(destinationPath(QString*)), this, SIGNAL(destinationPath(QString*)), Qt::BlockingQueuedConnection);
     QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(inputFiles(QStringList*)), this, SIGNAL(inputFiles(QStringList*)), Qt::BlockingQueuedConnection);
     QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(overwriteOutputFiles(bool*)), this, SIGNAL(overwriteOutputFiles(bool*)), Qt::BlockingQueuedConnection);
-    QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(errorMessage(QString)), this, SIGNAL(errorMessage(QString)));
 
     this->debug("Decryption manager created");
 }
@@ -47,7 +46,6 @@ DecryptionManager::~DecryptionManager()
 
 void DecryptionManager::initialize()
 {
-    m_decryptionManagerImplSptr.data()->initialize();
     m_decryptionManagerImplSptr.data()->moveToThread(&m_decryptionManagerImplThread);
 
     m_decryptionManagerImplThread.start();
@@ -78,26 +76,6 @@ QString DecryptionManager::stateDescription() const
     return m_decryptionManagerImplSptr.data()->stateDescription();
 }
 
-unsigned long long DecryptionManager::decryptedBytes() const
-{
-    return m_decryptionManagerImplSptr.data()->decryptedBytes();
-}
-
-QString DecryptionManager::decryptedBytesString() const
-{
-    return m_decryptionManagerImplSptr.data()->decryptedBytesString();
-}
-
-unsigned long long DecryptionManager::bytesToDecrypt() const
-{
-    return m_decryptionManagerImplSptr.data()->bytesToDecrypt();
-}
-
-QString DecryptionManager::bytesToDecryptString() const
-{
-    return m_decryptionManagerImplSptr.data()->bytesToDecryptString();
-}
-
 float DecryptionManager::progress() const
 {
     return m_decryptionManagerImplSptr.data()->progress();
@@ -106,6 +84,26 @@ float DecryptionManager::progress() const
 QString DecryptionManager::progressString() const
 {
     return m_decryptionManagerImplSptr.data()->progressString();
+}
+
+unsigned long long DecryptionManager::processedBytes() const
+{
+    return m_decryptionManagerImplSptr.data()->processedBytes();
+}
+
+QString DecryptionManager::processedBytesString() const
+{
+    return m_decryptionManagerImplSptr.data()->processedBytesString();
+}
+
+unsigned long long DecryptionManager::bytesToProcess() const
+{
+    return m_decryptionManagerImplSptr.data()->bytesToProcess();
+}
+
+QString DecryptionManager::bytesToProcessString() const
+{
+    return m_decryptionManagerImplSptr.data()->bytesToProcessString();
 }
 
 int DecryptionManager::errors() const
@@ -148,9 +146,9 @@ void DecryptionManager::onIsDestinationPathUrlValidChanged(bool isDestinationPat
     QMetaObject::invokeMethod(m_decryptionManagerImplSptr.data(), "onIsDestinationPathUrlValidChanged", Qt::QueuedConnection, Q_ARG(bool, isDestinationPathUrlValid));
 }
 
-void DecryptionManager::onDecryptFiles()
+void DecryptionManager::onProcess()
 {
-    QMetaObject::invokeMethod(m_decryptionManagerImplSptr.data(), "onDecryptFiles", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(m_decryptionManagerImplSptr.data(), "onProcess", Qt::QueuedConnection);
 }
 
 void DecryptionManager::onPause()

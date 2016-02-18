@@ -14,41 +14,41 @@ Rectangle {
     height: childrenRect.height
 
     Connections {
-        target: secureManager
-        onEditTextChanged: { securePathComboBox.editText = editText }
+        target: destinationPathManager
+        onEditTextChanged: { destinationPathComboBox.editText = editText }
     }
 
     Text {
-        id: securePathLabel
+        id: destinationPathLabel
 
         anchors.left: parent.left
-        anchors.verticalCenter: securePathComboBox.verticalCenter
+        anchors.verticalCenter: destinationPathComboBox.verticalCenter
 
-        text: qsTr("secure path")
+        text: qsTr("destination path")
     }
 
     ComboBox {
-        id: securePathComboBox
+        id: destinationPathComboBox
 
         height: 25
         anchors.top: parent.top
-        anchors.left: securePathLabel.right
+        anchors.left: destinationPathLabel.right
         anchors.leftMargin: 20
-        anchors.right: securePathBrowseButton.left
+        anchors.right: destinationPathBrowseButton.left
         anchors.rightMargin: 20
 
-        model: secureManager.securePathModel
+        model: destinationPathManager.pathModel
         editable: true
         enabled: main.enabled
 
-        onEditTextChanged: { secureManager.onUpdateEditText(editText) }
+        onEditTextChanged: { destinationPathManager.onUpdateEditText(editText) }
 
         Text {
-            id: securePathOverlayText
+            id: destinationPathOverlayText
 
             anchors.centerIn: parent
 
-            text: qsTr("enter or select the secure path")
+            text: qsTr("enter or select destination path")
             color: "grey"
             opacity: parent.activeFocus || parent.editText.length > 0 ? 0 : 1
 
@@ -59,10 +59,10 @@ Rectangle {
     }
 
     Button {
-        id: securePathBrowseButton
+        id: destinationPathBrowseButton
 
         anchors.right: parent.right
-        anchors.verticalCenter: securePathComboBox.verticalCenter
+        anchors.verticalCenter: destinationPathComboBox.verticalCenter
 
         text: qsTr("browse")
         enabled: main.enabled
@@ -75,8 +75,8 @@ Rectangle {
 
         title: qsTr("Select a folder")
         selectFolder: true
-        folder: secureManager.isSecurePathUrlValid ? secureManager.securePathUrl : shortcuts.documents
+        folder: destinationPathManager.isDestinationPathUrlValid ? destinationPathManager.destinationPathUrl : shortcuts.documents
 
-        onAccepted: { secureManager.onUpdateEditText(folder) }
+        onAccepted: { destinationPathManager.onUpdateEditText(folder) }
     }
 }

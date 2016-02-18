@@ -3,51 +3,70 @@
 
 ApplicationManager::ApplicationManager(QObject *parent) :
     Base("AM", parent),
-    m_sourceManager(this),
-    m_secureManager(this),
-    m_destinationManager(this),
-    m_fileManager(this),
-    m_secureFileManager(this),
+    m_sourcePathManager(this),
+    m_securePathManager(this),
+    m_destinationPathManager(this),
+    m_sourceFileManager(QStringList("*"), this),
+    m_secureFileManager(QStringList("*.mef"), this),
     m_encryptionManager(this),
     m_decryptionManager(this),
     m_processManager(this),
+    m_statsManager(this),
     m_settingsManager(this),
     m_windowManager(this)
 {
-    QObject::connect(&m_sourceManager, SIGNAL(sourcePathModel(QStringList*)), &m_settingsManager, SLOT(onSourcePathModel(QStringList*)));
-    QObject::connect(&m_sourceManager, SIGNAL(sourcePathModelChanged(QStringList)), &m_settingsManager, SLOT(onSourcePathModelChanged(QStringList)));
-    QObject::connect(&m_sourceManager, SIGNAL(sourcePathChanged(QString)), &m_fileManager, SLOT(onSourcePathChanged(QString)));
-    QObject::connect(&m_sourceManager, SIGNAL(isSourcePathUrlValidChanged(bool)), &m_encryptionManager, SLOT(onIsSourcePathUrlValidChanged(bool)));
+    QObject::connect(&m_sourcePathManager, SIGNAL(pathModel(QStringList*)), &m_settingsManager, SLOT(onSourcePathModel(QStringList*)));
+    QObject::connect(&m_sourcePathManager, SIGNAL(pathModelChanged(QStringList)), &m_settingsManager, SLOT(onSourcePathModelChanged(QStringList)));
+    QObject::connect(&m_sourcePathManager, SIGNAL(pathChanged(QString)), &m_sourceFileManager, SLOT(onPathChanged(QString)));
+    QObject::connect(&m_sourcePathManager, SIGNAL(isPathUrlValidChanged(bool)), &m_encryptionManager, SLOT(onIsSourcePathUrlValidChanged(bool)));
 
-    QObject::connect(&m_secureManager, SIGNAL(securePathModel(QStringList*)), &m_settingsManager, SLOT(onSecurePathModel(QStringList*)));
-    QObject::connect(&m_secureManager, SIGNAL(securePathModelChanged(QStringList)), &m_settingsManager, SLOT(onSecurePathModelChanged(QStringList)));
-    QObject::connect(&m_secureManager, SIGNAL(securePathChanged(QString)), &m_secureFileManager, SLOT(onSecurePathChanged(QString)));
-    QObject::connect(&m_secureManager, SIGNAL(isSecurePathUrlValidChanged(bool)), &m_decryptionManager, SLOT(onIsSecurePathUrlValidChanged(bool)));
+    QObject::connect(&m_securePathManager, SIGNAL(pathModel(QStringList*)), &m_settingsManager, SLOT(onSecurePathModel(QStringList*)));
+    QObject::connect(&m_securePathManager, SIGNAL(pathModelChanged(QStringList)), &m_settingsManager, SLOT(onSecurePathModelChanged(QStringList)));
+    QObject::connect(&m_securePathManager, SIGNAL(pathChanged(QString)), &m_secureFileManager, SLOT(onPathChanged(QString)));
+    QObject::connect(&m_securePathManager, SIGNAL(isPathUrlValidChanged(bool)), &m_decryptionManager, SLOT(onIsSecurePathUrlValidChanged(bool)));
 
-    QObject::connect(&m_destinationManager, SIGNAL(destinationPathModel(QStringList*)), &m_settingsManager, SLOT(onDestinationPathModel(QStringList*)));
-    QObject::connect(&m_destinationManager, SIGNAL(destinationPathModelChanged(QStringList)), &m_settingsManager, SLOT(onDestinationPathModelChanged(QStringList)));
-    QObject::connect(&m_destinationManager, SIGNAL(isDestinationPathUrlValidChanged(bool)), &m_encryptionManager, SLOT(onIsDestinationPathUrlValidChanged(bool)));
-    QObject::connect(&m_destinationManager, SIGNAL(isDestinationPathUrlValidChanged(bool)), &m_decryptionManager, SLOT(onIsDestinationPathUrlValidChanged(bool)));
+    QObject::connect(&m_destinationPathManager, SIGNAL(pathModel(QStringList*)), &m_settingsManager, SLOT(onDestinationPathModel(QStringList*)));
+    QObject::connect(&m_destinationPathManager, SIGNAL(pathModelChanged(QStringList)), &m_settingsManager, SLOT(onDestinationPathModelChanged(QStringList)));
+    QObject::connect(&m_destinationPathManager, SIGNAL(isPathUrlValidChanged(bool)), &m_encryptionManager, SLOT(onIsDestinationPathUrlValidChanged(bool)));
+    QObject::connect(&m_destinationPathManager, SIGNAL(isPathUrlValidChanged(bool)), &m_decryptionManager, SLOT(onIsDestinationPathUrlValidChanged(bool)));
 
-    QObject::connect(&m_fileManager, SIGNAL(sourcePath(QString*)), &m_sourceManager, SLOT(onSourcePath(QString*)));
+    QObject::connect(&m_sourceFileManager, SIGNAL(path(QString*)), &m_sourcePathManager, SLOT(onPath(QString*)));
 
-    QObject::connect(&m_secureFileManager, SIGNAL(securePath(QString*)), &m_secureManager, SLOT(onSecurePath(QString*)));
+    QObject::connect(&m_secureFileManager, SIGNAL(path(QString*)), &m_securePathManager, SLOT(onPath(QString*)));
 
-    QObject::connect(&m_encryptionManager, SIGNAL(isSourcePathUrlValid(bool*)), &m_sourceManager, SLOT(onIsSourcePathUrlValid(bool*)));
-    QObject::connect(&m_encryptionManager, SIGNAL(isDestinationPathUrlValid(bool*)), &m_destinationManager, SLOT(onIsDestinationPathUrlValid(bool*)));
-    QObject::connect(&m_encryptionManager, SIGNAL(sourcePath(QString*)), &m_sourceManager, SLOT(onSourcePath(QString*)));
-    QObject::connect(&m_encryptionManager, SIGNAL(destinationPath(QString*)), &m_destinationManager, SLOT(onDestinationPath(QString*)));
-    QObject::connect(&m_encryptionManager, SIGNAL(inputFiles(QStringList*)), &m_fileManager, SLOT(onInputFiles(QStringList*)));
-    QObject::connect(&m_encryptionManager, SIGNAL(overwriteOutputFiles(bool*)), &m_fileManager, SLOT(onOverwriteOutputFiles(bool*)));
     QObject::connect(&m_encryptionManager, SIGNAL(stateChanged(Enums::ProcessState)), &m_processManager, SLOT(onEncryptionStateChanged(Enums::ProcessState)));
+    QObject::connect(&m_encryptionManager, SIGNAL(progressChanged(float)), &m_processManager, SLOT(onEncryptionProgressChanged(float)));
+    QObject::connect(&m_encryptionManager, SIGNAL(processedBytesChanged(unsigned long long)), &m_statsManager, SLOT(onProcessedBytesChanged(unsigned long long)));
+    QObject::connect(&m_encryptionManager, SIGNAL(bytesToProcessChanged(unsigned long long)), &m_statsManager, SLOT(onBytesToProcessChanged(unsigned long long)));
+    QObject::connect(&m_encryptionManager, SIGNAL(errorsChanged(int)), &m_statsManager, SLOT(onErrorsChanged(int)));
+    QObject::connect(&m_encryptionManager, SIGNAL(warningsChanged(int)), &m_statsManager, SLOT(onWarningsChanged(int)));
+    QObject::connect(&m_encryptionManager, SIGNAL(skippedChanged(int)), &m_statsManager, SLOT(onSkippedChanged(int)));
+    QObject::connect(&m_encryptionManager, SIGNAL(overwrittenChanged(int)), &m_statsManager, SLOT(onOverwrittenChanged(int)));
+    QObject::connect(&m_encryptionManager, SIGNAL(processedChanged(int)), &m_statsManager, SLOT(onProcessedChanged(int)));
+    QObject::connect(&m_encryptionManager, SIGNAL(currentInputFileChanged(QString)), &m_statsManager, SLOT(onCurrentInputFileChanged(QString)));
+    QObject::connect(&m_encryptionManager, SIGNAL(isSourcePathUrlValid(bool*)), &m_sourcePathManager, SLOT(onIsPathUrlValid(bool*)));
+    QObject::connect(&m_encryptionManager, SIGNAL(isDestinationPathUrlValid(bool*)), &m_destinationPathManager, SLOT(onIsPathUrlValid(bool*)));
+    QObject::connect(&m_encryptionManager, SIGNAL(sourcePath(QString*)), &m_sourcePathManager, SLOT(onPath(QString*)));
+    QObject::connect(&m_encryptionManager, SIGNAL(destinationPath(QString*)), &m_destinationPathManager, SLOT(onPath(QString*)));
+    QObject::connect(&m_encryptionManager, SIGNAL(inputFiles(QStringList*)), &m_sourceFileManager, SLOT(onInputFiles(QStringList*)));
+    QObject::connect(&m_encryptionManager, SIGNAL(overwriteOutputFiles(bool*)), &m_sourceFileManager, SLOT(onOverwriteOutputFiles(bool*)));
 
-    QObject::connect(&m_decryptionManager, SIGNAL(isSecurePathUrlValid(bool*)), &m_secureManager, SLOT(onIsSecurePathUrlValid(bool*)));
-    QObject::connect(&m_decryptionManager, SIGNAL(isDestinationPathUrlValid(bool*)), &m_destinationManager, SLOT(onIsDestinationPathUrlValid(bool*)));
-    QObject::connect(&m_decryptionManager, SIGNAL(securePath(QString*)), &m_secureManager, SLOT(onSecurePath(QString*)));
-    QObject::connect(&m_decryptionManager, SIGNAL(destinationPath(QString*)), &m_destinationManager, SLOT(onDestinationPath(QString*)));
+    QObject::connect(&m_decryptionManager, SIGNAL(stateChanged(Enums::ProcessState)), &m_processManager, SLOT(onDecryptionStateChanged(Enums::ProcessState)));
+    QObject::connect(&m_decryptionManager, SIGNAL(progressChanged(float)), &m_processManager, SLOT(onDecryptionProgressChanged(float)));
+    QObject::connect(&m_decryptionManager, SIGNAL(processedBytesChanged(unsigned long long)), &m_statsManager, SLOT(onProcessedBytesChanged(unsigned long long)));
+    QObject::connect(&m_decryptionManager, SIGNAL(bytesToProcessChanged(unsigned long long)), &m_statsManager, SLOT(onBytesToProcessChanged(unsigned long long)));
+    QObject::connect(&m_decryptionManager, SIGNAL(errorsChanged(int)), &m_statsManager, SLOT(onErrorsChanged(int)));
+    QObject::connect(&m_decryptionManager, SIGNAL(warningsChanged(int)), &m_statsManager, SLOT(onWarningsChanged(int)));
+    QObject::connect(&m_decryptionManager, SIGNAL(skippedChanged(int)), &m_statsManager, SLOT(onSkippedChanged(int)));
+    QObject::connect(&m_decryptionManager, SIGNAL(overwrittenChanged(int)), &m_statsManager, SLOT(onOverwrittenChanged(int)));
+    QObject::connect(&m_decryptionManager, SIGNAL(processedChanged(int)), &m_statsManager, SLOT(onProcessedChanged(int)));
+    QObject::connect(&m_decryptionManager, SIGNAL(currentInputFileChanged(QString)), &m_statsManager, SLOT(onCurrentInputFileChanged(QString)));
+    QObject::connect(&m_decryptionManager, SIGNAL(isSecurePathUrlValid(bool*)), &m_securePathManager, SLOT(onIsPathUrlValid(bool*)));
+    QObject::connect(&m_decryptionManager, SIGNAL(isDestinationPathUrlValid(bool*)), &m_destinationPathManager, SLOT(onIsPathUrlValid(bool*)));
+    QObject::connect(&m_decryptionManager, SIGNAL(securePath(QString*)), &m_securePathManager, SLOT(onPath(QString*)));
+    QObject::connect(&m_decryptionManager, SIGNAL(destinationPath(QString*)), &m_destinationPathManager, SLOT(onPath(QString*)));
     QObject::connect(&m_decryptionManager, SIGNAL(inputFiles(QStringList*)), &m_secureFileManager, SLOT(onInputFiles(QStringList*)));
     QObject::connect(&m_decryptionManager, SIGNAL(overwriteOutputFiles(bool*)), &m_secureFileManager, SLOT(onOverwriteOutputFiles(bool*)));
-    QObject::connect(&m_decryptionManager, SIGNAL(stateChanged(Enums::ProcessState)), &m_processManager, SLOT(onDecryptionStateChanged(Enums::ProcessState)));
 
     QObject::connect(&m_processManager, SIGNAL(pauseEncryption()), &m_encryptionManager, SLOT(onPause()));
     QObject::connect(&m_processManager, SIGNAL(pauseDecryption()), &m_decryptionManager, SLOT(onPause()));
@@ -66,36 +85,33 @@ ApplicationManager::~ApplicationManager()
 
 void ApplicationManager::initialize()
 {
-    m_sourceManager.initialize();
-    m_secureManager.initialize();
-    m_destinationManager.initialize();
-    m_fileManager.initialize();
-    m_secureFileManager.initialize();
+    m_sourcePathManager.initialize();
+    m_securePathManager.initialize();
+    m_destinationPathManager.initialize();
     m_encryptionManager.initialize();
     m_decryptionManager.initialize();
-    m_processManager.initialize();
 
     this->debug("Initialized");
 }
 
-SourceManager *ApplicationManager::sourceManager()
+SourcePathManager *ApplicationManager::sourcePathManager()
 {
-    return &m_sourceManager;
+    return &m_sourcePathManager;
 }
 
-SecureManager *ApplicationManager::secureManager()
+SecurePathManager *ApplicationManager::securePathManager()
 {
-    return &m_secureManager;
+    return &m_securePathManager;
 }
 
-DestinationManager *ApplicationManager::destinationManager()
+DestinationPathManager *ApplicationManager::destinationPathManager()
 {
-    return &m_destinationManager;
+    return &m_destinationPathManager;
 }
 
-FileManager *ApplicationManager::fileManager()
+SourceFileManager *ApplicationManager::sourceFileManager()
 {
-    return &m_fileManager;
+    return &m_sourceFileManager;
 }
 
 SecureFileManager *ApplicationManager::secureFileManager()
@@ -116,6 +132,11 @@ DecryptionManager *ApplicationManager::decryptionManager()
 ProcessManager *ApplicationManager::processManager()
 {
     return &m_processManager;
+}
+
+StatsManager *ApplicationManager::statsManager()
+{
+    return &m_statsManager;
 }
 
 WindowManager *ApplicationManager::windowManager()

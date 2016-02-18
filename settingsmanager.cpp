@@ -5,11 +5,11 @@
 // Local
 #include "settingsmanager.h"
 
-const QString SettingsManager::m_SOURCE_PATH_MODEL_KEY("sourceManager/sourcePathModel");
+const QString SettingsManager::m_SOURCE_PATH_MODEL_KEY("sourcePathManager/sourcePathModel");
 const QStringList SettingsManager::m_FALL_BACK_SOURCE_PATH_MODEL;
-const QString SettingsManager::m_SECURE_PATH_MODEL_KEY("sourceManager/securePathModel");
+const QString SettingsManager::m_SECURE_PATH_MODEL_KEY("securePathManager/securePathModel");
 const QStringList SettingsManager::m_FALL_BACK_SECURE_PATH_MODEL;
-const QString SettingsManager::m_DESTINATION_PATH_MODEL_KEY("sourceManager/destinationPathModel");
+const QString SettingsManager::m_DESTINATION_PATH_MODEL_KEY("destinationPathManager/destinationPathModel");
 const QStringList SettingsManager::m_FALL_BACK_DESTINATION_PATH_MODEL;
 
 SettingsManager::SettingsManager(QObject *parent) :

@@ -11,373 +11,24 @@
 // Crypto++
 #include <default.h>
 #include <files.h>
-#include <osrng.h>
 
 // Local
 #include "encryptionmanagerimpl.h"
 #include "utils.h"
 
-const QString EncryptionManagerImpl::m_CURRENT_INPUT_FILE_NONE("none");
 const QString EncryptionManagerImpl::m_OUTPUT_FILE_EXTENSION(".mef");
-const QString EncryptionManagerImpl::m_PASSPHRASE("Let's pretend that this is a clever passphrase");
-const QString EncryptionManagerImpl::m_AES_KEY_FILE_NAME("AES_key.bin");
-const QString EncryptionManagerImpl::m_AES_IV_FILE_NAME("AES_iv.bin");
 const unsigned long long EncryptionManagerImpl::m_ENCRYPTION_THRESHOLD_SIZE(10485760);
 const unsigned long long EncryptionManagerImpl::m_ENCRYPTION_CHUNK_SIZE(1048576);
 
 EncryptionManagerImpl::EncryptionManagerImpl(QMutex *mutex, QWaitCondition *waitCondition, QObject *parent) :
-    Base("EMI", parent),
-    m_isEnabled(false),
-    m_state(Enums::ProcessState_Idle),
-    m_stateDescription(Utils::processStateToString(m_state)),
-    m_pause(false),
-    m_stop(false),
-    m_encryptedBytes(0),
-    m_encryptedBytesString(Utils::bytesToString(m_encryptedBytes)),
-    m_bytesToEncrypt(0),
-    m_bytesToEncryptString(Utils::bytesToString(m_bytesToEncrypt)),
-    m_progress(0),
-    m_progressString(Utils::progressToString(m_progress)),
-    m_errors(0),
-    m_warnings(0),
-    m_skipped(0),
-    m_overwritten(0),
-    m_processed(0),
-    m_currentInputFile(m_CURRENT_INPUT_FILE_NONE),
-    m_key(CryptoPP::AES::MAX_KEYLENGTH),
-    m_iv(),
-    m_mutex(mutex),
-    m_waitCondition(waitCondition)
+    ProcessImplBase(mutex, waitCondition, "EMI", parent)
 {
-    QObject::connect(this, SIGNAL(stateChanged(Enums::ProcessState)), this, SLOT(onStateChanged(Enums::ProcessState)));
-    QObject::connect(this, SIGNAL(encryptedBytesChanged(unsigned long long)), this, SLOT(onBytesEncryptedChanged(unsigned long long)));
-    QObject::connect(this, SIGNAL(bytesToEncryptChanged(unsigned long long)), this, SLOT(onBytesToEncryptChanged(unsigned long long)));
-    QObject::connect(this, SIGNAL(progressChanged(float)), this, SLOT(onProgressChanged(float)));
-
     this->debug("Encryption manager implementation created");
 }
 
 EncryptionManagerImpl::~EncryptionManagerImpl()
 {
     this->debug("Encryption manager implementation disposed of");
-}
-
-void EncryptionManagerImpl::initialize()
-{
-    this->debug("Initialized");
-}
-
-bool EncryptionManagerImpl::isEnabled() const
-{
-    return m_isEnabled;
-}
-
-Enums::ProcessState EncryptionManagerImpl::state() const
-{
-    return m_state;
-}
-
-QString EncryptionManagerImpl::stateDescription() const
-{
-    return m_stateDescription;
-}
-
-void EncryptionManagerImpl::setPause(bool pause)
-{
-    if (m_pause == pause)
-    {
-        return;
-    }
-
-    m_pause = pause;
-
-    this->debug("Pause changed: " + QString(m_pause ? "true" : "false"));
-
-    emit this->pauseChanged(m_pause);
-}
-
-void EncryptionManagerImpl::setStop(bool stop)
-{
-    if (m_stop == stop)
-    {
-        return;
-    }
-
-    m_stop = stop;
-
-    this->debug("Stop changed: " + QString(m_stop ? "true" : "false"));
-
-    emit this->stopChanged(m_stop);
-}
-
-unsigned long long EncryptionManagerImpl::encryptedBytes() const
-{
-    return m_encryptedBytes;
-}
-
-QString EncryptionManagerImpl::encryptedBytesString() const
-{
-    return m_encryptedBytesString;
-}
-
-unsigned long long EncryptionManagerImpl::bytesToEncrypt() const
-{
-    return m_bytesToEncrypt;
-}
-
-QString EncryptionManagerImpl::bytesToEncryptString() const
-{
-    return m_bytesToEncryptString;
-}
-
-float EncryptionManagerImpl::progress() const
-{
-    return m_progress;
-}
-
-QString EncryptionManagerImpl::progressString() const
-{
-    return m_progressString;
-}
-
-int EncryptionManagerImpl::errors() const
-{
-    return m_errors;
-}
-
-int EncryptionManagerImpl::warnings() const
-{
-    return m_warnings;
-}
-
-int EncryptionManagerImpl::skipped() const
-{
-    return m_skipped;
-}
-
-int EncryptionManagerImpl::overwritten() const
-{
-    return m_overwritten;
-}
-
-int EncryptionManagerImpl::processed() const
-{
-    return m_processed;
-}
-
-QString EncryptionManagerImpl::currentInputFile() const
-{
-    return m_currentInputFile;
-}
-
-void EncryptionManagerImpl::setIsEnabled(bool isEnabled)
-{
-    if (m_isEnabled == isEnabled)
-    {
-        return;
-    }
-
-    m_isEnabled = isEnabled;
-
-    this->debug("Is enabled changed: " + QString(m_isEnabled ? "true" : "false"));
-
-    emit this->isEnabledChanged(m_isEnabled);
-}
-
-void EncryptionManagerImpl::setState(Enums::ProcessState state)
-{
-    if (m_state == state)
-    {
-        return;
-    }
-
-    m_state = state;
-
-    this->debug("State changed: " + QString::number(m_state));
-
-    emit this->stateChanged(m_state);
-}
-
-void EncryptionManagerImpl::setStateDescription(const QString &stateDescription)
-{
-    if (m_stateDescription == stateDescription)
-    {
-        return;
-    }
-
-    m_stateDescription = stateDescription;
-
-    this->debug("State description changed: " + m_stateDescription);
-
-    emit this->stateDescriptionChanged(m_stateDescription);
-}
-
-void EncryptionManagerImpl::setEncryptedBytes(unsigned long long encryptedBytes)
-{
-    if (m_encryptedBytes == encryptedBytes)
-    {
-        return;
-    }
-
-    m_encryptedBytes = encryptedBytes;
-
-    //this->debug("Encrypted bytes changed: " + QString::number(m_encryptedBytes));
-
-    emit this->encryptedBytesChanged(m_encryptedBytes);
-}
-
-void EncryptionManagerImpl::setEncryptedBytesString(const QString &encryptedBytesString)
-{
-    if (m_encryptedBytesString == encryptedBytesString)
-    {
-        return;
-    }
-
-    m_encryptedBytesString = encryptedBytesString;
-
-    //this->debug("Encrypted bytes string changed: " + m_encryptedBytesString);
-
-    emit this->encryptedBytesStringChanged(m_encryptedBytesString);
-}
-
-void EncryptionManagerImpl::setBytesToEncrypt(unsigned long long bytesToEncrypt)
-{
-    if (m_bytesToEncrypt == bytesToEncrypt)
-    {
-        return;
-    }
-
-    m_bytesToEncrypt = bytesToEncrypt;
-
-    this->debug("Bytes to encrypt changed: " + QString::number(m_bytesToEncrypt));
-
-    emit this->bytesToEncryptChanged(m_bytesToEncrypt);
-}
-
-void EncryptionManagerImpl::setBytesToEncryptString(const QString &bytesToEncryptString)
-{
-    if (m_bytesToEncryptString == bytesToEncryptString)
-    {
-        return;
-    }
-
-    m_bytesToEncryptString = bytesToEncryptString;
-
-    this->debug("Bytes to encrypt string changed: " + m_bytesToEncryptString);
-
-    emit this->bytesToEncryptStringChanged(m_bytesToEncryptString);
-}
-
-void EncryptionManagerImpl::setProgress(float progress)
-{
-    if (m_progress == progress)
-    {
-        return;
-    }
-
-    m_progress = progress;
-
-    //this->debug("Progress changed: " + QString::number(m_progress));
-
-    emit this->progressChanged(m_progress);
-}
-
-void EncryptionManagerImpl::setProgressString(const QString &progressString)
-{
-    if (m_progressString == progressString)
-    {
-        return;
-    }
-
-    m_progressString = progressString;
-
-    //this->debug("Progress string changed: " + m_progressString);
-
-    emit this->progressStringChanged(m_progressString);
-}
-
-void EncryptionManagerImpl::setErrors(int errors)
-{
-    if (m_errors == errors)
-    {
-        return;
-    }
-
-    m_errors = errors;
-
-    this->debug("Errors changed: " + m_errors);
-
-    emit this->errorsChanged(m_errors);
-}
-
-void EncryptionManagerImpl::setWarnings(int warnings)
-{
-    if (m_warnings == warnings)
-    {
-        return;
-    }
-
-    m_warnings = warnings;
-
-    this->debug("Warnings changed: " + m_warnings);
-
-    emit this->warningsChanged(m_warnings);
-}
-
-void EncryptionManagerImpl::setSkipped(int skipped)
-{
-    if (m_skipped == skipped)
-    {
-        return;
-    }
-
-    m_skipped = skipped;
-
-    this->debug("Skipped changed: " + QString::number(m_skipped));
-
-    emit this->skippedChanged(m_skipped);
-}
-
-void EncryptionManagerImpl::setOverwritten(int overwritten)
-{
-    if (m_overwritten == overwritten)
-    {
-        return;
-    }
-
-    m_overwritten = overwritten;
-
-    this->debug("Overwritten changed: " + QString::number(m_overwritten));
-
-    emit this->overwrittenChanged(m_overwritten);
-}
-
-void EncryptionManagerImpl::setProcessed(int processed)
-{
-    if (m_processed == processed)
-    {
-        return;
-    }
-
-    m_processed = processed;
-
-    this->debug("Processed changed: " + QString::number(m_processed));
-
-    emit this->processedChanged(m_processed);
-}
-
-void EncryptionManagerImpl::setCurrentInputFile(const QString &currentInputFile)
-{
-    if (m_currentInputFile == currentInputFile)
-    {
-        return;
-    }
-
-    m_currentInputFile = currentInputFile;
-
-    this->debug("Current input file changed: " + m_currentInputFile);
-
-    emit this->currentInputFileChanged(m_currentInputFile);
 }
 
 bool EncryptionManagerImpl::checkIfEnabled()
@@ -399,116 +50,6 @@ bool EncryptionManagerImpl::checkIfEnabled()
     return true;
 }
 
-bool EncryptionManagerImpl::processStateCheckpoint()
-{
-    QMutexLocker mutex_locker(m_mutex);
-    Q_UNUSED(mutex_locker)
-
-    // Check whether the process should be paused, resumed or stopped.
-    if (m_pause)
-    {
-        // The process should be paused.
-        this->setState(Enums::ProcessState_Paused);
-        emit this->paused();
-        m_waitCondition->wait(m_mutex);
-
-        if (!m_stop)
-        {
-            // The process has been resumed.
-            this->setState(Enums::ProcessState_Working);
-            emit this->working();
-        }
-    }
-
-    if (m_stop)
-    {
-        // The process should be stopped.
-        this->setState(Enums::ProcessState_Stopped);
-        emit this->stopped();
-
-        this->setProgress(0);
-
-        return false;
-    }
-
-    return true;
-}
-
-bool EncryptionManagerImpl::readKeyFromFile()
-{
-    QString key_file_name = QDir::current().filePath(m_AES_KEY_FILE_NAME);
-    QFile key_file(key_file_name);
-    if (!key_file.exists())
-    {
-        this->error("The key file \"" + key_file_name + "\" does not exist");
-
-        return false;
-    }
-    bool ret_val = key_file.open(QIODevice::ReadOnly);
-    if (!ret_val)
-    {
-        this->error("Cannot open the key file: " + key_file_name);
-
-        return false;
-    }
-    size_t key_size =  m_key.size();
-    memset(m_key.data(), 0, key_size);
-    long long bytes_read = key_file.read(reinterpret_cast<char *>(m_key.data()), key_size);
-    key_file.close();
-    if (bytes_read != key_size)
-    {
-        this->error("Wrong key size: expected " + Utils::bytesToString(key_size) + ", got " + Utils::bytesToString(bytes_read));
-
-        return false;
-    }
-    if (m_key.empty())
-    {
-        this->error("The encryption key is empty");
-
-        return false;
-    }
-
-    return true;
-}
-
-bool EncryptionManagerImpl::readIvFromFile()
-{
-    QString iv_file_name = QDir::current().filePath(m_AES_IV_FILE_NAME);
-    QFile iv_file(iv_file_name);
-    if (!iv_file.exists())
-    {
-        this->error("The IV file \"" + iv_file_name + "\" does not exist");
-
-        return false;
-    }
-    bool ret_val = iv_file.open(QIODevice::ReadOnly);
-    if (!ret_val)
-    {
-        this->error("Cannot open the IV file: " + iv_file_name);
-
-        return false;
-    }
-    size_t iv_size = sizeof(m_iv);
-    memset(m_iv, 0, iv_size);
-    long long bytes_read = iv_file.read(reinterpret_cast<char *>(m_iv), iv_size);
-    iv_file.close();
-    if (bytes_read != iv_size)
-    {
-        this->error("Wrong IV size: expected " + Utils::bytesToString(iv_size) + ", got " + Utils::bytesToString(bytes_read));
-
-        return false;
-    }
-    for (size_t i = 0; i < iv_size; i++)
-    {
-        if (m_iv[i] != 0)
-        {
-            return true;
-        }
-    }
-
-    return false;
-}
-
 EncryptionManagerImpl::EncryptionState EncryptionManagerImpl::encryptFileWithMac(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, QTime &encryptionTime)
 {
     this->debug("Encrypting file with MAC: " + inputFile + " [" + Utils::bytesToString(inputFileSize) + "]");
@@ -528,7 +69,7 @@ EncryptionManagerImpl::EncryptionState EncryptionManagerImpl::encryptFileWithMac
         {
             file_source.PumpAll();
 
-            this->setEncryptedBytes(m_encryptedBytes + inputFileSize);
+            this->setProcessedBytes(m_processedBytes + inputFileSize);
         }
         else
         {
@@ -551,7 +92,7 @@ EncryptionManagerImpl::EncryptionState EncryptionManagerImpl::encryptFileWithMac
 
                 long long encrypted_bytes = file_source.Pump(m_ENCRYPTION_CHUNK_SIZE);
 
-                this->setEncryptedBytes(m_encryptedBytes + encrypted_bytes);
+                this->setProcessedBytes(m_processedBytes + encrypted_bytes);
 
                 total_encrypted_bytes += encrypted_bytes;
             }
@@ -592,7 +133,7 @@ EncryptionManagerImpl::EncryptionState EncryptionManagerImpl::encryptFileWithAes
         {
             file_source.PumpAll();
 
-            this->setEncryptedBytes(m_encryptedBytes + inputFileSize);
+            this->setProcessedBytes(m_processedBytes + inputFileSize);
         }
         else
         {
@@ -615,7 +156,7 @@ EncryptionManagerImpl::EncryptionState EncryptionManagerImpl::encryptFileWithAes
 
                 long long encrypted_bytes = file_source.Pump(m_ENCRYPTION_CHUNK_SIZE);
 
-                this->setEncryptedBytes(m_encryptedBytes + encrypted_bytes);
+                this->setProcessedBytes(m_processedBytes + encrypted_bytes);
 
                 total_encrypted_bytes += encrypted_bytes;
             }
@@ -664,7 +205,7 @@ void EncryptionManagerImpl::onIsDestinationPathUrlValidChanged(bool isDestinatio
     this->setIsEnabled(this->checkIfEnabled());
 }
 
-void EncryptionManagerImpl::onEncryptFiles()
+void EncryptionManagerImpl::onProcess()
 {
     this->debug("Encrypting files...");
 
@@ -758,8 +299,8 @@ void EncryptionManagerImpl::onEncryptFiles()
     // Encrypt the files.
     this->setPause(false);
     this->setStop(false);
-    this->setEncryptedBytes(0);
-    this->setBytesToEncrypt(input_files_total_size);
+    this->setProcessedBytes(0);
+    this->setBytesToProcess(input_files_total_size);
     this->setProgress(0);
     this->setErrors(0);
     this->setWarnings(0);
@@ -787,7 +328,7 @@ void EncryptionManagerImpl::onEncryptFiles()
         {
             this->error("The input file \"" + input_file + "\" does not exist");
 
-            this->setEncryptedBytes(m_encryptedBytes + input_file_info.size());
+            this->setProcessedBytes(m_processedBytes + input_file_info.size());
             this->setErrors(m_errors + 1);
 
             continue;
@@ -803,7 +344,7 @@ void EncryptionManagerImpl::onEncryptFiles()
             {
                 this->debug("The output file \"" + output_file_info.fileName() + "\" already exists, skipping...");
 
-                this->setEncryptedBytes(m_encryptedBytes + input_file_info.size());
+                this->setProcessedBytes(m_processedBytes + input_file_info.size());
                 this->setSkipped(m_skipped + 1);
 
                 continue;
@@ -851,30 +392,4 @@ void EncryptionManagerImpl::onEncryptFiles()
     this->setCurrentInputFile(m_CURRENT_INPUT_FILE_NONE);
 
     this->debug("Files encrypted");
-}
-
-void EncryptionManagerImpl::onUpdateState(Enums::ProcessState state)
-{
-    this->setState(state);
-}
-
-void EncryptionManagerImpl::onStateChanged(Enums::ProcessState state)
-{
-    this->setStateDescription(Utils::processStateToString(state));
-}
-
-void EncryptionManagerImpl::onProgressChanged(float progress)
-{
-    this->setProgressString(Utils::progressToString(progress));
-}
-
-void EncryptionManagerImpl::onBytesEncryptedChanged(unsigned long long bytesEncrypted)
-{
-    this->setEncryptedBytesString(Utils::bytesToString(bytesEncrypted));
-    this->setProgress(bytesEncrypted / static_cast<float>(m_bytesToEncrypt));
-}
-
-void EncryptionManagerImpl::onBytesToEncryptChanged(unsigned long long bytesToEncrypt)
-{
-    this->setBytesToEncryptString(Utils::bytesToString(bytesToEncrypt));
 }

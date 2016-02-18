@@ -48,13 +48,15 @@ int main(int argc, char *argv[])
     QQmlContext *context = engine.rootContext();
     context->setContextProperty("application", &application);
     context->setContextProperty("applicationManager", &application_manager);
-    context->setContextProperty("sourceManager", application_manager.sourceManager());
-    context->setContextProperty("secureManager", application_manager.secureManager());
-    context->setContextProperty("destinationManager", application_manager.destinationManager());
-    context->setContextProperty("fileManager", application_manager.fileManager());
+    context->setContextProperty("sourcePathManager", application_manager.sourcePathManager());
+    context->setContextProperty("securePathManager", application_manager.securePathManager());
+    context->setContextProperty("destinationPathManager", application_manager.destinationPathManager());
+    context->setContextProperty("sourceFileManager", application_manager.sourceFileManager());
+    context->setContextProperty("secureFileManager", application_manager.secureFileManager());
     context->setContextProperty("encryptionManager", application_manager.encryptionManager());
     context->setContextProperty("decryptionManager", application_manager.decryptionManager());
     context->setContextProperty("processManager", application_manager.processManager());
+    context->setContextProperty("statsManager", application_manager.statsManager());
     context->setContextProperty("windowManager", application_manager.windowManager());
     component.loadUrl(QUrl("qrc:/qml/main.qml"));
     if (!component.isReady())

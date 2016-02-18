@@ -13,6 +13,8 @@ class ProcessManager : public Base
     Q_PROPERTY(QString typeDescription READ typeDescription NOTIFY typeDescriptionChanged)
     Q_PROPERTY(Enums::ProcessState state READ state NOTIFY stateChanged)
     Q_PROPERTY(QString stateDescription READ stateDescription NOTIFY stateDescriptionChanged)
+    Q_PROPERTY(float progress READ progress NOTIFY progressChanged)
+    Q_PROPERTY(QString progressString READ progressString NOTIFY progressStringChanged)
 
 private:
     bool m_isEnabled;
@@ -20,18 +22,21 @@ private:
     QString m_typeDescription;
     Enums::ProcessState m_state;
     QString m_stateDescription;
+    float m_progress;
+    QString m_progressString;
 
 public:
     explicit ProcessManager(QObject *parent = NULL);
     ~ProcessManager();
 
 public:
-    void initialize();
     bool isEnabled() const;
     Enums::ProcessType type() const;
     QString typeDescription() const;
     Enums::ProcessState state() const;
     QString stateDescription() const;
+    float progress() const;
+    QString progressString() const;
 
 private:
     void setIsEnabled(bool isEnabled);
@@ -39,10 +44,14 @@ private:
     void setTypeDescription(const QString &typeDescription);
     void setState(Enums::ProcessState state);
     void setStateDescription(const QString &stateDescription);
+    void setProgress(float progress);
+    void setProgressString(const QString &progressString);
 
 public slots:
     void onEncryptionStateChanged(Enums::ProcessState encryptionState);
     void onDecryptionStateChanged(Enums::ProcessState decryptionState);
+    void onEncryptionProgressChanged(float encryptionProgress);
+    void onDecryptionProgressChanged(float decryptionProgress);
     void onPause();
     void onResume();
     void onStop();
@@ -50,6 +59,7 @@ public slots:
 private slots:
     void onTypeChanged(Enums::ProcessType type);
     void onStateChanged(Enums::ProcessState state);
+    void onProgressChanged(float progress);
 
 signals:
     void isEnabledChanged(bool isEnabled);
@@ -57,6 +67,8 @@ signals:
     void typeDescriptionChanged(const QString &typeDescription);
     void stateChanged(Enums::ProcessState state);
     void stateDescriptionChanged(const QString &stateDescription);
+    void progressChanged(float progress);
+    void progressStringChanged(const QString &progressString);
     void pauseEncryption();
     void pauseDecryption();
     void resumeEncryption();

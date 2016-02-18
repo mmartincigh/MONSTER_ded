@@ -3,8 +3,8 @@ import QtQuick 2.5
 Rectangle {
     id: main
 
-    SourcePanel {
-        id: sourcePanel
+    SourcePathPanel {
+        id: sourcePathPanel
 
         anchors.top: parent.top
         anchors.topMargin: 20
@@ -14,10 +14,28 @@ Rectangle {
         anchors.rightMargin: 20
     }
 
-    SecurePanel {
-        id: securePanel
+    Row {
+        id: encryptionRow
 
-        anchors.top: sourcePanel.bottom
+        anchors.top: sourcePathPanel.bottom
+        anchors.topMargin: 20
+        anchors.horizontalCenter: parent.horizontalCenter
+
+        spacing: 20
+
+        EncryptionPanel {
+            id: encryptionPanel
+        }
+
+        SourceFilesPanel {
+            id: sourceFilesPanel
+        }
+    }
+
+    SecurePathPanel {
+        id: securePathPanel
+
+        anchors.top: encryptionRow.bottom
         anchors.topMargin: 20
         anchors.left: parent.left
         anchors.leftMargin: 20
@@ -25,10 +43,28 @@ Rectangle {
         anchors.rightMargin: 20
     }
 
-    DestinationPanel {
-        id: destinationPanel
+    Row {
+        id: decryptionRow
 
-        anchors.top: securePanel.bottom
+        anchors.top: securePathPanel.bottom
+        anchors.topMargin: 20
+        anchors.horizontalCenter: parent.horizontalCenter
+
+        spacing: 20
+
+        DecryptionPanel {
+            id: decryptionPanel
+        }
+
+        SecureFilesPanel {
+            id: secureFilesPanel
+        }
+    }
+
+    DestinationPathPanel {
+        id: destinationPathPanel
+
+        anchors.top: decryptionRow.bottom
         anchors.topMargin: 20
         anchors.left: parent.left
         anchors.leftMargin: 20
@@ -36,30 +72,10 @@ Rectangle {
         anchors.rightMargin: 20
     }
 
-    FilesPanel {
-        id: filesPanel
+    ProgressPanel {
+        id: progressPanel
 
-        anchors.top: destinationPanel.bottom
-        anchors.topMargin: 20
-        anchors.left: parent.left
-        anchors.leftMargin: 20
-    }
-
-    EncryptionPanel {
-        id: encryptionPanel
-
-        anchors.top: filesPanel.bottom
-        anchors.topMargin: 20
-        anchors.left: parent.left
-        anchors.leftMargin: 20
-        anchors.right: parent.right
-        anchors.rightMargin: 20
-    }
-
-    DecryptionPanel {
-        id: decryptionPanel
-
-        anchors.top: encryptionPanel.bottom
+        anchors.top: destinationPathPanel.bottom
         anchors.topMargin: 20
         anchors.left: parent.left
         anchors.leftMargin: 20
@@ -70,10 +86,9 @@ Rectangle {
     ProcessPanel {
         id: processPanel
 
-        anchors.top: decryptionPanel.bottom
+        anchors.top: progressPanel.bottom
         anchors.topMargin: 20
-        anchors.left: parent.left
-        anchors.leftMargin: 20
+        anchors.horizontalCenter: parent.horizontalCenter
     }
 
     StatsPanel {

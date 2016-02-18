@@ -9,28 +9,28 @@ Rectangle {
     height: childrenRect.height
 
     Text {
-        id: encryptedBytesLabel
+        id: processBytesLabel
 
         anchors.top: parent.top
         anchors.left: parent.left
 
-        text: qsTr("encrypted bytes:")
+        text: qsTr("processed bytes:")
     }
 
     Text {
-        id: encryptedBytes
+        id: processBytes
 
         anchors.top: parent.top
-        anchors.left: encryptedBytesLabel.right
+        anchors.left: processBytesLabel.right
         anchors.leftMargin: 20
 
-        text: encryptionManager.encryptedBytes + " [" + encryptionManager.encryptedBytesString + "] / " + encryptionManager.bytesToEncrypt + " [" + encryptionManager.bytesToEncryptString + "]"
+        text: statsManager.processedBytes + " [" + statsManager.processedBytesString + "] / " + statsManager.bytesToProcess + " [" + statsManager.bytesToProcessString + "]"
     }
 
     Text {
         id: errorsLabel
 
-        anchors.top: encryptedBytesLabel.bottom
+        anchors.top: processBytesLabel.bottom
         anchors.topMargin: 20
         anchors.left: parent.left
 
@@ -40,18 +40,18 @@ Rectangle {
     Text {
         id: errors
 
-        anchors.top: encryptedBytesLabel.bottom
+        anchors.top: processBytesLabel.bottom
         anchors.topMargin: 20
         anchors.left: skipped.left
 
-        text: encryptionManager.errors
-        color: encryptionManager.errors > 0 ? "red" : "black"
+        text: statsManager.errors
+        color: statsManager.errors > 0 ? "red" : "black"
     }
 
     Text {
         id: warningsLabel
 
-        anchors.top: encryptedBytesLabel.bottom
+        anchors.top: processBytesLabel.bottom
         anchors.topMargin: 20
         anchors.left: parent.left
         anchors.leftMargin: 140
@@ -62,12 +62,12 @@ Rectangle {
     Text {
         id: warnings
 
-        anchors.top: encryptedBytesLabel.bottom
+        anchors.top: processBytesLabel.bottom
         anchors.topMargin: 20
         anchors.left: overwritten.left
 
-        text: encryptionManager.warnings
-        color: encryptionManager.warnings > 0 ? "orange" : "black"
+        text: statsManager.warnings
+        color: statsManager.warnings > 0 ? "orange" : "black"
     }
 
     Text {
@@ -88,8 +88,8 @@ Rectangle {
         anchors.left: skippedLabel.right
         anchors.leftMargin: 20
 
-        text: encryptionManager.skipped
-        color: encryptionManager.skipped > 0 ? "blue" : "black"
+        text: statsManager.skipped
+        color: statsManager.skipped > 0 ? "blue" : "black"
     }
 
     Text {
@@ -111,8 +111,8 @@ Rectangle {
         anchors.left: overwrittenLabel.right
         anchors.leftMargin: 20
 
-        text: encryptionManager.overwritten
-        color: encryptionManager.overwritten > 0 ? "blue" : "black"
+        text: statsManager.overwritten
+        color: statsManager.overwritten > 0 ? "blue" : "black"
     }
 
     Text {
@@ -134,8 +134,8 @@ Rectangle {
         anchors.left: processedLabel.right
         anchors.leftMargin: 20
 
-        text: encryptionManager.processed
-        color: encryptionManager.processed > 0 ? "green" : "black"
+        text: statsManager.processed
+        color: statsManager.processed > 0 ? "green" : "black"
     }
 
     Text {
@@ -157,7 +157,7 @@ Rectangle {
         anchors.leftMargin: 20
         anchors.right: parent.right
 
-        text: encryptionManager.currentInputFile
+        text: statsManager.currentInputFile
         clip: true
     }
 }

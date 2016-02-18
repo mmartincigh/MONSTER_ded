@@ -1,17 +1,6 @@
-sourceManager -> sourcePathManager
-secureManager ...
-destinationManager ...
-+ interface
-
-fileManager -> sourceFileManager
-+ interface
-
-processManager that works for both encr/decr!
-
-encryption/descryption manager interface
 
 rename all source files -> prefix MDED
 
-single progress bar for both processes
 
-rename encr/decr state AND/OR process state
+clean key and iv functions
+and use them every time 'onprocess' returns

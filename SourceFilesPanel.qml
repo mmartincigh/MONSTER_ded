@@ -16,7 +16,7 @@ Rectangle {
         anchors.left: parent.left
         anchors.verticalCenter: reloadInputFilesButton.verticalCenter
 
-        text: qsTr("input files count:")
+        text: qsTr("source files count:")
     }
 
     Text {
@@ -26,7 +26,7 @@ Rectangle {
         anchors.leftMargin: 20
         anchors.verticalCenter: reloadInputFilesButton.verticalCenter
 
-        text: fileManager.inputFilesCount
+        text: sourceFileManager.inputFilesCount
     }
 
     Button {
@@ -39,7 +39,7 @@ Rectangle {
         text: qsTr("reload")
         enabled: encryptionManager.isEnabled && (encryptionManager.state === Enums.ProcessState_Idle || encryptionManager.state === Enums.ProcessState_Stopped || encryptionManager.state === Enums.ProcessState_Completed)
 
-        onClicked: { fileManager.onReloadInputFiles() }
+        onClicked: { sourceFileManager.onReloadInputFiles() }
     }
 
     Text {
@@ -59,11 +59,11 @@ Rectangle {
         anchors.leftMargin: 20
         anchors.verticalCenter: reloadInputFilesButton.verticalCenter
 
-        checked: fileManager.overwriteOutputFiles
+        checked: sourceFileManager.overwriteOutputFiles
         enabled: encryptionManager.state === Enums.ProcessState_Idle || encryptionManager.state === Enums.ProcessState_Stopped || encryptionManager.state === Enums.ProcessState_Completed
 
         Binding {
-            target: fileManager
+            target: sourceFileManager
             property: "overwriteOutputFiles"
             value: overwriteOutputFiles.checked
         }

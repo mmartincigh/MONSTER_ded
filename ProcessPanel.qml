@@ -47,44 +47,4 @@ Rectangle {
 
         onClicked: { processManager.onStop() }
     }
-
-    Text {
-        id: typeLabel
-
-        anchors.left: stopButton.right
-        anchors.leftMargin: 40
-        anchors.verticalCenter: stopButton.verticalCenter
-
-        text: qsTr("type:")
-    }
-
-    Text {
-        id: type
-
-        anchors.left: typeLabel.right
-        anchors.leftMargin: 20
-        anchors.verticalCenter: stopButton.verticalCenter
-
-        text: processManager.typeDescription
-    }
-
-    Text {
-        id: progressLabel
-
-        anchors.left: typeLabel.right
-        anchors.leftMargin: 100
-        anchors.verticalCenter: stopButton.verticalCenter
-
-        text: qsTr("progress:")
-    }
-
-    Text {
-        id: progress
-
-        anchors.left: progressLabel.right
-        anchors.leftMargin: 20
-        anchors.verticalCenter: stopButton.verticalCenter
-
-        text: encryptionManager.progressString
-    }
 }

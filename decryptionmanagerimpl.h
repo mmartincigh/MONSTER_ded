@@ -34,6 +34,8 @@ public slots:
     void onIsDestinationPathUrlValidChanged(bool isDestinationPathUrlValid);
     virtual void onProcess();
 
+    void onDecryptFile(const QString &fileToDecrypt);
+
 signals:
     void isSecurePathUrlValid(bool *isSecurePathUrlValid);
     void isDestinationPathUrlValid(bool *isDestinationPathUrlValid);

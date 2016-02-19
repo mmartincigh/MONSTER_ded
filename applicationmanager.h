@@ -35,9 +35,10 @@ private:
     StatsManager m_statsManager;
     SettingsManager m_settingsManager;
     WindowManager m_windowManager;
+    QStringList m_arguments;
 
 public:
-    explicit ApplicationManager(QObject *parent = NULL);
+    explicit ApplicationManager(const QStringList &arguments, QObject *parent = NULL);
     ~ApplicationManager();
 
 public:
@@ -52,6 +53,9 @@ public:
     ProcessManager *processManager();
     StatsManager *statsManager();
     WindowManager *windowManager();
+
+private:
+    void parseArguments();
 
 public slots:
     void onCompleted();

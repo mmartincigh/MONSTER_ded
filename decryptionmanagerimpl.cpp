@@ -253,7 +253,7 @@ void DecryptionManagerImpl::onProcess()
     }
     this->debug("Secure path: " + secure_path);
 
-    // Get the destiantion path.
+    // Get the destination path.
     QString destination_path;
     emit this->destinationPath(&destination_path);
     if (destination_path.isEmpty())
@@ -400,4 +400,121 @@ void DecryptionManagerImpl::onProcess()
     this->setCurrentInputFile(m_CURRENT_INPUT_FILE_NONE);
 
     this->debug("Files decrypted");
+}
+
+void DecryptionManagerImpl::onDecryptFile(const QString &fileToDecrypt)
+{
+    this->debug("Decrypting file: " + fileToDecrypt);
+
+    // Check whether the input file exists.
+    QString input_file(fileToDecrypt);
+    QFileInfo input_file_info(input_file);
+    if (!input_file_info.exists())
+    {
+        this->error("The input file \"" + input_file + "\" does not exist");
+
+        return;
+    }
+
+    // Save the decrypted file in the same path of the input file.
+    QString output_path(input_file_info.absolutePath());
+    if (output_path.isEmpty())
+    {
+        this->error("Output path is empty");
+
+        return;
+    }
+    QDir output_directory(output_path);
+    if (!output_directory.exists())
+    {
+        this->error("The output directory does not exist: " + output_directory.path());
+
+        return;
+    }
+    this->debug("Output path: " + output_path);
+
+    // Get the size of the input file.
+    unsigned long long input_file_size = input_file_info.size();
+    this->debug("Input file size: " + QString::number(input_file_size) + "B [" + Utils::bytesToString(input_file_size) + "]");
+
+    // Get the decryption key from file.
+    bool ret_val = this->readKeyFromFile();
+    if (!ret_val)
+    {
+        this->error("Cannot get the decryption key from file");
+
+        return;
+    }
+    this->debug("Decryption key read from file");
+
+    // Get the initialization vector from file.
+    ret_val = this->readIvFromFile();
+    if (!ret_val)
+    {
+        this->error("Cannot get the initialization vector from file");
+
+        return;
+    }
+    this->debug("Initialization vector read from file");
+
+    // Decrypt the file.
+    this->setProcessedBytes(0);
+    this->setBytesToProcess(input_file_size);
+    this->setProgress(0);
+    this->setErrors(0);
+    this->setWarnings(0);
+    this->setSkipped(0);
+    this->setOverwritten(0);
+    this->setProcessed(0);
+    this->setCurrentInputFile(input_file_info.fileName());
+    this->setState(Enums::ProcessState_Working);
+
+    // Check whether the output file name is valid.
+    QString output_file = output_directory.filePath(input_file_info.completeBaseName());
+    if (output_file.length() > MAX_PATH)
+    {
+        this->error("The output file name \"" + output_file + "\" is too long");
+
+        this->setProcessedBytes(input_file_info.size());
+        this->setErrors(1);
+
+        return;
+    }
+
+    // Decrypt the file.
+    QTime decryption_time(0, 0, 0, 0);
+    DecryptionState decryption_ret_val = this->decryptFileWithAes(input_file, input_file_info.size(), output_file, decryption_time);
+    switch (decryption_ret_val)
+    {
+    case DecryptionState_Success:
+        break;
+    case DecryptionState_Warning:
+        this->setProcessedBytes(input_file_info.size());
+        this->setWarnings(1);
+
+        return;
+    case DecryptionState_Error:
+        this->setProcessedBytes(input_file_info.size());
+        this->setErrors(1);
+
+        return;
+    default:
+        this->error("Unknown decryption state");
+
+        this->setProcessedBytes(input_file_info.size());
+        this->setErrors(1);
+
+        return;
+    }
+
+    // File decrypted.
+    QFileInfo output_file_info(output_file);
+    this->debug("File decrypted to: " + output_file + " [" + Utils::bytesToString(output_file_info.size()) + "]");
+    this->debug("Decryption time: " + decryption_time.toString("HH:mm:ss:zzz"));
+    this->setProcessed(1);
+    this->setProgress(1);
+    this->setState(Enums::ProcessState_Completed);
+    this->setCurrentInputFile(m_CURRENT_INPUT_FILE_NONE);
+
+    this->debug("File decrypted");
 }

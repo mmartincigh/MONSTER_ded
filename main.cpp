@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
     text_stream << LogManager::LOG_HEADER << endl << flush;
     log_file.close();
 
-    ApplicationManager application_manager(&application);
+    ApplicationManager application_manager(application.arguments(), &application);
     application_manager.initialize();
 
     QQmlApplicationEngine engine;

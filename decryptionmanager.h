@@ -50,6 +50,8 @@ public slots:
     virtual void onResume();
     virtual void onStop();
 
+    void onDecryptFile(const QString &fileToDecrypt);
+
 signals:
     void isSecurePathUrlValid(bool *isSecurePathUrlValid);
     void isDestinationPathUrlValid(bool *isDestinationPathUrlValid);

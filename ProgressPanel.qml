@@ -36,7 +36,7 @@ Rectangle {
             anchors.centerIn: parent
 
             opacity: (processManager.state === Enums.ProcessState_Idle || processManager.state === Enums.ProcessState_Stopped || processManager.state === Enums.ProcessState_Completed) ? 0 : 1
-            text: encryptionManager.progressString
+            text: processManager.progressString
 
             Behavior on opacity {
                 NumberAnimation { duration: 250 }

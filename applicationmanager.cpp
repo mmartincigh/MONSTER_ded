@@ -1,7 +1,10 @@
+// Qt
+#include <QFileInfo>
+
 // Local
 #include "applicationmanager.h"
 
-ApplicationManager::ApplicationManager(QObject *parent) :
+ApplicationManager::ApplicationManager(const QStringList &arguments, QObject *parent) :
     Base("AM", parent),
     m_sourcePathManager(this),
     m_securePathManager(this),
@@ -13,7 +16,8 @@ ApplicationManager::ApplicationManager(QObject *parent) :
     m_processManager(this),
     m_statsManager(this),
     m_settingsManager(this),
-    m_windowManager(this)
+    m_windowManager(this),
+    m_arguments(arguments)
 {
     QObject::connect(&m_sourcePathManager, SIGNAL(pathModel(QStringList*)), &m_settingsManager, SLOT(onSourcePathModel(QStringList*)));
     QObject::connect(&m_sourcePathManager, SIGNAL(pathModelChanged(QStringList)), &m_settingsManager, SLOT(onSourcePathModelChanged(QStringList)));
@@ -144,7 +148,48 @@ WindowManager *ApplicationManager::windowManager()
     return &m_windowManager;
 }
 
+void ApplicationManager::parseArguments()
+{
+    this->debug("Arguments: " + m_arguments.join('|'));
+
+    // Check if there are extra arguments.
+    if (m_arguments.length() == 1)
+    {
+        // No extra arguments.
+
+        return;
+    }
+
+    // Consider only the second argument.
+    QString argument(m_arguments.at(1));
+
+    // Check if the argument is a valid file name.
+    QFileInfo argument_file_info(argument);
+    if (!argument_file_info.exists())
+    {
+        // Not a valid file name.
+
+        return;
+    }
+
+    // Check whether the argument is an encrypted file.
+    QString argument_extension(argument_file_info.suffix());
+    if (argument_extension != "mef")
+    {
+        // Not an encrypted file.
+
+        return;
+    }
+
+    this->debug("Encrypted file passed as an argument: " + argument);
+
+    // Decrypt the file.
+    QMetaObject::invokeMethod(&m_decryptionManager, "onDecryptFile", Qt::QueuedConnection, Q_ARG(QString, argument));
+}
+
 void ApplicationManager::onCompleted()
 {
     this->debug("GUI Completed");
+
+    this->parseArguments();
 }

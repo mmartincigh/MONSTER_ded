@@ -180,3 +180,8 @@ void DecryptionManager::onStop()
 
     this->debug("Stop event set");
 }
+
+void DecryptionManager::onDecryptFile(const QString &fileToDecrypt)
+{
+    QMetaObject::invokeMethod(m_decryptionManagerImplSptr.data(), "onDecryptFile", Qt::QueuedConnection, Q_ARG(QString, fileToDecrypt));
+}

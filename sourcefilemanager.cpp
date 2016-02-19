@@ -2,7 +2,7 @@
 #include "sourcefilemanager.h"
 
 SourceFileManager::SourceFileManager(const QStringList &nameFilters, QObject *parent) :
-    FileBase(nameFilters, "FM", parent)
+    FileBase(nameFilters, "SFM", parent)
 {
     this->debug("File manager created");
 }

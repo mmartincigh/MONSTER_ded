@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
 #endif
 
     qInstallMessageHandler(LogManager::messageHandler);
-    qRegisterMetaType<Enums::ProcessState>("Enums::ProcessType");
+    qRegisterMetaType<Enums::ProcessType>("Enums::ProcessType");
     qRegisterMetaType<Enums::ProcessState>("Enums::ProcessState");
     qmlRegisterType<Enums>("MONSTER.MONSTER_ded", 1, 0, "Enums");
     QApplication application(argc, argv);

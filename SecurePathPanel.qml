@@ -73,7 +73,7 @@ Rectangle {
 
         title: qsTr("Select a folder")
         selectFolder: true
-        folder: securePathManager.isSecurePathUrlValid ? securePathManager.securePathUrl : shortcuts.documents
+        folder: securePathManager.isPathUrlValid ? securePathManager.pathUrl : shortcuts.documents
 
         onAccepted: { securePathManager.onUpdateEditText(folder) }
     }

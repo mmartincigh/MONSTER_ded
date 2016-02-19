@@ -24,9 +24,9 @@ EncryptionManager::EncryptionManager(QObject *parent) :
     QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(processedChanged(int)), this, SIGNAL(processedChanged(int)));
     QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(currentInputFileChanged(QString)), this, SIGNAL(currentInputFileChanged(QString)));
     QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(isSourcePathUrlValid(bool*)), this, SIGNAL(isSourcePathUrlValid(bool*)), Qt::BlockingQueuedConnection);
-    QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(isDestinationPathUrlValid(bool*)), this, SIGNAL(isDestinationPathUrlValid(bool*)), Qt::BlockingQueuedConnection);
+    QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(isSecurePathUrlValid(bool*)), this, SIGNAL(isSecurePathUrlValid(bool*)), Qt::BlockingQueuedConnection);
     QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(sourcePath(QString*)), this, SIGNAL(sourcePath(QString*)), Qt::BlockingQueuedConnection);
-    QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(destinationPath(QString*)), this, SIGNAL(destinationPath(QString*)), Qt::BlockingQueuedConnection);
+    QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(securePath(QString*)), this, SIGNAL(securePath(QString*)), Qt::BlockingQueuedConnection);
     QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(inputFiles(QStringList*)), this, SIGNAL(inputFiles(QStringList*)), Qt::BlockingQueuedConnection);
     QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(overwriteOutputFiles(bool*)), this, SIGNAL(overwriteOutputFiles(bool*)), Qt::BlockingQueuedConnection);
 
@@ -141,9 +141,9 @@ void EncryptionManager::onIsSourcePathUrlValidChanged(bool isSourcePathUrlValid)
     QMetaObject::invokeMethod(m_encryptionManagerImplSptr.data(), "onIsSourcePathUrlValidChanged", Qt::QueuedConnection, Q_ARG(bool, isSourcePathUrlValid));
 }
 
-void EncryptionManager::onIsDestinationPathUrlValidChanged(bool isDestinationPathUrlValid)
+void EncryptionManager::onIsSecurePathUrlValidChanged(bool isSecurePathUrlValid)
 {
-    QMetaObject::invokeMethod(m_encryptionManagerImplSptr.data(), "onIsDestinationPathUrlValidChanged", Qt::QueuedConnection, Q_ARG(bool, isDestinationPathUrlValid));
+    QMetaObject::invokeMethod(m_encryptionManagerImplSptr.data(), "onIsSecurePathUrlValidChanged", Qt::QueuedConnection, Q_ARG(bool, isSecurePathUrlValid));
 }
 
 void EncryptionManager::onProcess()

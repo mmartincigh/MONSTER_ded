@@ -17,7 +17,6 @@ private:
     };
 
 private:
-    static const QString m_OUTPUT_FILE_EXTENSION;
     static const unsigned long long m_DECRYPTION_THRESHOLD_SIZE;
     static const unsigned long long m_DECRYPTION_CHUNK_SIZE;
 

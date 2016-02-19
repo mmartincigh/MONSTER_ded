@@ -23,11 +23,11 @@ ApplicationManager::ApplicationManager(QObject *parent) :
     QObject::connect(&m_securePathManager, SIGNAL(pathModel(QStringList*)), &m_settingsManager, SLOT(onSecurePathModel(QStringList*)));
     QObject::connect(&m_securePathManager, SIGNAL(pathModelChanged(QStringList)), &m_settingsManager, SLOT(onSecurePathModelChanged(QStringList)));
     QObject::connect(&m_securePathManager, SIGNAL(pathChanged(QString)), &m_secureFileManager, SLOT(onPathChanged(QString)));
+    QObject::connect(&m_securePathManager, SIGNAL(isPathUrlValidChanged(bool)), &m_encryptionManager, SLOT(onIsSecurePathUrlValidChanged(bool)));
     QObject::connect(&m_securePathManager, SIGNAL(isPathUrlValidChanged(bool)), &m_decryptionManager, SLOT(onIsSecurePathUrlValidChanged(bool)));
 
     QObject::connect(&m_destinationPathManager, SIGNAL(pathModel(QStringList*)), &m_settingsManager, SLOT(onDestinationPathModel(QStringList*)));
     QObject::connect(&m_destinationPathManager, SIGNAL(pathModelChanged(QStringList)), &m_settingsManager, SLOT(onDestinationPathModelChanged(QStringList)));
-    QObject::connect(&m_destinationPathManager, SIGNAL(isPathUrlValidChanged(bool)), &m_encryptionManager, SLOT(onIsDestinationPathUrlValidChanged(bool)));
     QObject::connect(&m_destinationPathManager, SIGNAL(isPathUrlValidChanged(bool)), &m_decryptionManager, SLOT(onIsDestinationPathUrlValidChanged(bool)));
 
     QObject::connect(&m_sourceFileManager, SIGNAL(path(QString*)), &m_sourcePathManager, SLOT(onPath(QString*)));
@@ -45,9 +45,9 @@ ApplicationManager::ApplicationManager(QObject *parent) :
     QObject::connect(&m_encryptionManager, SIGNAL(processedChanged(int)), &m_statsManager, SLOT(onProcessedChanged(int)));
     QObject::connect(&m_encryptionManager, SIGNAL(currentInputFileChanged(QString)), &m_statsManager, SLOT(onCurrentInputFileChanged(QString)));
     QObject::connect(&m_encryptionManager, SIGNAL(isSourcePathUrlValid(bool*)), &m_sourcePathManager, SLOT(onIsPathUrlValid(bool*)));
-    QObject::connect(&m_encryptionManager, SIGNAL(isDestinationPathUrlValid(bool*)), &m_destinationPathManager, SLOT(onIsPathUrlValid(bool*)));
+    QObject::connect(&m_encryptionManager, SIGNAL(isSecurePathUrlValid(bool*)), &m_securePathManager, SLOT(onIsPathUrlValid(bool*)));
     QObject::connect(&m_encryptionManager, SIGNAL(sourcePath(QString*)), &m_sourcePathManager, SLOT(onPath(QString*)));
-    QObject::connect(&m_encryptionManager, SIGNAL(destinationPath(QString*)), &m_destinationPathManager, SLOT(onPath(QString*)));
+    QObject::connect(&m_encryptionManager, SIGNAL(securePath(QString*)), &m_securePathManager, SLOT(onPath(QString*)));
     QObject::connect(&m_encryptionManager, SIGNAL(inputFiles(QStringList*)), &m_sourceFileManager, SLOT(onInputFiles(QStringList*)));
     QObject::connect(&m_encryptionManager, SIGNAL(overwriteOutputFiles(bool*)), &m_sourceFileManager, SLOT(onOverwriteOutputFiles(bool*)));
 

@@ -3,8 +3,6 @@ import QtQuick 2.5
 Rectangle {
     id: main
 
-    border.color: "red"
-
     width: childrenRect.width
     height: childrenRect.height
 

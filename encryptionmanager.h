@@ -44,7 +44,7 @@ public:
 
 public slots:
     void onIsSourcePathUrlValidChanged(bool isSourcePathUrlValid);
-    void onIsDestinationPathUrlValidChanged(bool isDestinationPathUrlValid);
+    void onIsSecurePathUrlValidChanged(bool isSecurePathUrlValid);
     virtual void onProcess();
     virtual void onPause();
     virtual void onResume();
@@ -52,9 +52,9 @@ public slots:
 
 signals:
     void isSourcePathUrlValid(bool *isSourcePathUrlValid);
-    void isDestinationPathUrlValid(bool *isDestinationPathUrlValid);
+    void isSecurePathUrlValid(bool *isSecurePathUrlValid);
     void sourcePath(QString *sourcePath);
-    void destinationPath(QString *destinationPath);
+    void securePath(QString *securePath);
     void inputFiles(QStringList *inputFiles);
     void overwriteOutputFiles(bool *overwriteOutputFiles);
 };

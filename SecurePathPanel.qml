@@ -6,8 +6,6 @@ import MONSTER.MONSTER_ded 1.0
 Rectangle {
     id: main
 
-    border.color: "red"
-
     property bool enabled: encryptionManager.state === Enums.ProcessState_Idle || encryptionManager.state === Enums.ProcessState_Stopped || encryptionManager.state === Enums.ProcessState_Completed
 
     width: childrenRect.width

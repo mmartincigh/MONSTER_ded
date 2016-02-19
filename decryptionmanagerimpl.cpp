@@ -16,7 +16,6 @@
 #include "decryptionmanagerimpl.h"
 #include "utils.h"
 
-const QString DecryptionManagerImpl::m_OUTPUT_FILE_EXTENSION(".mef");
 const unsigned long long DecryptionManagerImpl::m_DECRYPTION_THRESHOLD_SIZE(10485760);
 const unsigned long long DecryptionManagerImpl::m_DECRYPTION_CHUNK_SIZE(1048576);
 
@@ -209,8 +208,6 @@ void DecryptionManagerImpl::onProcess()
 {
     this->debug("Decrypting files...");
 
-    return;
-
     if (!m_isEnabled)
     {
         this->error("File Decryption not enabled");
@@ -334,8 +331,20 @@ void DecryptionManagerImpl::onProcess()
             continue;
         }
 
+        // Check whether the output file name is valid.
+        QString output_file = destination_directory.filePath(input_file_info.completeBaseName());
+        if (output_file.length() > MAX_PATH)
+        {
+            this->error("The output file name \"" + output_file + "\" is too long");
+
+            this->setProcessedBytes(m_processedBytes + input_file_info.size());
+            this->setErrors(m_errors + 1);
+
+            continue;
+        }
+
         // Check whether the output file can be overwritten.
-        QFileInfo output_file_info(destination_directory.filePath(input_file_info.completeBaseName()).left(MAX_PATH - m_OUTPUT_FILE_EXTENSION.length() - 1) + m_OUTPUT_FILE_EXTENSION);
+        QFileInfo output_file_info(output_file);
         bool output_file_exists = output_file_info.exists();
         if (!overwrite_output_files)
         {
@@ -350,7 +359,6 @@ void DecryptionManagerImpl::onProcess()
                 continue;
             }
         }
-        QString output_file = output_file_info.absoluteFilePath();
 
         // Decrypt the file.
         QTime decryption_time(0, 0, 0, 0);

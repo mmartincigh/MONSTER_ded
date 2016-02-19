@@ -40,9 +40,9 @@ bool EncryptionManagerImpl::checkIfEnabled()
         return false;
     }
 
-    bool is_destination_url_path_valid = false;
-    emit this->isDestinationPathUrlValid(&is_destination_url_path_valid);
-    if (!is_destination_url_path_valid)
+    bool is_secure_url_path_valid = false;
+    emit this->isSecurePathUrlValid(&is_secure_url_path_valid);
+    if (!is_secure_url_path_valid)
     {
         return false;
     }
@@ -191,11 +191,11 @@ void EncryptionManagerImpl::onIsSourcePathUrlValidChanged(bool isSourcePathUrlVa
     this->setIsEnabled(this->checkIfEnabled());
 }
 
-void EncryptionManagerImpl::onIsDestinationPathUrlValidChanged(bool isDestinationPathUrlValid)
+void EncryptionManagerImpl::onIsSecurePathUrlValidChanged(bool isSecurePathUrlValid)
 {
-    this->debug("Is destination path URL vaild: " + QString(isDestinationPathUrlValid ? "true" : "false"));
+    this->debug("Is secure path URL vaild: " + QString(isSecurePathUrlValid ? "true" : "false"));
 
-    if (!isDestinationPathUrlValid)
+    if (!isSecurePathUrlValid)
     {
         this->setIsEnabled(false);
 
@@ -254,23 +254,23 @@ void EncryptionManagerImpl::onProcess()
     }
     this->debug("Source path: " + source_path);
 
-    // Get the destiantion path.
-    QString destination_path;
-    emit this->destinationPath(&destination_path);
-    if (destination_path.isEmpty())
+    // Get the secure path.
+    QString secure_path;
+    emit this->securePath(&secure_path);
+    if (secure_path.isEmpty())
     {
-        this->error("Destination path is empty");
+        this->error("Secure path is empty");
 
         return;
     }
-    QDir destination_directory(destination_path);
-    if (!destination_directory.exists())
+    QDir secure_directory(secure_path);
+    if (!secure_directory.exists())
     {
-        this->error("The destination directory does not exist: " + destination_directory.path());
+        this->error("The secure directory does not exist: " + secure_directory.path());
 
         return;
     }
-    this->debug("Destination path: " + destination_path);
+    this->debug("Secure path: " + secure_path);
 
     // Get the input files.
     QStringList input_files;
@@ -334,8 +334,20 @@ void EncryptionManagerImpl::onProcess()
             continue;
         }
 
+        // Check whether the output file name is valid.
+        QString output_file = secure_directory.filePath(input_file_info.fileName() + m_OUTPUT_FILE_EXTENSION);
+        if (output_file.length() > MAX_PATH)
+        {
+            this->error("The output file name \"" + output_file + "\" is too long");
+
+            this->setProcessedBytes(m_processedBytes + input_file_info.size());
+            this->setErrors(m_errors + 1);
+
+            continue;
+        }
+
         // Check whether the output file can be overwritten.
-        QFileInfo output_file_info(destination_directory.filePath(input_file_info.completeBaseName()).left(MAX_PATH - m_OUTPUT_FILE_EXTENSION.length() - 1) + m_OUTPUT_FILE_EXTENSION);
+        QFileInfo output_file_info(output_file);
         bool output_file_exists = output_file_info.exists();
         if (!overwrite_output_files)
         {
@@ -350,7 +362,6 @@ void EncryptionManagerImpl::onProcess()
                 continue;
             }
         }
-        QString output_file = output_file_info.absoluteFilePath();
 
         // Encrypt the file.
         QTime encryption_time(0, 0, 0, 0);

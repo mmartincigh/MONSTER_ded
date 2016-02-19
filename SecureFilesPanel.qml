@@ -5,7 +5,7 @@ import MONSTER.MONSTER_ded 1.0
 Rectangle {
     id: main
 
-    border.color: "red"
+    property bool enabled: decryptionManager.isEnabled && (processManager.state === Enums.ProcessState_Idle || processManager.state === Enums.ProcessState_Stopped || processManager.state === Enums.ProcessState_Completed)
 
     width: childrenRect.width
     height: childrenRect.height
@@ -37,7 +37,7 @@ Rectangle {
         anchors.leftMargin: 80
 
         text: qsTr("reload")
-        enabled: encryptionManager.isEnabled && (encryptionManager.state === Enums.ProcessState_Idle || encryptionManager.state === Enums.ProcessState_Stopped || encryptionManager.state === Enums.ProcessState_Completed)
+        enabled: main.enabled
 
         onClicked: { secureFileManager.onReloadInputFiles() }
     }
@@ -60,7 +60,7 @@ Rectangle {
         anchors.verticalCenter: reloadInputFilesButton.verticalCenter
 
         checked: secureFileManager.overwriteOutputFiles
-        enabled: encryptionManager.state === Enums.ProcessState_Idle || encryptionManager.state === Enums.ProcessState_Stopped || encryptionManager.state === Enums.ProcessState_Completed
+        enabled: main.enabled
 
         Binding {
             target: secureFileManager

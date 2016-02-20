@@ -43,17 +43,7 @@ ProcessImplBase::ProcessImplBase(const QString &applicationDirPath, QMutex *mute
 
 ProcessImplBase::~ProcessImplBase()
 {
-    // Clear the key.
-    for (size_t i = 0; i < m_key.size(); i++)
-    {
-        m_key[i] = '\0';
-    }
-
-    // Clear the initialization vector.
-    for (int i = 0; i < CryptoPP::AES::BLOCKSIZE; i++)
-    {
-        m_iv[i] = '\0';
-    }
+    this->clearSecrets();
 }
 
 bool ProcessImplBase::isEnabled() const
@@ -238,7 +228,7 @@ void ProcessImplBase::setErrors(int errors)
 
     m_errors = errors;
 
-    this->debug("Errors changed: " + m_errors);
+    this->debug("Errors changed: " + QString::number(m_errors));
 
     emit this->errorsChanged(m_errors);
 }
@@ -252,7 +242,7 @@ void ProcessImplBase::setWarnings(int warnings)
 
     m_warnings = warnings;
 
-    this->debug("Warnings changed: " + m_warnings);
+    this->debug("Warnings changed: " + QString::number(m_warnings));
 
     emit this->warningsChanged(m_warnings);
 }
@@ -423,6 +413,21 @@ bool ProcessImplBase::processStateCheckpoint()
     }
 
     return true;
+}
+
+void ProcessImplBase::clearSecrets()
+{
+    // Clear the key.
+    for (size_t i = 0; i < m_key.size(); i++)
+    {
+        m_key[i] = '\0';
+    }
+
+    // Clear the initialization vector.
+    for (int i = 0; i < CryptoPP::AES::BLOCKSIZE; i++)
+    {
+        m_iv[i] = '\0';
+    }
 }
 
 void ProcessImplBase::setStateDescription(const QString &stateDescription)

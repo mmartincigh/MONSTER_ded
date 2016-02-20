@@ -33,6 +33,7 @@ public slots:
     void onIsSourcePathUrlValidChanged(bool isSourcePathUrlValid);
     void onIsSecurePathUrlValidChanged(bool isSecurePathUrlValid);
     virtual void onProcess();
+    virtual void onProcess(const QString &inputFile);
 
 signals:
     void isSourcePathUrlValid(bool *isSourcePathUrlValid);

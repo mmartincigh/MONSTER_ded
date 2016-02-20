@@ -2,7 +2,7 @@ TARGET = MONSTER_ded
 
 TEMPLATE = app
 
-VERSION = 1.7.1
+VERSION = 1.7.2
 
 QT += \
     qml \
@@ -97,6 +97,7 @@ HEADERS += \
     securefilemanager.h \
     securepathmanager.h \
     settingsmanager.h \
+    singleapplication.h \
     sourcefilemanager.h \
     sourcepathmanager.h \
     statsmanager.h \
@@ -121,6 +122,7 @@ SOURCES += \
     securefilemanager.cpp \
     securepathmanager.cpp \
     settingsmanager.cpp \
+    singleapplication.cpp \
     sourcefilemanager.cpp \
     sourcepathmanager.cpp \
     statsmanager.cpp \

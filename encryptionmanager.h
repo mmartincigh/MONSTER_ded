@@ -46,6 +46,7 @@ public slots:
     void onIsSourcePathUrlValidChanged(bool isSourcePathUrlValid);
     void onIsSecurePathUrlValidChanged(bool isSecurePathUrlValid);
     virtual void onProcess();
+    virtual void onProcess(const QString &inputFile);
     virtual void onPause();
     virtual void onResume();
     virtual void onStop();

@@ -30,6 +30,7 @@ public:
     static QString processTypeToString(Enums::ProcessType type);
     static QString progressToString(float progress);
     static QString bytesToString(unsigned long long bytes);
+    static QString pointerToString(void *pointer);
     static unsigned int levenshteinDistance(const std::string &from_string, const std::string &to_string);
     static unsigned int levenshteinDistance(const QString &from_string, const QString &to_string);
 };

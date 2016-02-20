@@ -174,24 +174,65 @@ void ApplicationManager::parseArguments()
         return;
     }
 
-    // Check whether the argument is an encrypted file.
+    // Check whether the argument is an encrypted file or a regular file.
     QString argument_extension(argument_file_info.suffix());
-    if (argument_extension != Utils::MEF_EXTENSION)
+    if (argument_extension == Utils::MEF_EXTENSION)
     {
-        // Not an encrypted file.
+        // Encrypted file.
+        this->debug("Encrypted file passed as an argument: " + argument);
 
-        return;
+        // Decrypt the file.
+        QMetaObject::invokeMethod(&m_decryptionManager, "onProcess", Qt::QueuedConnection, Q_ARG(QString, argument));
     }
+    else
+    {
+        // Regular file.
+        this->debug("Regular file passed as an argument: " + argument);
 
-    this->debug("Encrypted file passed as an argument: " + argument);
-
-    // Decrypt the file.
-    QMetaObject::invokeMethod(&m_decryptionManager, "onDecryptFile", Qt::QueuedConnection, Q_ARG(QString, argument));
+        // Encrypt the file.
+        QMetaObject::invokeMethod(&m_encryptionManager, "onProcess", Qt::QueuedConnection, Q_ARG(QString, argument));
+    }
 }
 
-void ApplicationManager::onCompleted()
+void ApplicationManager::onGuiCompleted()
 {
     this->debug("GUI Completed");
 
     this->parseArguments();
+}
+
+void ApplicationManager::onMessageReceived(const QString &message)
+{
+    this->debug("Message received: " + message);
+
+    // Regardless the contents of the received message, bring the application's window to front.
+    m_windowManager.bringToFront();
+
+    // Check if the argument is a valid file name.
+    QFileInfo argument_file_info(message);
+    if (!argument_file_info.exists())
+    {
+        // Not a valid file name.
+
+        return;
+    }
+
+    // Check whether the argument is an encrypted file or a regular file.
+    QString argument_extension(argument_file_info.suffix());
+    if (argument_extension == Utils::MEF_EXTENSION)
+    {
+        // Encrypted file.
+        this->debug("Encrypted file passed from another instance: " + message);
+
+        // Decrypt the file.
+        QMetaObject::invokeMethod(&m_decryptionManager, "onProcess", Qt::QueuedConnection, Q_ARG(QString, message));
+    }
+    else
+    {
+        // Regular file.
+        this->debug("Regular file passed from another instance: " + message);
+
+        // Encrypt the file.
+        QMetaObject::invokeMethod(&m_encryptionManager, "onProcess", Qt::QueuedConnection, Q_ARG(QString, message));
+    }
 }

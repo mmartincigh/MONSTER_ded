@@ -151,6 +151,28 @@ void EncryptionManager::onProcess()
     QMetaObject::invokeMethod(m_encryptionManagerImplSptr.data(), "onProcess", Qt::QueuedConnection);
 }
 
+void EncryptionManager::onProcess(const QString &inputFile)
+{
+    // Check whether the encryptor is busy.
+    switch (m_encryptionManagerImplSptr.data()->state())
+    {
+    case Enums::ProcessState_Idle:
+    case Enums::ProcessState_Stopped:
+    case Enums::ProcessState_Completed:
+        break;
+
+    case Enums::ProcessState_Working:
+    case Enums::ProcessState_Paused:
+    default:
+        this->warning("Cannot encrypt file \"" + inputFile + "\": encryptor busy");
+
+        return;
+    }
+
+    // Encrypt the file.
+    QMetaObject::invokeMethod(m_encryptionManagerImplSptr.data(), "onProcess", Qt::QueuedConnection, Q_ARG(QString, inputFile));
+}
+
 void EncryptionManager::onPause()
 {
     m_mutex.lock();

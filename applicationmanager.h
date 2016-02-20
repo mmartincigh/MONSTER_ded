@@ -58,7 +58,8 @@ private:
     void parseArguments();
 
 public slots:
-    void onCompleted();
+    void onGuiCompleted();
+    void onMessageReceived(const QString &message);
 };
 
 #endif // APPLICATIONMANAGER_H

@@ -76,6 +76,11 @@ QString Utils::bytesToString(unsigned long long bytes)
     return QString("%1%2").arg(bytes_double, 0, 'g', 5).arg(size_unit);
 }
 
+QString Utils::pointerToString(void *pointer)
+{
+    return QString("0x%1").arg(QString("%1").arg((quintptr)pointer, QT_POINTER_SIZE * 2, 16, QChar('0')).toUpper());
+}
+
 unsigned int Utils::levenshteinDistance(const std::string &from_string, const std::string &to_string)
 {
     const size_t from_string_size = from_string.size();

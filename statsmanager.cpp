@@ -140,7 +140,7 @@ void StatsManager::setErrors(int errors)
 
     m_errors = errors;
 
-    this->debug("Errors changed: " + m_errors);
+    this->debug("Errors changed: " + QString::number(m_errors));
 
     emit this->errorsChanged(m_errors);
 }
@@ -154,7 +154,7 @@ void StatsManager::setWarnings(int warnings)
 
     m_warnings = warnings;
 
-    this->debug("Warnings changed: " + m_warnings);
+    this->debug("Warnings changed: " + QString::number(m_warnings));
 
     emit this->warningsChanged(m_warnings);
 }

@@ -52,6 +52,7 @@ public:
 
 public slots:
     virtual void onProcess() = 0;
+    virtual void onProcess(const QString &inputFile) = 0;
     virtual void onPause() = 0;
     virtual void onResume() = 0;
     virtual void onStop() = 0;

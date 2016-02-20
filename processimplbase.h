@@ -82,6 +82,7 @@ protected:
     bool readKeyFromFile();
     bool readIvFromFile();
     bool processStateCheckpoint();
+    void clearSecrets();
 
 private:
     void setStateDescription(const QString &stateDescription);

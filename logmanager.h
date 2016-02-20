@@ -12,7 +12,6 @@ class LogManager : public QObject
 
 private:
     static const QString m_LOG_FILENAME;
-    static const QString m_LOG_HEADER;
     static const QString m_LOG_DATE_TIME_FORMAT;
     static QString m_logPath;
     static QString m_logAbsoluteFilePath;

@@ -80,7 +80,7 @@ DecryptionManagerImpl::DecryptionState DecryptionManagerImpl::decryptFileWithMac
                 // Check whether the decryption should be paused, resumed or stopped.
                 if (!this->processStateCheckpoint())
                 {
-                    this->warning("The decryption was stopped in the middle of the file \"" + inputFile + "\", the resulting file may be corrupted");
+                    this->warning("The decryption was stopped in the middle of the file \"" + inputFile + "\", the resulting file might be corrupted");
 
                     int time_elapsed = time.elapsed();
                     QTime decryption_time = QTime(0, 0, 0, 0).addMSecs(time_elapsed);
@@ -144,7 +144,7 @@ DecryptionManagerImpl::DecryptionState DecryptionManagerImpl::decryptFileWithAes
                 // Check whether the decryption should be paused, resumed or stopped.
                 if (!this->processStateCheckpoint())
                 {
-                    this->warning("The decryption was stopped in the middle of the file \"" + inputFile + "\", the resulting file may be corrupted");
+                    this->warning("The decryption was stopped in the middle of the file \"" + inputFile + "\", the resulting file might be corrupted");
 
                     int time_elapsed = time.elapsed();
                     QTime decryption_time = QTime(0, 0, 0, 0).addMSecs(time_elapsed);
@@ -402,16 +402,15 @@ void DecryptionManagerImpl::onProcess()
     this->debug("Files decrypted");
 }
 
-void DecryptionManagerImpl::onDecryptFile(const QString &fileToDecrypt)
+void DecryptionManagerImpl::onProcess(const QString &inputFile)
 {
-    this->debug("Decrypting file: " + fileToDecrypt);
+    this->debug("Decrypting file: " + inputFile);
 
     // Check whether the input file exists.
-    QString input_file(fileToDecrypt);
-    QFileInfo input_file_info(input_file);
+    QFileInfo input_file_info(inputFile);
     if (!input_file_info.exists())
     {
-        this->error("The input file \"" + input_file + "\" does not exist");
+        this->error("The input file \"" + inputFile + "\" does not exist");
 
         return;
     }
@@ -483,7 +482,7 @@ void DecryptionManagerImpl::onDecryptFile(const QString &fileToDecrypt)
 
     // Decrypt the file.
     QTime decryption_time(0, 0, 0, 0);
-    DecryptionState decryption_ret_val = this->decryptFileWithAes(input_file, input_file_info.size(), output_file, decryption_time);
+    DecryptionState decryption_ret_val = this->decryptFileWithAes(inputFile, input_file_info.size(), output_file, decryption_time);
     switch (decryption_ret_val)
     {
     case DecryptionState_Success:

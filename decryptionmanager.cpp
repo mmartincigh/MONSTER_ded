@@ -151,6 +151,28 @@ void DecryptionManager::onProcess()
     QMetaObject::invokeMethod(m_decryptionManagerImplSptr.data(), "onProcess", Qt::QueuedConnection);
 }
 
+void DecryptionManager::onProcess(const QString &inputFile)
+{
+    // Check whether the decryptor is busy.
+    switch (m_decryptionManagerImplSptr.data()->state())
+    {
+    case Enums::ProcessState_Idle:
+    case Enums::ProcessState_Stopped:
+    case Enums::ProcessState_Completed:
+        break;
+
+    case Enums::ProcessState_Working:
+    case Enums::ProcessState_Paused:
+    default:
+        this->warning("Cannot decrypt file \"" + inputFile + "\": decryptor busy");
+
+        return;
+    }
+
+    // Decrypt the file.
+    QMetaObject::invokeMethod(m_decryptionManagerImplSptr.data(), "onProcess", Qt::QueuedConnection, Q_ARG(QString, inputFile));
+}
+
 void DecryptionManager::onPause()
 {
     m_mutex.lock();
@@ -179,9 +201,4 @@ void DecryptionManager::onStop()
     m_mutex.unlock();
 
     this->debug("Stop event set");
-}
-
-void DecryptionManager::onDecryptFile(const QString &fileToDecrypt)
-{
-    QMetaObject::invokeMethod(m_decryptionManagerImplSptr.data(), "onDecryptFile", Qt::QueuedConnection, Q_ARG(QString, fileToDecrypt));
 }

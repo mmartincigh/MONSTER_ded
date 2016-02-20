@@ -80,7 +80,7 @@ EncryptionManagerImpl::EncryptionState EncryptionManagerImpl::encryptFileWithMac
                 // Check whether the encryption should be paused, resumed or stopped.
                 if (!this->processStateCheckpoint())
                 {
-                    this->warning("The encryption was stopped in the middle of the file \"" + inputFile + "\", the resulting file may be corrupted");
+                    this->warning("The encryption was stopped in the middle of the file \"" + inputFile + "\", the resulting file might be corrupted");
 
                     int time_elapsed = time.elapsed();
                     QTime encryption_time = QTime(0, 0, 0, 0).addMSecs(time_elapsed);
@@ -144,7 +144,7 @@ EncryptionManagerImpl::EncryptionState EncryptionManagerImpl::encryptFileWithAes
                 // Check whether the encryption should be paused, resumed or stopped.
                 if (!this->processStateCheckpoint())
                 {
-                    this->warning("The encryption was stopped in the middle of the file \"" + inputFile + "\", the resulting file may be corrupted");
+                    this->warning("The encryption was stopped in the middle of the file \"" + inputFile + "\", the resulting file might be corrupted");
 
                     int time_elapsed = time.elapsed();
                     QTime encryption_time = QTime(0, 0, 0, 0).addMSecs(time_elapsed);
@@ -402,4 +402,120 @@ void EncryptionManagerImpl::onProcess()
     this->setCurrentInputFile(m_CURRENT_INPUT_FILE_NONE);
 
     this->debug("Files encrypted");
+}
+
+void EncryptionManagerImpl::onProcess(const QString &inputFile)
+{
+    this->debug("Encrypting file: " + inputFile);
+
+    // Check whether the input file exists.
+    QFileInfo input_file_info(inputFile);
+    if (!input_file_info.exists())
+    {
+        this->error("The input file \"" + inputFile + "\" does not exist");
+
+        return;
+    }
+
+    // Save the encrypted file in the same path of the input file.
+    QString output_path(input_file_info.absolutePath());
+    if (output_path.isEmpty())
+    {
+        this->error("Output path is empty");
+
+        return;
+    }
+    QDir output_directory(output_path);
+    if (!output_directory.exists())
+    {
+        this->error("The output directory does not exist: " + output_directory.path());
+
+        return;
+    }
+    this->debug("Output path: " + output_path);
+
+    // Get the size of the input file.
+    unsigned long long input_file_size = input_file_info.size();
+    this->debug("Input file size: " + QString::number(input_file_size) + "B [" + Utils::bytesToString(input_file_size) + "]");
+
+    // Get the encryption key from file.
+    bool ret_val = this->readKeyFromFile();
+    if (!ret_val)
+    {
+        this->error("Cannot get the encryption key from file");
+
+        return;
+    }
+    this->debug("Encryption key read from file");
+
+    // Get the initialization vector from file.
+    ret_val = this->readIvFromFile();
+    if (!ret_val)
+    {
+        this->error("Cannot get the initialization vector from file");
+
+        return;
+    }
+    this->debug("Initialization vector read from file");
+
+    // Encrypt the file.
+    this->setProcessedBytes(0);
+    this->setBytesToProcess(input_file_size);
+    this->setProgress(0);
+    this->setErrors(0);
+    this->setWarnings(0);
+    this->setSkipped(0);
+    this->setOverwritten(0);
+    this->setProcessed(0);
+    this->setCurrentInputFile(input_file_info.fileName());
+    this->setState(Enums::ProcessState_Working);
+
+    // Check whether the output file name is valid.
+    QString output_file = output_directory.filePath(input_file_info.fileName() + Utils::MEF_FILE_EXTENSION);
+    if (output_file.length() > MAX_PATH)
+    {
+        this->error("The output file name \"" + output_file + "\" is too long");
+
+        this->setProcessedBytes(input_file_info.size());
+        this->setErrors(1);
+
+        return;
+    }
+
+    // Encrypt the file.
+    QTime encryption_time(0, 0, 0, 0);
+    EncryptionState encryption_ret_val = this->encryptFileWithAes(inputFile, input_file_info.size(), output_file, encryption_time);
+    switch (encryption_ret_val)
+    {
+    case EncryptionState_Success:
+        break;
+    case EncryptionState_Warning:
+        this->setProcessedBytes(input_file_info.size());
+        this->setWarnings(1);
+
+        return;
+    case EncryptionState_Error:
+        this->setProcessedBytes(input_file_info.size());
+        this->setErrors(1);
+
+        return;
+    default:
+        this->error("Unknown encryption state");
+
+        this->setProcessedBytes(input_file_info.size());
+        this->setErrors(1);
+
+        return;
+    }
+
+    // File encrypted.
+    QFileInfo output_file_info(output_file);
+    this->debug("File encrypted to: " + output_file + " [" + Utils::bytesToString(output_file_info.size()) + "]");
+    this->debug("Encryption time: " + encryption_time.toString("HH:mm:ss:zzz"));
+    this->setProcessed(1);
+    this->setProgress(1);
+    this->setState(Enums::ProcessState_Completed);
+    this->setCurrentInputFile(m_CURRENT_INPUT_FILE_NONE);
+
+    this->debug("File encrypted");
 }

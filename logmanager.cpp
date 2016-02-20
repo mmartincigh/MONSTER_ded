@@ -11,7 +11,6 @@
 #include "applicationutils.h"
 
 const QString LogManager::m_LOG_FILENAME(ApplicationUtils::APPLICATION_NAME + ".txt");
-const QString LogManager::m_LOG_HEADER(QString(ApplicationUtils::APPLICATION_NAME.length(), '=') + "\n" + ApplicationUtils::APPLICATION_NAME + "\n" + QString(ApplicationUtils::APPLICATION_NAME.length(), '=') + "\n");
 const QString LogManager::m_LOG_DATE_TIME_FORMAT("yyyy-MM-dd HH.mm.ss.zzz ");
 QString LogManager::m_logPath("");
 QString LogManager::m_logAbsoluteFilePath("");
@@ -29,6 +28,11 @@ LogManager::~LogManager()
 
 void LogManager::initialize(const QString &applicationDirPath)
 {
+    // Prepare the log header.
+    QString log_header_info(ApplicationUtils::APPLICATION_NAME + " " + ApplicationUtils::APPLICATION_VERSION);
+    QString log_header_frame(log_header_info.length(), '=');
+    QString log_header(log_header_frame + "\n" + log_header_info + "\n" + log_header_frame + "\n");
+
     // Create the log file (if it doesn't exist) and write the header.
     m_logPath = applicationDirPath;
     QDir application_directory(m_logPath);
@@ -36,7 +40,7 @@ void LogManager::initialize(const QString &applicationDirPath)
     QFile log_file(m_logAbsoluteFilePath);
     log_file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Append);
     QTextStream text_stream(&log_file);
-    text_stream << LogManager::m_LOG_HEADER << endl << flush;
+    text_stream << log_header << endl << flush;
     log_file.close();
 }
 
@@ -90,7 +94,7 @@ void LogManager::debug(const QString &debugMessage)
 
     emit this->debugMessage(debugMessage);
 
-    qDebug().nospace() << qPrintable(m_logTag.leftJustified(5, ' ')) << "> " << qPrintable(debugMessage);
+    qDebug() << qPrintable(m_logTag.rightJustified(5, ' ')) << ">" << qPrintable(debugMessage);
 }
 
 void LogManager::warning(const QString &warningMessage)
@@ -99,7 +103,7 @@ void LogManager::warning(const QString &warningMessage)
 
     emit this->warningMessage(warningMessage);
 
-    qWarning().nospace() << qPrintable(m_logTag) << "> WARNING: " << qPrintable(warningMessage);
+    qWarning() << qPrintable(m_logTag.rightJustified(5, ' ')) << "> WARNING:" << qPrintable(warningMessage);
 }
 
 void LogManager::error(const QString &errorMessage)
@@ -108,5 +112,5 @@ void LogManager::error(const QString &errorMessage)
 
     emit this->errorMessage(errorMessage);
 
-    qCritical().nospace() << qPrintable(m_logTag) << "> ERROR: " << qPrintable(errorMessage);
+    qCritical() << qPrintable(m_logTag.rightJustified(5, ' ')) << "> ERROR:" << qPrintable(errorMessage);
 }

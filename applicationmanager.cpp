@@ -1,18 +1,20 @@
 // Qt
 #include <QFileInfo>
+#include <QDir>
 
 // Local
 #include "applicationmanager.h"
+#include "utils.h"
 
-ApplicationManager::ApplicationManager(const QStringList &arguments, QObject *parent) :
+ApplicationManager::ApplicationManager(const QString &applicationDirPath, const QStringList &arguments, QObject *parent) :
     Base("AM", parent),
     m_sourcePathManager(this),
     m_securePathManager(this),
     m_destinationPathManager(this),
     m_sourceFileManager(QStringList("*"), this),
-    m_secureFileManager(QStringList("*.mef"), this),
-    m_encryptionManager(this),
-    m_decryptionManager(this),
+    m_secureFileManager(QStringList(Utils::MEF_NAME_FILTER), this),
+    m_encryptionManager(applicationDirPath, this),
+    m_decryptionManager(applicationDirPath, this),
     m_processManager(this),
     m_statsManager(this),
     m_settingsManager(this),
@@ -174,7 +176,7 @@ void ApplicationManager::parseArguments()
 
     // Check whether the argument is an encrypted file.
     QString argument_extension(argument_file_info.suffix());
-    if (argument_extension != "mef")
+    if (argument_extension != Utils::MEF_EXTENSION)
     {
         // Not an encrypted file.
 

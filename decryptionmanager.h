@@ -20,7 +20,7 @@ private:
     QSharedPointer<DecryptionManagerImpl> m_decryptionManagerImplSptr;
 
 public:
-    explicit DecryptionManager(QObject *parent = NULL);
+    explicit DecryptionManager(const QString &applicationDirPath, QObject *parent = NULL);
     ~DecryptionManager();
 
 public:
@@ -49,7 +49,6 @@ public slots:
     virtual void onPause();
     virtual void onResume();
     virtual void onStop();
-
     void onDecryptFile(const QString &fileToDecrypt);
 
 signals:

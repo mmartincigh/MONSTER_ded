@@ -10,12 +10,12 @@ class LogManager : public QObject
 {
     Q_OBJECT
 
-public:
-    static const QString LOG_FILENAME;
-    static const QString LOG_HEADER;
-
 private:
+    static const QString m_LOG_FILENAME;
+    static const QString m_LOG_HEADER;
     static const QString m_LOG_DATE_TIME_FORMAT;
+    static QString m_logPath;
+    static QString m_logAbsoluteFilePath;
     static QMutex m_mutex;
     QString m_logTag;
 
@@ -24,6 +24,7 @@ public:
     ~LogManager();
 
 public:
+    static void initialize(const QString &applicationDirPath);
     static void messageHandler(QtMsgType messageType, const QMessageLogContext &messageLogContext, const QString &message);
 
 protected:

@@ -38,7 +38,7 @@ private:
     QStringList m_arguments;
 
 public:
-    explicit ApplicationManager(const QStringList &arguments, QObject *parent = NULL);
+    explicit ApplicationManager(const QString &applicationDirPath, const QStringList &arguments, QObject *parent = NULL);
     ~ApplicationManager();
 
 public:

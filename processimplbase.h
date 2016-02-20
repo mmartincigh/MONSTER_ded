@@ -40,11 +40,12 @@ private:
     QString m_currentInputFile;
     bool m_pause;
     bool m_stop;
+    QString m_applicationDirPath;
     QMutex *m_mutex;
     QWaitCondition *m_waitCondition;
 
 public:
-    explicit ProcessImplBase(QMutex *mutex, QWaitCondition *waitCondition, const QString &logTag, QObject *parent = NULL);
+    explicit ProcessImplBase(const QString &applicationDirPath, QMutex *mutex, QWaitCondition *waitCondition, const QString &logTag, QObject *parent = NULL);
     ~ProcessImplBase();
 
 public:

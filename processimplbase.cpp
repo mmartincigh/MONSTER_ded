@@ -10,7 +10,7 @@ const QString ProcessImplBase::m_PASSPHRASE("Let's pretend that this is a clever
 const QString ProcessImplBase::m_AES_KEY_FILE_NAME("AES_key.bin");
 const QString ProcessImplBase::m_AES_IV_FILE_NAME("AES_iv.bin");
 
-ProcessImplBase::ProcessImplBase(QMutex *mutex, QWaitCondition *waitCondition, const QString &logTag, QObject *parent) :
+ProcessImplBase::ProcessImplBase(const QString &applicationDirPath, QMutex *mutex, QWaitCondition *waitCondition, const QString &logTag, QObject *parent) :
     IProcessImpl(logTag, parent),
     m_isEnabled(false),
     m_processedBytes(0),
@@ -31,6 +31,7 @@ ProcessImplBase::ProcessImplBase(QMutex *mutex, QWaitCondition *waitCondition, c
     m_currentInputFile(m_CURRENT_INPUT_FILE_NONE),
     m_pause(false),
     m_stop(false),
+    m_applicationDirPath(applicationDirPath),
     m_key(CryptoPP::AES::MAX_KEYLENGTH),
     m_waitCondition(waitCondition)
 {
@@ -314,7 +315,8 @@ void ProcessImplBase::setCurrentInputFile(const QString &currentInputFile)
 
 bool ProcessImplBase::readKeyFromFile()
 {
-    QString key_file_name = QDir::current().filePath(m_AES_KEY_FILE_NAME);
+    QDir application_directory(m_applicationDirPath);
+    QString key_file_name = application_directory.filePath(m_AES_KEY_FILE_NAME);
     QFile key_file(key_file_name);
     if (!key_file.exists())
     {
@@ -351,7 +353,8 @@ bool ProcessImplBase::readKeyFromFile()
 
 bool ProcessImplBase::readIvFromFile()
 {
-    QString iv_file_name = QDir::current().filePath(m_AES_IV_FILE_NAME);
+    QDir application_directory(m_applicationDirPath);
+    QString iv_file_name = application_directory.filePath(m_AES_IV_FILE_NAME);
     QFile iv_file(iv_file_name);
     if (!iv_file.exists())
     {

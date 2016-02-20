@@ -10,6 +10,11 @@
 
 class Utils
 {
+public:
+    static const QString MEF_EXTENSION;
+    static const QString MEF_FILE_EXTENSION;
+    static const QString MEF_NAME_FILTER;
+
 private:
     static const QUrl::FormattingOptions m_URL_CONVERSION_FLAGS;
     static const QRegExp m_FILE_SCHEME_REG_EXP;

@@ -6,7 +6,7 @@ import MONSTER.MONSTER_ded 1.0
 Rectangle {
     id: main
 
-    property bool enabled: encryptionManager.state === Enums.ProcessState_Idle || encryptionManager.state === Enums.ProcessState_Stopped || encryptionManager.state === Enums.ProcessState_Completed
+    property bool enabled: processManager.state === Enums.ProcessState_Idle || processManager.state === Enums.ProcessState_Stopped || processManager.state === Enums.ProcessState_Completed
 
     width: childrenRect.width
     height: childrenRect.height

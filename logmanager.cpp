@@ -3,15 +3,18 @@
 
 // Qt
 #include <QDateTime>
+#include <QDir>
 #include <QFile>
 
 // Local
 #include "logmanager.h"
 #include "applicationutils.h"
 
-const QString LogManager::LOG_FILENAME(ApplicationUtils::APPLICATION_NAME + ".txt");
-const QString LogManager::LOG_HEADER(QString(ApplicationUtils::APPLICATION_NAME.length(), '=') + "\n" + ApplicationUtils::APPLICATION_NAME + "\n" + QString(ApplicationUtils::APPLICATION_NAME.length(), '=') + "\n");
+const QString LogManager::m_LOG_FILENAME(ApplicationUtils::APPLICATION_NAME + ".txt");
+const QString LogManager::m_LOG_HEADER(QString(ApplicationUtils::APPLICATION_NAME.length(), '=') + "\n" + ApplicationUtils::APPLICATION_NAME + "\n" + QString(ApplicationUtils::APPLICATION_NAME.length(), '=') + "\n");
 const QString LogManager::m_LOG_DATE_TIME_FORMAT("yyyy-MM-dd HH.mm.ss.zzz ");
+QString LogManager::m_logPath("");
+QString LogManager::m_logAbsoluteFilePath("");
 QMutex LogManager::m_mutex;
 
 LogManager::LogManager(const QString &logTag, QObject *parent) :
@@ -22,6 +25,19 @@ LogManager::LogManager(const QString &logTag, QObject *parent) :
 
 LogManager::~LogManager()
 {
+}
+
+void LogManager::initialize(const QString &applicationDirPath)
+{
+    // Create the log file (if it doesn't exist) and write the header.
+    m_logPath = applicationDirPath;
+    QDir application_directory(m_logPath);
+    m_logAbsoluteFilePath = application_directory.filePath(LogManager::m_LOG_FILENAME);
+    QFile log_file(m_logAbsoluteFilePath);
+    log_file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Append);
+    QTextStream text_stream(&log_file);
+    text_stream << LogManager::m_LOG_HEADER << endl << flush;
+    log_file.close();
 }
 
 void LogManager::messageHandler(QtMsgType messageType, const QMessageLogContext &messageLogContext, const QString &message)
@@ -56,7 +72,7 @@ void LogManager::messageHandler(QtMsgType messageType, const QMessageLogContext 
     message_string += QString("%1 %2").arg(message_type).arg(message);
 
     // Log to file.
-    QFile log_file(LOG_FILENAME);
+    QFile log_file(m_logAbsoluteFilePath);
     log_file.open(QIODevice::WriteOnly | QIODevice::Append);
     QTextStream text_stream(&log_file);
     text_stream << message_string << endl << flush;

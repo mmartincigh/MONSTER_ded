@@ -17,12 +17,11 @@ private:
     };
 
 private:
-    static const QString m_OUTPUT_FILE_EXTENSION;
     static const unsigned long long m_ENCRYPTION_THRESHOLD_SIZE;
     static const unsigned long long m_ENCRYPTION_CHUNK_SIZE;
 
 public:
-    explicit EncryptionManagerImpl(QMutex *mutex, QWaitCondition *waitCondition, QObject *parent = NULL);
+    explicit EncryptionManagerImpl(const QString &applicationDirPath, QMutex *mutex, QWaitCondition *waitCondition, QObject *parent = NULL);
     ~EncryptionManagerImpl();
 
 private:

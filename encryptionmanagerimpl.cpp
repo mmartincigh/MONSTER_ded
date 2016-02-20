@@ -16,12 +16,11 @@
 #include "encryptionmanagerimpl.h"
 #include "utils.h"
 
-const QString EncryptionManagerImpl::m_OUTPUT_FILE_EXTENSION(".mef");
 const unsigned long long EncryptionManagerImpl::m_ENCRYPTION_THRESHOLD_SIZE(10485760);
 const unsigned long long EncryptionManagerImpl::m_ENCRYPTION_CHUNK_SIZE(1048576);
 
-EncryptionManagerImpl::EncryptionManagerImpl(QMutex *mutex, QWaitCondition *waitCondition, QObject *parent) :
-    ProcessImplBase(mutex, waitCondition, "EMI", parent)
+EncryptionManagerImpl::EncryptionManagerImpl(const QString &applicationDirPath, QMutex *mutex, QWaitCondition *waitCondition, QObject *parent) :
+    ProcessImplBase(applicationDirPath, mutex, waitCondition, "EMI", parent)
 {
     this->debug("Encryption manager implementation created");
 }
@@ -335,7 +334,7 @@ void EncryptionManagerImpl::onProcess()
         }
 
         // Check whether the output file name is valid.
-        QString output_file = secure_directory.filePath(input_file_info.fileName() + m_OUTPUT_FILE_EXTENSION);
+        QString output_file = secure_directory.filePath(input_file_info.fileName() + Utils::MEF_FILE_EXTENSION);
         if (output_file.length() > MAX_PATH)
         {
             this->error("The output file name \"" + output_file + "\" is too long");

@@ -5,7 +5,6 @@
 #include <QQmlApplicationEngine>
 #include <QQmlComponent>
 #include <QQmlContext>
-#include <QFile>
 
 // Local
 #include "applicationmanager.h"
@@ -32,13 +31,9 @@ int main(int argc, char *argv[])
     splash_screen.show();
     application.processEvents();
 
-    QFile log_file(LogManager::LOG_FILENAME);
-    log_file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Append);
-    QTextStream text_stream(&log_file);
-    text_stream << LogManager::LOG_HEADER << endl << flush;
-    log_file.close();
+    LogManager::initialize(application.applicationDirPath());
 
-    ApplicationManager application_manager(application.arguments(), &application);
+    ApplicationManager application_manager(application.applicationDirPath(), application.arguments(), &application);
     application_manager.initialize();
 
     QQmlApplicationEngine engine;

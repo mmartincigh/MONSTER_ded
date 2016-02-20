@@ -20,7 +20,7 @@ private:
     QSharedPointer<EncryptionManagerImpl> m_encryptionManagerImplSptr;
 
 public:
-    explicit EncryptionManager(QObject *parent = NULL);
+    explicit EncryptionManager(const QString &applicationDirPath, QObject *parent = NULL);
     ~EncryptionManager();
 
 public:

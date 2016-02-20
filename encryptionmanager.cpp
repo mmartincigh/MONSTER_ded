@@ -1,12 +1,12 @@
 // Local
 #include "encryptionmanager.h"
 
-EncryptionManager::EncryptionManager(QObject *parent) :
+EncryptionManager::EncryptionManager(const QString &applicationDirPath, QObject *parent) :
     IProcess("EM", parent),
     m_mutex(),
     m_waitCondition(),
     m_encryptionManagerImplThread(this),
-    m_encryptionManagerImplSptr(new EncryptionManagerImpl(&m_mutex, &m_waitCondition))
+    m_encryptionManagerImplSptr(new EncryptionManagerImpl(applicationDirPath, &m_mutex, &m_waitCondition))
 {
     QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(isEnabledChanged(bool)), this, SIGNAL(isEnabledChanged(bool)));
     QObject::connect(m_encryptionManagerImplSptr.data(), SIGNAL(stateChanged(Enums::ProcessState)), this, SIGNAL(stateChanged(Enums::ProcessState)));

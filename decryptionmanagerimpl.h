@@ -21,7 +21,7 @@ private:
     static const unsigned long long m_DECRYPTION_CHUNK_SIZE;
 
 public:
-    explicit DecryptionManagerImpl(QMutex *mutex, QWaitCondition *waitCondition, QObject *parent = NULL);
+    explicit DecryptionManagerImpl(const QString &applicationDirPath, QMutex *mutex, QWaitCondition *waitCondition, QObject *parent = NULL);
     ~DecryptionManagerImpl();
 
 private:
@@ -33,7 +33,6 @@ public slots:
     void onIsSecurePathUrlValidChanged(bool isSecurePathUrlValid);
     void onIsDestinationPathUrlValidChanged(bool isDestinationPathUrlValid);
     virtual void onProcess();
-
     void onDecryptFile(const QString &fileToDecrypt);
 
 signals:

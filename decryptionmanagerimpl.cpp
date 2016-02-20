@@ -19,8 +19,8 @@
 const unsigned long long DecryptionManagerImpl::m_DECRYPTION_THRESHOLD_SIZE(10485760);
 const unsigned long long DecryptionManagerImpl::m_DECRYPTION_CHUNK_SIZE(1048576);
 
-DecryptionManagerImpl::DecryptionManagerImpl(QMutex *mutex, QWaitCondition *waitCondition, QObject *parent) :
-    ProcessImplBase(mutex, waitCondition, "DMI", parent)
+DecryptionManagerImpl::DecryptionManagerImpl(const QString &applicationDirPath, QMutex *mutex, QWaitCondition *waitCondition, QObject *parent) :
+    ProcessImplBase(applicationDirPath, mutex, waitCondition, "DMI", parent)
 {
     this->debug("Decryption manager implementation created");
 }

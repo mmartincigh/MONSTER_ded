@@ -1,12 +1,12 @@
 // Local
 #include "decryptionmanager.h"
 
-DecryptionManager::DecryptionManager(QObject *parent) :
+DecryptionManager::DecryptionManager(const QString &applicationDirPath, QObject *parent) :
     IProcess("DM", parent),
     m_mutex(),
     m_waitCondition(),
     m_decryptionManagerImplThread(this),
-    m_decryptionManagerImplSptr(new DecryptionManagerImpl(&m_mutex, &m_waitCondition))
+    m_decryptionManagerImplSptr(new DecryptionManagerImpl(applicationDirPath, &m_mutex, &m_waitCondition))
 {
     QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(isEnabledChanged(bool)), this, SIGNAL(isEnabledChanged(bool)));
     QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(stateChanged(Enums::ProcessState)), this, SIGNAL(stateChanged(Enums::ProcessState)));

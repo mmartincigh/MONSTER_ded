@@ -27,7 +27,7 @@ public:
 private:
     bool checkIfEnabled();
     DecryptionState decryptFileWithMac(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, QTime &decryptionTime);
-    DecryptionState decryptFileWithAes(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, QTime &decryptionTime);
+    DecryptionState decryptFileWithAes(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, const CryptoPP::SecByteBlock key, const unsigned char *iv, QTime &decryptionTime);
 
 public slots:
     void onIsSecurePathUrlValidChanged(bool isSecurePathUrlValid);

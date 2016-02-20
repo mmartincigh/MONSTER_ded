@@ -26,8 +26,6 @@ protected:
     int m_skipped;
     int m_overwritten;
     int m_processed;
-    CryptoPP::SecByteBlock m_key;
-    unsigned char m_iv[CryptoPP::AES::BLOCKSIZE];
 
 private:
     Enums::ProcessState m_state;
@@ -79,10 +77,11 @@ protected:
     void setOverwritten(int overwritten);
     void setProcessed(int processed);
     void setCurrentInputFile(const QString &currentInputFile);
-    bool readKeyFromFile();
-    bool readIvFromFile();
+    bool readKeyFromFile(/* out */ CryptoPP::SecByteBlock &outkey);
+    bool readIvFromFile(/* out */ unsigned char *outIv, size_t ivSize);
+    void clearKey(CryptoPP::SecByteBlock &key);
+    void clearIv(unsigned char *iv, size_t ivSize);
     bool processStateCheckpoint();
-    void clearSecrets();
 
 private:
     void setStateDescription(const QString &stateDescription);

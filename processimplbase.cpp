@@ -19,7 +19,6 @@ ProcessImplBase::ProcessImplBase(const QString &applicationDirPath, QMutex *mute
     m_skipped(0),
     m_overwritten(0),
     m_processed(0),
-    m_iv(),
     m_mutex(mutex),
     m_state(Enums::ProcessState_Idle),
     m_stateDescription(Utils::processStateToString(m_state)),
@@ -32,7 +31,6 @@ ProcessImplBase::ProcessImplBase(const QString &applicationDirPath, QMutex *mute
     m_pause(false),
     m_stop(false),
     m_applicationDirPath(applicationDirPath),
-    m_key(CryptoPP::AES::MAX_KEYLENGTH),
     m_waitCondition(waitCondition)
 {
     QObject::connect(this, SIGNAL(stateChanged(Enums::ProcessState)), this, SLOT(onStateChanged(Enums::ProcessState)));
@@ -43,7 +41,6 @@ ProcessImplBase::ProcessImplBase(const QString &applicationDirPath, QMutex *mute
 
 ProcessImplBase::~ProcessImplBase()
 {
-    this->clearSecrets();
 }
 
 bool ProcessImplBase::isEnabled() const
@@ -303,8 +300,13 @@ void ProcessImplBase::setCurrentInputFile(const QString &currentInputFile)
     emit this->currentInputFileChanged(m_currentInputFile);
 }
 
-bool ProcessImplBase::readKeyFromFile()
+bool ProcessImplBase::readKeyFromFile(/* out */ CryptoPP::SecByteBlock &outKey)
 {
+    // Initialize the output parameter.
+    size_t key_size =  outKey.size();
+    memset(outKey.data(), 0, key_size);
+
+    // Get the key.
     QDir application_directory(m_applicationDirPath);
     QString key_file_name = application_directory.filePath(m_AES_KEY_FILE_NAME);
     QFile key_file(key_file_name);
@@ -321,9 +323,7 @@ bool ProcessImplBase::readKeyFromFile()
 
         return false;
     }
-    size_t key_size =  m_key.size();
-    memset(m_key.data(), 0, key_size);
-    long long bytes_read = key_file.read(reinterpret_cast<char *>(m_key.data()), key_size);
+    long long bytes_read = key_file.read(reinterpret_cast<char *>(outKey.data()), key_size);
     key_file.close();
     if (bytes_read != key_size)
     {
@@ -331,7 +331,7 @@ bool ProcessImplBase::readKeyFromFile()
 
         return false;
     }
-    if (m_key.empty())
+    if (outKey.empty())
     {
         this->error("The encryption key is empty");
 
@@ -341,8 +341,12 @@ bool ProcessImplBase::readKeyFromFile()
     return true;
 }
 
-bool ProcessImplBase::readIvFromFile()
+bool ProcessImplBase::readIvFromFile(/* out */ unsigned char *outIv, size_t ivSize)
 {
+    // Initialize the output parameter.
+    memset(outIv, 0, ivSize);
+
+    // Get the initialization vector.
     QDir application_directory(m_applicationDirPath);
     QString iv_file_name = application_directory.filePath(m_AES_IV_FILE_NAME);
     QFile iv_file(iv_file_name);
@@ -359,25 +363,41 @@ bool ProcessImplBase::readIvFromFile()
 
         return false;
     }
-    size_t iv_size = sizeof(m_iv);
-    memset(m_iv, 0, iv_size);
-    long long bytes_read = iv_file.read(reinterpret_cast<char *>(m_iv), iv_size);
+    long long bytes_read = iv_file.read(reinterpret_cast<char *>(outIv), ivSize);
     iv_file.close();
-    if (bytes_read != iv_size)
+    if (bytes_read != ivSize)
     {
-        this->error("Wrong IV size: expected " + Utils::bytesToString(iv_size) + ", got " + Utils::bytesToString(bytes_read));
+        this->error("Wrong IV size: expected " + Utils::bytesToString(ivSize) + ", got " + Utils::bytesToString(bytes_read));
 
         return false;
     }
-    for (size_t i = 0; i < iv_size; i++)
+    for (size_t i = 0; i < ivSize; i++)
     {
-        if (m_iv[i] != 0)
+        if (outIv[i] != 0)
         {
             return true;
         }
     }
 
     return false;
+}
+
+void ProcessImplBase::clearKey(CryptoPP::SecByteBlock &key)
+{
+    // Clear the key.
+    for (size_t i = 0; i < key.size(); i++)
+    {
+        key[i] = '\0';
+    }
+}
+
+void ProcessImplBase::clearIv(unsigned char *iv, size_t ivSize)
+{
+    // Clear the initialization vector.
+    for (size_t i = 0; i < ivSize; i++)
+    {
+        iv[i] = '\0';
+    }
 }
 
 bool ProcessImplBase::processStateCheckpoint()
@@ -413,21 +433,6 @@ bool ProcessImplBase::processStateCheckpoint()
     }
 
     return true;
-}
-
-void ProcessImplBase::clearSecrets()
-{
-    // Clear the key.
-    for (size_t i = 0; i < m_key.size(); i++)
-    {
-        m_key[i] = '\0';
-    }
-
-    // Clear the initialization vector.
-    for (int i = 0; i < CryptoPP::AES::BLOCKSIZE; i++)
-    {
-        m_iv[i] = '\0';
-    }
 }
 
 void ProcessImplBase::setStateDescription(const QString &stateDescription)

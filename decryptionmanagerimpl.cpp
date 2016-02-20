@@ -112,7 +112,7 @@ DecryptionManagerImpl::DecryptionState DecryptionManagerImpl::decryptFileWithMac
     return DecryptionState_Success;
 }
 
-DecryptionManagerImpl::DecryptionState DecryptionManagerImpl::decryptFileWithAes(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, QTime &decryptionTime)
+DecryptionManagerImpl::DecryptionState DecryptionManagerImpl::decryptFileWithAes(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, const CryptoPP::SecByteBlock key, const unsigned char *iv, QTime &decryptionTime)
 {
     this->debug("Decrypting file with AES: " + inputFile + " [" + Utils::bytesToString(inputFileSize) + "]");
 
@@ -123,7 +123,7 @@ DecryptionManagerImpl::DecryptionState DecryptionManagerImpl::decryptFileWithAes
     {
         // Construct the decryption machinery.
         CryptoPP::FileSink *file_sink = new CryptoPP::FileSink(outputFile.toUtf8().constData());
-        CryptoPP::CBC_Mode<CryptoPP::AES>::Decryption aes_decryptor(m_key, m_key.size(), m_iv);
+        CryptoPP::CBC_Mode<CryptoPP::AES>::Decryption aes_decryptor(key, key.size(), iv);
         CryptoPP::StreamTransformationFilter *stream_transformation_filter_sptr = new CryptoPP::StreamTransformationFilter(aes_decryptor, file_sink);
         CryptoPP::FileSource file_source(inputFile.toUtf8().constData(), false, stream_transformation_filter_sptr);
 
@@ -215,26 +215,6 @@ void DecryptionManagerImpl::onProcess()
         return;
     }
 
-    // Get the decryption key from file.
-    bool ret_val = this->readKeyFromFile();
-    if (!ret_val)
-    {
-        this->error("Cannot get the decryption key from file");
-
-        return;
-    }
-    this->debug("Decryption key read from file");
-
-    // Get the initialization vector from file.
-    ret_val = this->readIvFromFile();
-    if (!ret_val)
-    {
-        this->error("Cannot get the initialization vector from file");
-
-        return;
-    }
-    this->debug("Initialization vector read from file");
-
     // Get the secure path.
     QString secure_path;
     emit this->securePath(&secure_path);
@@ -295,6 +275,31 @@ void DecryptionManagerImpl::onProcess()
     }
     this->debug("Input files total size: " + QString::number(input_files_total_size) + "B [" + Utils::bytesToString(input_files_total_size) + "]");
 
+    // Get the decryption key from file.
+    CryptoPP::SecByteBlock key(CryptoPP::AES::MAX_KEYLENGTH);
+    bool ret_val = this->readKeyFromFile(key);
+    if (!ret_val)
+    {
+        this->error("Cannot get the decryption key from file");
+
+        return;
+    }
+    this->debug("Decryption key read from file");
+
+    // Get the initialization vector from file.
+    unsigned char iv[CryptoPP::AES::BLOCKSIZE];
+    size_t iv_size = sizeof(iv);
+    ret_val = this->readIvFromFile(iv, iv_size);
+    if (!ret_val)
+    {
+        this->error("Cannot get the initialization vector from file");
+
+        this->clearKey(key);
+
+        return;
+    }
+    this->debug("Initialization vector read from file");
+
     // Decrypt the files.
     this->setProcessedBytes(0);
     this->setBytesToProcess(input_files_total_size);
@@ -311,6 +316,9 @@ void DecryptionManagerImpl::onProcess()
         // Check whether the process should be paused, resumed or stopped.
         if (!this->processStateCheckpoint())
         {
+            this->clearKey(key);
+            this->clearIv(iv, iv_size);
+
             return;
         }
 
@@ -362,7 +370,7 @@ void DecryptionManagerImpl::onProcess()
 
         // Decrypt the file.
         QTime decryption_time(0, 0, 0, 0);
-        DecryptionState ret_val = this->decryptFileWithAes(input_file, input_file_info.size(), output_file, decryption_time);
+        DecryptionState ret_val = this->decryptFileWithAes(input_file, input_file_info.size(), output_file, key, iv, decryption_time);
         switch (ret_val)
         {
         case DecryptionState_Success:
@@ -373,6 +381,9 @@ void DecryptionManagerImpl::onProcess()
             // Check whether the process should be paused, resumed or stopped.
             if (!this->processStateCheckpoint())
             {
+                this->clearKey(key);
+                this->clearIv(iv, iv_size);
+
                 return;
             }
 
@@ -383,12 +394,19 @@ void DecryptionManagerImpl::onProcess()
             // Check whether the process should be paused, resumed or stopped.
             if (!this->processStateCheckpoint())
             {
+                this->clearKey(key);
+                this->clearIv(iv, iv_size);
+
                 return;
             }
 
             continue;
         default:
             this->error("Unknown decryption state");
+
+            this->clearKey(key);
+            this->clearIv(iv, iv_size);
+
             return;
         }
         this->debug("File decrypted to: " + output_file + " [" + Utils::bytesToString(output_file_info.size()) + "]");
@@ -398,6 +416,8 @@ void DecryptionManagerImpl::onProcess()
     this->setProgress(1);
     this->setState(Enums::ProcessState_Completed);
     this->setCurrentInputFile(m_CURRENT_INPUT_FILE_NONE);
+    this->clearKey(key);
+    this->clearIv(iv, iv_size);
 
     this->debug("Files decrypted");
 }
@@ -437,7 +457,8 @@ void DecryptionManagerImpl::onProcess(const QString &inputFile)
     this->debug("Input file size: " + QString::number(input_file_size) + "B [" + Utils::bytesToString(input_file_size) + "]");
 
     // Get the decryption key from file.
-    bool ret_val = this->readKeyFromFile();
+    CryptoPP::SecByteBlock key(CryptoPP::AES::MAX_KEYLENGTH);
+    bool ret_val = this->readKeyFromFile(key);
     if (!ret_val)
     {
         this->error("Cannot get the decryption key from file");
@@ -447,10 +468,14 @@ void DecryptionManagerImpl::onProcess(const QString &inputFile)
     this->debug("Decryption key read from file");
 
     // Get the initialization vector from file.
-    ret_val = this->readIvFromFile();
+    unsigned char iv[CryptoPP::AES::BLOCKSIZE];
+    size_t iv_size = sizeof(iv);
+    ret_val = this->readIvFromFile(iv, iv_size);
     if (!ret_val)
     {
         this->error("Cannot get the initialization vector from file");
+
+        this->clearKey(key);
 
         return;
     }
@@ -476,13 +501,15 @@ void DecryptionManagerImpl::onProcess(const QString &inputFile)
 
         this->setProcessedBytes(input_file_info.size());
         this->setErrors(1);
+        this->clearKey(key);
+        this->clearIv(iv, iv_size);
 
         return;
     }
 
     // Decrypt the file.
     QTime decryption_time(0, 0, 0, 0);
-    DecryptionState decryption_ret_val = this->decryptFileWithAes(inputFile, input_file_info.size(), output_file, decryption_time);
+    DecryptionState decryption_ret_val = this->decryptFileWithAes(inputFile, input_file_info.size(), output_file, key, iv, decryption_time);
     switch (decryption_ret_val)
     {
     case DecryptionState_Success:
@@ -490,11 +517,15 @@ void DecryptionManagerImpl::onProcess(const QString &inputFile)
     case DecryptionState_Warning:
         this->setProcessedBytes(input_file_info.size());
         this->setWarnings(1);
+        this->clearKey(key);
+        this->clearIv(iv, iv_size);
 
         return;
     case DecryptionState_Error:
         this->setProcessedBytes(input_file_info.size());
         this->setErrors(1);
+        this->clearKey(key);
+        this->clearIv(iv, iv_size);
 
         return;
     default:
@@ -502,6 +533,8 @@ void DecryptionManagerImpl::onProcess(const QString &inputFile)
 
         this->setProcessedBytes(input_file_info.size());
         this->setErrors(1);
+        this->clearKey(key);
+        this->clearIv(iv, iv_size);
 
         return;
     }
@@ -514,6 +547,8 @@ void DecryptionManagerImpl::onProcess(const QString &inputFile)
     this->setProgress(1);
     this->setState(Enums::ProcessState_Completed);
     this->setCurrentInputFile(m_CURRENT_INPUT_FILE_NONE);
+    this->clearKey(key);
+    this->clearIv(iv, iv_size);
 
     this->debug("File decrypted");
 }

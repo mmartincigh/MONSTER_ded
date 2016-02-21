@@ -20,7 +20,7 @@ WindowManager::WindowManager(QObject *parent) :
 
 WindowManager::~WindowManager()
 {
-    this->debug("Window manager manager created");
+    this->debug("Window manager manager disposed of");
 }
 
 Qt::WindowFlags WindowManager::windowFlags() const

@@ -16,7 +16,6 @@ class PathBase : public IPath
 
 private:
     static const int m_MAX_MODEL_SIZE;
-    static const QString m_URL_FILE_SCHEME;
     QString m_editText;
     QStringList m_pathModel;
     QString m_path;

@@ -6,11 +6,6 @@
 #include "utils.h"
 
 const int PathBase::m_MAX_MODEL_SIZE(5);
-#if defined(Q_OS_WIN)
-const QString PathBase::m_URL_FILE_SCHEME("file:///");
-#else
-const QString PathBase::m_URL_FILE_SCHEME("file://");
-#endif
 
 PathBase::PathBase(const QString &logTag, QObject *parent) :
     IPath(logTag, parent),
@@ -207,6 +202,6 @@ void PathBase::onEditTextChanged(const QString &editText)
     this->setPath(editText);
 
     QString source_path(editText);
-    QUrl source_path_url(source_path.prepend(m_URL_FILE_SCHEME));
+    QUrl source_path_url(source_path.prepend(Utils::URL_FILE_SCHEME));
     this->setPathUrl(source_path_url);
 }

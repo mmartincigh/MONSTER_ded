@@ -42,6 +42,7 @@ signals:
     void destinationPath(QString *destinationPath);
     void inputFiles(QStringList *inputFiles);
     void overwriteOutputFiles(bool *overwriteOutputFiles);
+    void openFile(const QString &file);
 };
 
 #endif // DECRYPTIONMANAGERIMPL_H

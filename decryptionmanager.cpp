@@ -29,6 +29,7 @@ DecryptionManager::DecryptionManager(const QString &applicationDirPath, QObject 
     QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(destinationPath(QString*)), this, SIGNAL(destinationPath(QString*)), Qt::BlockingQueuedConnection);
     QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(inputFiles(QStringList*)), this, SIGNAL(inputFiles(QStringList*)), Qt::BlockingQueuedConnection);
     QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(overwriteOutputFiles(bool*)), this, SIGNAL(overwriteOutputFiles(bool*)), Qt::BlockingQueuedConnection);
+    QObject::connect(m_decryptionManagerImplSptr.data(), SIGNAL(openFile(QString)), this, SIGNAL(openFile(QString)));
 
     this->debug("Decryption manager created");
 }

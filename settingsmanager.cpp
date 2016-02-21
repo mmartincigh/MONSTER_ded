@@ -11,6 +11,8 @@ const QString SettingsManager::m_SECURE_PATH_MODEL_KEY("securePathManager/secure
 const QStringList SettingsManager::m_FALL_BACK_SECURE_PATH_MODEL;
 const QString SettingsManager::m_DESTINATION_PATH_MODEL_KEY("destinationPathManager/destinationPathModel");
 const QStringList SettingsManager::m_FALL_BACK_DESTINATION_PATH_MODEL;
+const QString SettingsManager::m_OPEN_FILE_KEY("processManager/openFile");
+const bool SettingsManager::m_FALL_BACK_OPEN_FILE(false);
 
 SettingsManager::SettingsManager(QObject *parent) :
     Base("SM", parent),
@@ -37,6 +39,11 @@ QStringList SettingsManager::securePathModel() const
 QStringList SettingsManager::destinationPathModel() const
 {
     return m_settings.value(m_DESTINATION_PATH_MODEL_KEY, m_FALL_BACK_DESTINATION_PATH_MODEL).toStringList();
+}
+
+bool SettingsManager::openFile() const
+{
+    return m_settings.value(m_OPEN_FILE_KEY, m_FALL_BACK_OPEN_FILE).toBool();
 }
 
 void SettingsManager::onSourcePathModel(QStringList *sourcePathModel)
@@ -115,4 +122,30 @@ void SettingsManager::onDestinationPathModelChanged(const QStringList &destinati
     m_settings.setValue(m_DESTINATION_PATH_MODEL_KEY, destinationPathModel);
 
     this->debug("Destination path model changed: " + destinationPathModel.join('|'));
+}
+
+void SettingsManager::onOpenFile(bool *openFile)
+{
+    if (openFile == NULL)
+    {
+        return;
+    }
+
+    *openFile = this->openFile();
+
+    this->debug("Open file: " + QString(*openFile ? "true" : "false"));
+}
+
+void SettingsManager::onOpenFileChanged(bool openFile)
+{
+    bool default_open_file = this->openFile();
+
+    if (default_open_file == openFile)
+    {
+        return;
+    }
+
+    m_settings.setValue(m_OPEN_FILE_KEY, openFile);
+
+    this->debug("Open file changed: " + QString(openFile ? "true" : "false"));
 }

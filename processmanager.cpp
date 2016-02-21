@@ -1,3 +1,6 @@
+// Qt
+#include <QDesktopServices>
+
 // Local
 #include "processmanager.h"
 #include "utils.h"
@@ -10,7 +13,8 @@ ProcessManager::ProcessManager(QObject *parent) :
     m_state(Enums::ProcessState_Idle),
     m_stateDescription(Utils::processStateToString(m_state)),
     m_progress(0),
-    m_progressString(Utils::progressToString(m_progress))
+    m_progressString(Utils::progressToString(m_progress)),
+    m_openFile(false)
 {
     QObject::connect(this, SIGNAL(typeChanged(Enums::ProcessType)), this, SLOT(onTypeChanged(Enums::ProcessType)));
     QObject::connect(this, SIGNAL(stateChanged(Enums::ProcessState)), this, SLOT(onStateChanged(Enums::ProcessState)));
@@ -22,6 +26,15 @@ ProcessManager::ProcessManager(QObject *parent) :
 ProcessManager::~ProcessManager()
 {
     this->debug("Process manager disposed of");
+}
+
+void ProcessManager::initialize()
+{
+    bool open_file = false;
+    emit this->openFile(&open_file);
+    this->setOpenFile(open_file);
+
+    this->debug("Initialized");
 }
 
 bool ProcessManager::isEnabled() const
@@ -57,6 +70,25 @@ float ProcessManager::progress() const
 QString ProcessManager::progressString() const
 {
     return m_progressString;
+}
+
+bool ProcessManager::openFile() const
+{
+    return m_openFile;
+}
+
+void ProcessManager::setOpenFile(bool openFile)
+{
+    if (m_openFile == openFile)
+    {
+        return;
+    }
+
+    m_openFile = openFile;
+
+    this->debug("Open file changed: " + QString(m_openFile ? "true" : "false"));
+
+    emit this->openFileChanged(m_openFile);
 }
 
 void ProcessManager::setIsEnabled(bool isEnabled)
@@ -301,6 +333,26 @@ void ProcessManager::onStop()
     default:
         this->error("Unkown process type");
         return;
+    }
+}
+
+void ProcessManager::onOpenFile(const QString &file)
+{
+    if (!m_openFile)
+    {
+        return;
+    }
+
+    this->debug("Opening file: " + file);
+
+    bool ret_val = QDesktopServices::openUrl(QUrl(Utils::URL_FILE_SCHEME + file));
+    if (ret_val)
+    {
+        this->debug("File opened");
+    }
+    else
+    {
+        this->warning("Cannot open file");
     }
 }
 

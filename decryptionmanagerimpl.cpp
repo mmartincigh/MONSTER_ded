@@ -551,4 +551,7 @@ void DecryptionManagerImpl::onProcess(const QString &inputFile)
     this->clearIv(iv, iv_size);
 
     this->debug("File decrypted");
+
+    // Try to open the file.
+    emit this->openFile(output_file);
 }

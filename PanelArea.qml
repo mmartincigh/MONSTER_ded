@@ -101,6 +101,15 @@ Rectangle {
         anchors.leftMargin: 20
     }
 
+    SettingsPanel {
+        id: settingsPanel
+
+        anchors.top: processPanel.bottom
+        anchors.topMargin: 20
+        anchors.right: parent.right
+        anchors.rightMargin: 20
+    }
+
     Text {
         id: version
 

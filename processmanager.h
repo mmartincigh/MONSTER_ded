@@ -15,6 +15,7 @@ class ProcessManager : public Base
     Q_PROPERTY(QString stateDescription READ stateDescription NOTIFY stateDescriptionChanged)
     Q_PROPERTY(float progress READ progress NOTIFY progressChanged)
     Q_PROPERTY(QString progressString READ progressString NOTIFY progressStringChanged)
+    Q_PROPERTY(bool openFile READ openFile WRITE setOpenFile NOTIFY openFileChanged)
 
 private:
     bool m_isEnabled;
@@ -24,12 +25,14 @@ private:
     QString m_stateDescription;
     float m_progress;
     QString m_progressString;
+    bool m_openFile;
 
 public:
     explicit ProcessManager(QObject *parent = NULL);
     ~ProcessManager();
 
 public:
+    void initialize();
     bool isEnabled() const;
     Enums::ProcessType type() const;
     QString typeDescription() const;
@@ -37,6 +40,8 @@ public:
     QString stateDescription() const;
     float progress() const;
     QString progressString() const;
+    bool openFile() const;
+    void setOpenFile(bool openFile);
 
 private:
     void setIsEnabled(bool isEnabled);
@@ -55,6 +60,7 @@ public slots:
     void onPause();
     void onResume();
     void onStop();
+    void onOpenFile(const QString &file);
 
 private slots:
     void onTypeChanged(Enums::ProcessType type);
@@ -69,6 +75,8 @@ signals:
     void stateDescriptionChanged(const QString &stateDescription);
     void progressChanged(float progress);
     void progressStringChanged(const QString &progressString);
+    void openFile(bool *openfile);
+    void openFileChanged(bool openfile);
     void pauseEncryption();
     void pauseDecryption();
     void resumeEncryption();

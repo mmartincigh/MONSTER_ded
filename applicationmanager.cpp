@@ -73,7 +73,10 @@ ApplicationManager::ApplicationManager(const QString &applicationDirPath, const 
     QObject::connect(&m_decryptionManager, SIGNAL(destinationPath(QString*)), &m_destinationPathManager, SLOT(onPath(QString*)));
     QObject::connect(&m_decryptionManager, SIGNAL(inputFiles(QStringList*)), &m_secureFileManager, SLOT(onInputFiles(QStringList*)));
     QObject::connect(&m_decryptionManager, SIGNAL(overwriteOutputFiles(bool*)), &m_secureFileManager, SLOT(onOverwriteOutputFiles(bool*)));
+    QObject::connect(&m_decryptionManager, SIGNAL(openFile(QString)), &m_processManager, SLOT(onOpenFile(QString)));
 
+    QObject::connect(&m_processManager, SIGNAL(openFile(bool*)), &m_settingsManager, SLOT(onOpenFile(bool*)));
+    QObject::connect(&m_processManager, SIGNAL(openFileChanged(bool)), &m_settingsManager, SLOT(onOpenFileChanged(bool)));
     QObject::connect(&m_processManager, SIGNAL(pauseEncryption()), &m_encryptionManager, SLOT(onPause()));
     QObject::connect(&m_processManager, SIGNAL(pauseDecryption()), &m_decryptionManager, SLOT(onPause()));
     QObject::connect(&m_processManager, SIGNAL(resumeEncryption()), &m_encryptionManager, SLOT(onResume()));
@@ -96,6 +99,7 @@ void ApplicationManager::initialize()
     m_destinationPathManager.initialize();
     m_encryptionManager.initialize();
     m_decryptionManager.initialize();
+    m_processManager.initialize();
 
     this->debug("Initialized");
 }

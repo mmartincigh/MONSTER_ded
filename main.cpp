@@ -15,6 +15,7 @@ int main(int argc, char *argv[])
 {
 #ifdef QT_DEBUG
     setbuf(stdout, NULL);
+    setbuf(stderr, NULL);
 #endif
 
     qInstallMessageHandler(LogManager::messageHandler);

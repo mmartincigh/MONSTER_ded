@@ -2,9 +2,9 @@
 #define SECUREPATHMANAGER_H
 
 // Local
-#include "pathbase.h"
+#include "pathmanagerbase.h"
 
-class SecurePathManager : public PathBase
+class SecurePathManager : public PathManagerBase
 {
     Q_OBJECT
 

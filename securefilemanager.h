@@ -2,9 +2,9 @@
 #define SECUREFILEMANAGER_H
 
 // Local
-#include "filebase.h"
+#include "filemanagerbase.h"
 
-class SecureFileManager : public FileBase
+class SecureFileManager : public FileManagerBase
 {
     Q_OBJECT
 

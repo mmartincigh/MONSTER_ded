@@ -2,7 +2,7 @@
 #include "secureFileManager.h"
 
 SecureFileManager::SecureFileManager(const QStringList &nameFilters, QObject *parent) :
-    FileBase(nameFilters, "SCRFM", parent)
+    FileManagerBase(nameFilters, "SCRFM", parent)
 {
     this->debug("Secure file manager created");
 }

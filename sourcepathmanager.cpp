@@ -2,7 +2,7 @@
 #include "sourcepathmanager.h"
 
 SourcePathManager::SourcePathManager(QObject *parent) :
-    PathBase("SRCPM", parent)
+    PathManagerBase("SRCPM", parent)
 {
     this->debug("Source path manager created");
 }

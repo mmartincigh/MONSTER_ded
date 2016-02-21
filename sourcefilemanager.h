@@ -2,9 +2,9 @@
 #define SOURCEFILEMANAGER_H
 
 // Local
-#include "filebase.h"
+#include "filemanagerbase.h"
 
-class SourceFileManager : public FileBase
+class SourceFileManager : public FileManagerBase
 {
     Q_OBJECT
 

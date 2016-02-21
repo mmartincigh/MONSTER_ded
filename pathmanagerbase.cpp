@@ -2,13 +2,13 @@
 #include <QFileInfo>
 
 // Local
-#include "pathbase.h"
+#include "pathmanagerbase.h"
 #include "utils.h"
 
-const int PathBase::m_MAX_MODEL_SIZE(5);
+const int PathManagerBase::m_MAX_MODEL_SIZE(5);
 
-PathBase::PathBase(const QString &logTag, QObject *parent) :
-    IPath(logTag, parent),
+PathManagerBase::PathManagerBase(const QString &logTag, QObject *parent) :
+    IPathManager(logTag, parent),
     m_editText(""),
     m_pathModel(),
     m_path(""),
@@ -18,11 +18,11 @@ PathBase::PathBase(const QString &logTag, QObject *parent) :
     QObject::connect(this, SIGNAL(editTextChanged(QString)), this, SLOT(onEditTextChanged(QString)));
 }
 
-PathBase::~PathBase()
+PathManagerBase::~PathManagerBase()
 {
 }
 
-void PathBase::initialize()
+void PathManagerBase::initialize()
 {
     QStringList path_model;
     emit this->pathModel(&path_model);
@@ -31,22 +31,22 @@ void PathBase::initialize()
     this->debug("Initialized");
 }
 
-QStringList PathBase::pathModel() const
+QStringList PathManagerBase::pathModel() const
 {
     return m_pathModel;
 }
 
-QUrl PathBase::pathUrl() const
+QUrl PathManagerBase::pathUrl() const
 {
     return m_pathUrl;
 }
 
-bool PathBase::isPathUrlValid() const
+bool PathManagerBase::isPathUrlValid() const
 {
     return m_isPathUrlValid;
 }
 
-void PathBase::setEditText(const QString &editText)
+void PathManagerBase::setEditText(const QString &editText)
 {
     if (m_editText == editText)
     {
@@ -60,7 +60,7 @@ void PathBase::setEditText(const QString &editText)
     emit this->editTextChanged(m_editText);
 }
 
-void PathBase::setPathModel(const QStringList &pathModel)
+void PathManagerBase::setPathModel(const QStringList &pathModel)
 {
     if (m_pathModel == pathModel)
     {
@@ -74,7 +74,7 @@ void PathBase::setPathModel(const QStringList &pathModel)
     emit this->pathModelChanged(m_pathModel);
 }
 
-void PathBase::setPath(const QString &path)
+void PathManagerBase::setPath(const QString &path)
 {
     if (m_path == path)
     {
@@ -88,7 +88,7 @@ void PathBase::setPath(const QString &path)
     emit this->pathChanged(m_path);
 }
 
-void PathBase::setPathUrl(const QUrl &pathUrl)
+void PathManagerBase::setPathUrl(const QUrl &pathUrl)
 {
     if (m_pathUrl == pathUrl)
     {
@@ -102,7 +102,7 @@ void PathBase::setPathUrl(const QUrl &pathUrl)
     emit this->pathUrlChanged(m_pathUrl);
 }
 
-void PathBase::setIsPathUrlValid(bool isPathUrlValid)
+void PathManagerBase::setIsPathUrlValid(bool isPathUrlValid)
 {
     if (m_isPathUrlValid == isPathUrlValid)
     {
@@ -116,7 +116,7 @@ void PathBase::setIsPathUrlValid(bool isPathUrlValid)
     emit this->isPathUrlValidChanged(m_isPathUrlValid);
 }
 
-void PathBase::updatePathModel()
+void PathManagerBase::updatePathModel()
 {
     // Do not change the model if the current path is invalid.
     if (!m_isPathUrlValid)
@@ -150,7 +150,7 @@ void PathBase::updatePathModel()
     this->setPathModel(path_model);
 }
 
-void PathBase::onPath(QString *path)
+void PathManagerBase::onPath(QString *path)
 {
     if (path == NULL)
     {
@@ -160,7 +160,7 @@ void PathBase::onPath(QString *path)
     *path = m_path;
 }
 
-void PathBase::onIsPathUrlValid(bool *isPathUrlValid)
+void PathManagerBase::onIsPathUrlValid(bool *isPathUrlValid)
 {
     if (isPathUrlValid == NULL)
     {
@@ -170,23 +170,23 @@ void PathBase::onIsPathUrlValid(bool *isPathUrlValid)
     *isPathUrlValid = m_isPathUrlValid;
 }
 
-void PathBase::onUpdateEditText(const QString &editText)
+void PathManagerBase::onUpdateEditText(const QString &editText)
 {
     this->setEditText(editText);
 }
 
-void PathBase::onUpdateEditText(const QUrl &editText)
+void PathManagerBase::onUpdateEditText(const QUrl &editText)
 {
     QString edit_text = Utils::urlToString(editText);
     this->setEditText(edit_text);
 }
 
-void PathBase::onProcess()
+void PathManagerBase::onProcess()
 {
     this->updatePathModel();
 }
 
-void PathBase::onEditTextChanged(const QString &editText)
+void PathManagerBase::onEditTextChanged(const QString &editText)
 {
     QFileInfo source_path_info(editText);
     bool is_source_path_valid = source_path_info.exists() && source_path_info.isDir();

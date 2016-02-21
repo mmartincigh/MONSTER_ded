@@ -2,7 +2,7 @@
 #include "destinationpathmanager.h"
 
 DestinationPathManager::DestinationPathManager(QObject *parent) :
-    PathBase("DSTPM", parent)
+    PathManagerBase("DSTPM", parent)
 {
     this->debug("Destination path manager created");
 }

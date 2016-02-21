@@ -85,13 +85,13 @@ HEADERS += \
     encryptionmanager.h \
     encryptionmanagerimpl.h \
     enums.h \
-    filebase.h \
-    ifile.h \
-    ipath.h \
+    filemanagerbase.h \
+    ifilemanager.h \
+    ipathmanager.h \
     iprocess.h \
     iprocessimpl.h \
     logmanager.h \
-    pathbase.h \
+    pathmanagerbase.h \
     processimplbase.h \
     processmanager.h \
     securefilemanager.h \
@@ -113,10 +113,10 @@ SOURCES += \
     destinationpathmanager.cpp \
     encryptionmanager.cpp \
     encryptionmanagerimpl.cpp \
-    filebase.cpp \
+    filemanagerbase.cpp \
     logmanager.cpp \
     main.cpp \
-    pathbase.cpp \
+    pathmanagerbase.cpp \
     processimplbase.cpp \
     processmanager.cpp \
     securefilemanager.cpp \

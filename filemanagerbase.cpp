@@ -2,11 +2,11 @@
 #include <QDir>
 
 // Local
-#include "filebase.h"
+#include "filemanagerbase.h"
 #include "utils.h"
 
-FileBase::FileBase(const QStringList &nameFilters, const QString &logTag, QObject *parent) :
-    IFile(logTag, parent),
+FileManagerBase::FileManagerBase(const QStringList &nameFilters, const QString &logTag, QObject *parent) :
+    IFileManager(logTag, parent),
     m_nameFilters(nameFilters),
     m_inputFiles(),
     m_inputFilesCount(0),
@@ -14,26 +14,26 @@ FileBase::FileBase(const QStringList &nameFilters, const QString &logTag, QObjec
 {
 }
 
-FileBase::~FileBase()
+FileManagerBase::~FileManagerBase()
 {
 }
 
-QStringList FileBase::inputFiles() const
+QStringList FileManagerBase::inputFiles() const
 {
     return m_inputFiles;
 }
 
-int FileBase::inputFilesCount() const
+int FileManagerBase::inputFilesCount() const
 {
     return m_inputFilesCount;
 }
 
-bool FileBase::overwriteOutputFiles() const
+bool FileManagerBase::overwriteOutputFiles() const
 {
     return m_overwriteOutputFiles;
 }
 
-void FileBase::setOverwriteOutputFiles(bool overwriteOutputFiles)
+void FileManagerBase::setOverwriteOutputFiles(bool overwriteOutputFiles)
 {
     if (m_overwriteOutputFiles == overwriteOutputFiles)
     {
@@ -47,7 +47,7 @@ void FileBase::setOverwriteOutputFiles(bool overwriteOutputFiles)
     emit this->overwriteOutputFilesChanged(m_overwriteOutputFiles);
 }
 
-void FileBase::setInputFiles(const QStringList &inputFiles)
+void FileManagerBase::setInputFiles(const QStringList &inputFiles)
 {
     if (m_inputFiles == inputFiles)
     {
@@ -61,7 +61,7 @@ void FileBase::setInputFiles(const QStringList &inputFiles)
     emit this->inputFilesChanged(m_inputFiles);
 }
 
-void FileBase::setInputFilesCount(int inputFilesCount)
+void FileManagerBase::setInputFilesCount(int inputFilesCount)
 {
     if (m_inputFilesCount == inputFilesCount)
     {
@@ -75,7 +75,7 @@ void FileBase::setInputFilesCount(int inputFilesCount)
     emit this->inputFilesCountChanged(m_inputFilesCount);
 }
 
-void FileBase::onPathChanged(const QString &path)
+void FileManagerBase::onPathChanged(const QString &path)
 {
     this->debug("Path: " + path);
     if (path.isEmpty())
@@ -88,7 +88,7 @@ void FileBase::onPathChanged(const QString &path)
     this->onReloadInputFiles(path);
 }
 
-void FileBase::onInputFiles(QStringList *inputFiles)
+void FileManagerBase::onInputFiles(QStringList *inputFiles)
 {
     if (inputFiles == NULL)
     {
@@ -98,7 +98,7 @@ void FileBase::onInputFiles(QStringList *inputFiles)
     *inputFiles = m_inputFiles;
 }
 
-void FileBase::onOverwriteOutputFiles(bool *overwriteOutputFiles)
+void FileManagerBase::onOverwriteOutputFiles(bool *overwriteOutputFiles)
 {
     if (overwriteOutputFiles == NULL)
     {
@@ -108,7 +108,7 @@ void FileBase::onOverwriteOutputFiles(bool *overwriteOutputFiles)
     *overwriteOutputFiles = m_overwriteOutputFiles;
 }
 
-void FileBase::onReloadInputFiles()
+void FileManagerBase::onReloadInputFiles()
 {
     QString path;
     emit this->path(&path);
@@ -122,7 +122,7 @@ void FileBase::onReloadInputFiles()
 
     this->onReloadInputFiles(path);
 }
-void FileBase::onReloadInputFiles(const QString &path)
+void FileManagerBase::onReloadInputFiles(const QString &path)
 {
     if (path.isEmpty())
     {
@@ -147,7 +147,7 @@ void FileBase::onReloadInputFiles(const QString &path)
         return;
     }
 }
-void FileBase::onReloadInputFiles(const QUrl &pathUrl)
+void FileManagerBase::onReloadInputFiles(const QUrl &pathUrl)
 {
     QString path = Utils::urlToString(pathUrl);
     this->onReloadInputFiles(path);

@@ -2,9 +2,9 @@
 #define SOURCEPATHMANAGER_H
 
 // Local
-#include "pathbase.h"
+#include "pathmanagerbase.h"
 
-class SourcePathManager : public PathBase
+class SourcePathManager : public PathManagerBase
 {
     Q_OBJECT
 

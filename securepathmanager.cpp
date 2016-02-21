@@ -2,7 +2,7 @@
 #include "securepathmanager.h"
 
 SecurePathManager::SecurePathManager(QObject *parent) :
-    PathBase("SCRPM", parent)
+    PathManagerBase("SCRPM", parent)
 {
     this->debug("Secure path manager created");
 }

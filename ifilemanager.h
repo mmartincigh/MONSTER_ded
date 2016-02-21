@@ -1,16 +1,16 @@
-#ifndef IFILE_H
-#define IFILE_H
+#ifndef IFILEMANAGER_H
+#define IFILEMANAGER_H
 
 // Local
 #include "base.h"
 
-class IFile : public Base
+class IFileManager : public Base
 {
     Q_OBJECT
 
 public:
-    explicit IFile(const QString &logTag, QObject *parent = NULL) : Base(logTag, parent) {}
-    virtual ~IFile() {}
+    explicit IFileManager(const QString &logTag, QObject *parent = NULL) : Base(logTag, parent) {}
+    virtual ~IFileManager() {}
 
 public:
     virtual QStringList inputFiles() const = 0;
@@ -19,4 +19,4 @@ public:
     virtual void setOverwriteOutputFiles(bool overwriteOutputFiles) = 0;
 };
 
-#endif // IFILE_H
+#endif // IFILEMANAGER_H

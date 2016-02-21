@@ -1,13 +1,13 @@
-#ifndef FILEBASE_H
-#define FILEBASE_H
+#ifndef FILEMANAGERBASE_H
+#define FILEMANAGERBASE_H
 
 // Qt
 #include <QUrl>
 
 // Local
-#include "ifile.h"
+#include "ifilemanager.h"
 
-class FileBase : public IFile
+class FileManagerBase : public IFileManager
 {
     Q_OBJECT
     Q_PROPERTY(int inputFilesCount READ inputFilesCount NOTIFY inputFilesCountChanged)
@@ -20,8 +20,8 @@ private:
     bool m_overwriteOutputFiles;
 
 public:
-    explicit FileBase(const QStringList &nameFilters, const QString &logTag, QObject *parent = NULL);
-    ~FileBase();
+    explicit FileManagerBase(const QStringList &nameFilters, const QString &logTag, QObject *parent = NULL);
+    ~FileManagerBase();
 
 public:
     virtual QStringList inputFiles() const;
@@ -48,4 +48,4 @@ signals:
     void path(QString *path);
 };
 
-#endif // FILEBASE_H
+#endif // FILEMANAGERBASE_H

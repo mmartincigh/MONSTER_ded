@@ -1,13 +1,13 @@
-#ifndef PATHBASE_H
-#define PATHBASE_H
+#ifndef PATHMANAGERBASE_H
+#define PATHMANAGERBASE_H
 
 // Qt
 #include <QUrl>
 
 // Local
-#include "ipath.h"
+#include "ipathmanager.h"
 
-class PathBase : public IPath
+class PathManagerBase : public IPathManager
 {
     Q_OBJECT
     Q_PROPERTY(QStringList pathModel READ pathModel NOTIFY pathModelChanged)
@@ -23,8 +23,8 @@ private:
     bool m_isPathUrlValid;
 
 public:
-    explicit PathBase(const QString &logTag, QObject *parent = NULL);
-    ~PathBase();
+    explicit PathManagerBase(const QString &logTag, QObject *parent = NULL);
+    ~PathManagerBase();
 
 public:
     virtual void initialize();
@@ -59,4 +59,4 @@ signals:
     void pathModel(QStringList *pathModel);
 };
 
-#endif // PATHBASE_H
+#endif // PATHMANAGERBASE_H

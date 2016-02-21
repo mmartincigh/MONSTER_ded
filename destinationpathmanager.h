@@ -3,9 +3,9 @@
 
 
 // Local
-#include "pathbase.h"
+#include "pathmanagerbase.h"
 
-class DestinationPathManager : public PathBase
+class DestinationPathManager : public PathManagerBase
 {
     Q_OBJECT
 

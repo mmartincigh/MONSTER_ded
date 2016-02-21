@@ -5,8 +5,3 @@ process multiple files from the command line and other instance
 encrypt file name
 
 decrypt in Java!
-
-ifile -> ifilemanager
-ipath -> ipath manager
-filebase -> fileManagerBase
-...

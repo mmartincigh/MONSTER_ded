@@ -4,6 +4,7 @@
 
 // Local
 #include "settingsmanager.h"
+#include "utils.h"
 
 const QString SettingsManager::m_SOURCE_PATH_MODEL_KEY("sourcePathManager/sourcePathModel");
 const QStringList SettingsManager::m_FALL_BACK_SOURCE_PATH_MODEL;
@@ -55,7 +56,7 @@ void SettingsManager::onSourcePathModel(QStringList *sourcePathModel)
 
     *sourcePathModel = this->sourcePathModel();
 
-    this->debug("Source path model: " + (*sourcePathModel).join('|'));
+    this->debug("Source path model: " + (*sourcePathModel).join(Utils::LIST_SEPARATOR));
 }
 
 void SettingsManager::onSourcePathModelChanged(const QStringList &sourcePathModel)
@@ -69,7 +70,7 @@ void SettingsManager::onSourcePathModelChanged(const QStringList &sourcePathMode
 
     m_settings.setValue(m_SOURCE_PATH_MODEL_KEY, sourcePathModel);
 
-    this->debug("Source path model changed: " + sourcePathModel.join('|'));
+    this->debug("Source path model changed: " + sourcePathModel.join(Utils::LIST_SEPARATOR));
 }
 
 void SettingsManager::onSecurePathModel(QStringList *securePathModel)
@@ -81,7 +82,7 @@ void SettingsManager::onSecurePathModel(QStringList *securePathModel)
 
     *securePathModel = this->securePathModel();
 
-    this->debug("Secure path model: " + (*securePathModel).join('|'));
+    this->debug("Secure path model: " + (*securePathModel).join(Utils::LIST_SEPARATOR));
 }
 
 void SettingsManager::onSecurePathModelChanged(const QStringList &securePathModel)
@@ -95,7 +96,7 @@ void SettingsManager::onSecurePathModelChanged(const QStringList &securePathMode
 
     m_settings.setValue(m_SECURE_PATH_MODEL_KEY, securePathModel);
 
-    this->debug("Secure path model changed: " + securePathModel.join('|'));
+    this->debug("Secure path model changed: " + securePathModel.join(Utils::LIST_SEPARATOR));
 }
 
 void SettingsManager::onDestinationPathModel(QStringList *destinationPathModel)
@@ -107,7 +108,7 @@ void SettingsManager::onDestinationPathModel(QStringList *destinationPathModel)
 
     *destinationPathModel = this->destinationPathModel();
 
-    this->debug("Destination path model: " + (*destinationPathModel).join('|'));
+    this->debug("Destination path model: " + (*destinationPathModel).join(Utils::LIST_SEPARATOR));
 }
 
 void SettingsManager::onDestinationPathModelChanged(const QStringList &destinationPathModel)
@@ -121,7 +122,7 @@ void SettingsManager::onDestinationPathModelChanged(const QStringList &destinati
 
     m_settings.setValue(m_DESTINATION_PATH_MODEL_KEY, destinationPathModel);
 
-    this->debug("Destination path model changed: " + destinationPathModel.join('|'));
+    this->debug("Destination path model changed: " + destinationPathModel.join(Utils::LIST_SEPARATOR));
 }
 
 void SettingsManager::onOpenFile(bool *openFile)

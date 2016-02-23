@@ -154,47 +154,69 @@ WindowManager *ApplicationManager::windowManager()
     return &m_windowManager;
 }
 
-void ApplicationManager::parseArguments()
+void ApplicationManager::parseArguments(QStringList &arguments)
 {
-    this->debug("Arguments: " + m_arguments.join('|'));
+    this->debug("Arguments: " + arguments.join(Utils::LIST_SEPARATOR));
 
-    // Check if there are extra arguments.
-    if (m_arguments.length() == 1)
+    // Check if there are arguments to parse.
+    if (arguments.empty())
     {
-        // No extra arguments.
+        // No arguments.
 
         return;
     }
 
-    // Consider only the second argument.
-    QString argument(m_arguments.at(1));
+    // Remove the executable from the arguments.
+    arguments.removeFirst();
 
-    // Check if the argument is a valid file name.
-    QFileInfo argument_file_info(argument);
-    if (!argument_file_info.exists())
+    // Remove duplicates.
+    arguments.removeDuplicates();
+
+    // Remove non-existent files.
+    QMutableListIterator<QString> argument(arguments);
+    while (argument.hasNext())
     {
-        // Not a valid file name.
+        // Check if the argument is a valid file name.
+        QFileInfo argument_file_info(argument.next());
+        if (!argument_file_info.exists())
+        {
+            // Not a valid file name.
+            argument.remove();
+        }
+    }
+
+    // Check if there are arguments to parse.
+    if (arguments.empty())
+    {
+        // No arguments.
 
         return;
     }
 
-    // Check whether the argument is an encrypted file or a regular file.
-    QString argument_extension(argument_file_info.suffix());
-    if (argument_extension == Utils::MEF_EXTENSION)
+    // Process files only if they all have to be encrypted or all to be decrypted.
+    QStringList files_to_decrypt = arguments.filter(QRegExp(Utils::MEF_FILE_EXTENSION + "$"));
+    if (files_to_decrypt.empty())
     {
-        // Encrypted file.
-        this->debug("Encrypted file passed as an argument: " + argument);
+        // The argument list contains only files to be encrypted.
+        this->debug("Decrypted files passed as arguments");
 
-        // Decrypt the file.
-        QMetaObject::invokeMethod(&m_decryptionManager, "onProcess", Qt::QueuedConnection, Q_ARG(QString, argument));
+        // Encrypt the files.
+        QMetaObject::invokeMethod(&m_encryptionManager, "onProcess", Qt::QueuedConnection, Q_ARG(QStringList, arguments));
+    }
+    else if (files_to_decrypt.length() < arguments.length())
+    {
+        // Mixed list of files.
+        this->warning("The arguments contain both encrypted and decrypted files");
+
+        return;
     }
     else
     {
-        // Regular file.
-        this->debug("Regular file passed as an argument: " + argument);
+        // The argument list contains only files to be decrypted.
+        this->debug("Encrypted files passed as arguments");
 
-        // Encrypt the file.
-        QMetaObject::invokeMethod(&m_encryptionManager, "onProcess", Qt::QueuedConnection, Q_ARG(QString, argument));
+        // Decrypt the files.
+        QMetaObject::invokeMethod(&m_decryptionManager, "onProcess", Qt::QueuedConnection, Q_ARG(QStringList, arguments));
     }
 }
 
@@ -202,7 +224,7 @@ void ApplicationManager::onGuiCompleted()
 {
     this->debug("GUI Completed");
 
-    this->parseArguments();
+    this->parseArguments(m_arguments);
 }
 
 void ApplicationManager::onMessageReceived(const QString &message)
@@ -212,31 +234,9 @@ void ApplicationManager::onMessageReceived(const QString &message)
     // Regardless the contents of the received message, bring the application's window to front.
     m_windowManager.bringToFront();
 
-    // Check if the argument is a valid file name.
-    QFileInfo argument_file_info(message);
-    if (!argument_file_info.exists())
-    {
-        // Not a valid file name.
+    // Get the arguments passed with the message.
+    QStringList arguments = message.split(Utils::LIST_SEPARATOR);
 
-        return;
-    }
-
-    // Check whether the argument is an encrypted file or a regular file.
-    QString argument_extension(argument_file_info.suffix());
-    if (argument_extension == Utils::MEF_EXTENSION)
-    {
-        // Encrypted file.
-        this->debug("Encrypted file passed from another instance: " + message);
-
-        // Decrypt the file.
-        QMetaObject::invokeMethod(&m_decryptionManager, "onProcess", Qt::QueuedConnection, Q_ARG(QString, message));
-    }
-    else
-    {
-        // Regular file.
-        this->debug("Regular file passed from another instance: " + message);
-
-        // Encrypt the file.
-        QMetaObject::invokeMethod(&m_encryptionManager, "onProcess", Qt::QueuedConnection, Q_ARG(QString, message));
-    }
+    // Parse the arguments.
+    this->parseArguments(arguments);
 }

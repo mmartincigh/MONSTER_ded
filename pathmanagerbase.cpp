@@ -69,7 +69,7 @@ void PathManagerBase::setPathModel(const QStringList &pathModel)
 
     m_pathModel = pathModel;
 
-    this->debug("Path model changed: " + m_pathModel.join('|'));
+    this->debug("Path model changed: " + m_pathModel.join(Utils::LIST_SEPARATOR));
 
     emit this->pathModelChanged(m_pathModel);
 }

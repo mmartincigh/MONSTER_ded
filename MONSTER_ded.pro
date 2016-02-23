@@ -2,7 +2,7 @@ TARGET = MONSTER_ded
 
 TEMPLATE = app
 
-VERSION = 1.7.4
+VERSION = 1.7.5
 
 QT += \
     qml \
@@ -18,10 +18,6 @@ CONFIG(debug, debug|release) {
 
 DEFINES += \
     SW_VERSION=\\\"$$VERSION\\\"
-#CONFIG(release, debug|release) {
-#    DEFINES += \
-#        QT_NO_DEBUG_OUTPUT
-#}
 
 CONFIG(debug, debug|release) {
     DESTDIR = $${OUT_PWD}/debug

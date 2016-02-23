@@ -20,7 +20,7 @@ private:
     QLocalServer m_localServer;
 
 public:
-    explicit SingleApplication(int argc, char *argv[]);
+    explicit SingleApplication(int &argc, char *argv[]);
     ~SingleApplication();
 
 public:

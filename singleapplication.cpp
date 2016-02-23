@@ -9,7 +9,7 @@
 
 const int SingleApplication::m_TIMEOUT(100);
 
-SingleApplication::SingleApplication(int argc, char *argv[]) :
+SingleApplication::SingleApplication(int &argc, char *argv[]) :
     QApplication(argc, argv),
     m_isRunning(false),
     m_sharedMemory(this),

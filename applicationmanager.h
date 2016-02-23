@@ -55,7 +55,7 @@ public:
     WindowManager *windowManager();
 
 private:
-    void parseArguments();
+    void parseArguments(QStringList &arguments);
 
 public slots:
     void onGuiCompleted();

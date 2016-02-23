@@ -38,6 +38,7 @@ public:
 public slots:
     virtual void onProcess() = 0;
     virtual void onProcess(const QString &inputFile) = 0;
+    virtual void onProcess(const QStringList &inputFiles) = 0;
 };
 
 #endif // IPROCESSIMPL_H

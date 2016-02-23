@@ -15,6 +15,7 @@ public:
     static const QString MEF_FILE_EXTENSION;
     static const QString MEF_NAME_FILTER;
     static const QString URL_FILE_SCHEME;
+    static const QChar LIST_SEPARATOR;
 
 private:
     static const QUrl::FormattingOptions m_URL_CONVERSION_FLAGS;

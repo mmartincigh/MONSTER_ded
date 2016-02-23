@@ -1,5 +1,6 @@
 // Local
 #include "encryptionmanager.h"
+#include "utils.h"
 
 EncryptionManager::EncryptionManager(const QString &applicationDirPath, QObject *parent) :
     IProcess("EM", parent),
@@ -148,9 +149,25 @@ void EncryptionManager::onIsSecurePathUrlValidChanged(bool isSecurePathUrlValid)
 
 void EncryptionManager::onProcess()
 {
+    // Check whether the encryptor is busy.
+    switch (m_encryptionManagerImplSptr.data()->state())
+    {
+    case Enums::ProcessState_Idle:
+    case Enums::ProcessState_Stopped:
+    case Enums::ProcessState_Completed:
+        break;
+
+    case Enums::ProcessState_Working:
+    case Enums::ProcessState_Paused:
+    default:
+        this->warning("Cannot encrypt: encryptor busy");
+
+        return;
+    }
+
+    // Encrypt.
     QMetaObject::invokeMethod(m_encryptionManagerImplSptr.data(), "onProcess", Qt::QueuedConnection);
 }
-
 void EncryptionManager::onProcess(const QString &inputFile)
 {
     // Check whether the encryptor is busy.
@@ -171,6 +188,27 @@ void EncryptionManager::onProcess(const QString &inputFile)
 
     // Encrypt the file.
     QMetaObject::invokeMethod(m_encryptionManagerImplSptr.data(), "onProcess", Qt::QueuedConnection, Q_ARG(QString, inputFile));
+}
+void EncryptionManager::onProcess(const QStringList &inputFiles)
+{
+    // Check whether the encryptor is busy.
+    switch (m_encryptionManagerImplSptr.data()->state())
+    {
+    case Enums::ProcessState_Idle:
+    case Enums::ProcessState_Stopped:
+    case Enums::ProcessState_Completed:
+        break;
+
+    case Enums::ProcessState_Working:
+    case Enums::ProcessState_Paused:
+    default:
+        this->warning("Cannot encrypt files \"" + inputFiles.join(Utils::LIST_SEPARATOR) + "\": encryptor busy");
+
+        return;
+    }
+
+    // Encrypt the file.
+    QMetaObject::invokeMethod(m_encryptionManagerImplSptr.data(), "onProcess", Qt::QueuedConnection, Q_ARG(QStringList, inputFiles));
 }
 
 void EncryptionManager::onPause()

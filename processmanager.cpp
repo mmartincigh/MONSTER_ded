@@ -200,8 +200,24 @@ void ProcessManager::onEncryptionStateChanged(Enums::ProcessState encryptionStat
         // Already an encryption process.
         break;
     case Enums::ProcessType_Decryption:
-        this->error("Conflicting process types");
-        return;
+        // Currently a decryption process, check if it can be turned into encryption.
+        switch (m_state)
+        {
+        case Enums::ProcessState_Idle:
+        case Enums::ProcessState_Stopped:
+        case Enums::ProcessState_Completed:
+            // The process can be turned into encryption.
+            this->setType(Enums::ProcessType_Encryption);
+
+            break;
+        case Enums::ProcessState_Working:
+        case Enums::ProcessState_Paused:
+        default:
+            this->error("Conflicting process type");
+            return;
+        }
+
+        break;
     default:
         this->error("Unknown process type");
         return;
@@ -218,8 +234,24 @@ void ProcessManager::onDecryptionStateChanged(Enums::ProcessState decryptionStat
         this->setType(Enums::ProcessType_Decryption);
         break;
     case Enums::ProcessType_Encryption:
-        this->error("Conflicting process types");
-        return;
+        // Currently a encryption process, check if it can be turned into decryption.
+        switch (m_state)
+        {
+        case Enums::ProcessState_Idle:
+        case Enums::ProcessState_Stopped:
+        case Enums::ProcessState_Completed:
+            // The process can be turned into dencryption.
+            this->setType(Enums::ProcessType_Decryption);
+
+            break;
+        case Enums::ProcessState_Working:
+        case Enums::ProcessState_Paused:
+        default:
+            this->error("Conflicting process type");
+            return;
+        }
+
+        break;
     case Enums::ProcessType_Decryption:
         // Already an decryption process.
         break;
@@ -242,7 +274,11 @@ void ProcessManager::onEncryptionProgressChanged(float encryptionProgress)
         // Already an encryption process.
         break;
     case Enums::ProcessType_Decryption:
-        this->error("Conflicting process types");
+        this->error("Conflicting process type");
+
+        // Stopping the process for good measure.
+        this->onStop();
+
         return;
     default:
         this->error("Unknown process type");
@@ -260,7 +296,11 @@ void ProcessManager::onDecryptionProgressChanged(float decryptionProgress)
         this->setType(Enums::ProcessType_Decryption);
         break;
     case Enums::ProcessType_Encryption:
-        this->error("Conflicting process types");
+        this->error("Conflicting process type");
+
+        // Stopping the process for good measure.
+        this->onStop();
+
         return;
     case Enums::ProcessType_Decryption:
         // Already an decryption process.

@@ -43,7 +43,7 @@ Rectangle {
         anchors.left: parent.left
         anchors.right: parent.right
 
-        text: qsTr("<b>info</b> it applies only to files opened using the application (for example, by double-clicking on them)")
+        text: qsTr("<b><font color=\"blue\">info</font></b> it applies only to individual files opened using the application directly (for example, by double-clicking on them)")
         textFormat: Text.RichText
         wrapMode: Text.WordWrap
     }

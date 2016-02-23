@@ -1,7 +1,7 @@
-rename all source files -> prefix MDED
-
-process multiple files from the command line and other instance
+rename all source files -> prefix MDED?
 
 encrypt file name
 
 decrypt in Java!
+
+directory listeners!

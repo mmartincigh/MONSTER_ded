@@ -1,5 +1,6 @@
 // Local
 #include "decryptionmanager.h"
+#include "utils.h"
 
 DecryptionManager::DecryptionManager(const QString &applicationDirPath, QObject *parent) :
     IProcess("DM", parent),
@@ -149,9 +150,25 @@ void DecryptionManager::onIsDestinationPathUrlValidChanged(bool isDestinationPat
 
 void DecryptionManager::onProcess()
 {
+    // Check whether the decryptor is busy.
+    switch (m_decryptionManagerImplSptr.data()->state())
+    {
+    case Enums::ProcessState_Idle:
+    case Enums::ProcessState_Stopped:
+    case Enums::ProcessState_Completed:
+        break;
+
+    case Enums::ProcessState_Working:
+    case Enums::ProcessState_Paused:
+    default:
+        this->warning("Cannot decrypt: decryptor busy");
+
+        return;
+    }
+
+    // Decrypt.
     QMetaObject::invokeMethod(m_decryptionManagerImplSptr.data(), "onProcess", Qt::QueuedConnection);
 }
-
 void DecryptionManager::onProcess(const QString &inputFile)
 {
     // Check whether the decryptor is busy.
@@ -172,6 +189,27 @@ void DecryptionManager::onProcess(const QString &inputFile)
 
     // Decrypt the file.
     QMetaObject::invokeMethod(m_decryptionManagerImplSptr.data(), "onProcess", Qt::QueuedConnection, Q_ARG(QString, inputFile));
+}
+void DecryptionManager::onProcess(const QStringList &inputFiles)
+{
+    // Check whether the decryptor is busy.
+    switch (m_decryptionManagerImplSptr.data()->state())
+    {
+    case Enums::ProcessState_Idle:
+    case Enums::ProcessState_Stopped:
+    case Enums::ProcessState_Completed:
+        break;
+
+    case Enums::ProcessState_Working:
+    case Enums::ProcessState_Paused:
+    default:
+        this->warning("Cannot decrypt files \"" + inputFiles.join(Utils::LIST_SEPARATOR) + "\": decryptor busy");
+
+        return;
+    }
+
+    // Decrypt the files.
+    QMetaObject::invokeMethod(m_decryptionManagerImplSptr.data(), "onProcess", Qt::QueuedConnection, Q_ARG(QStringList, inputFiles));
 }
 
 void DecryptionManager::onPause()

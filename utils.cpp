@@ -3,12 +3,13 @@
 
 const QString Utils::MEF_EXTENSION("mef");
 const QString Utils::MEF_FILE_EXTENSION("." + MEF_EXTENSION);
-const QString Utils::MEF_NAME_FILTER("*." + MEF_FILE_EXTENSION);
+const QString Utils::MEF_NAME_FILTER("*" + MEF_FILE_EXTENSION);
 #if defined(Q_OS_WIN)
 const QString Utils::URL_FILE_SCHEME("file:///");
 #else
 const QString Utils::URL_FILE_SCHEME("file://");
 #endif
+const QChar Utils::LIST_SEPARATOR('|');
 
 const QUrl::FormattingOptions Utils::m_URL_CONVERSION_FLAGS(QUrl::PrettyDecoded | QUrl::PreferLocalFile);
 const QRegExp Utils::m_FILE_SCHEME_REG_EXP("^file://");

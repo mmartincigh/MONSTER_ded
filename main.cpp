@@ -10,6 +10,7 @@
 #include "singleapplication.h"
 #include "applicationmanager.h"
 #include "applicationutils.h"
+#include "utils.h"
 
 int main(int argc, char *argv[])
 {
@@ -32,8 +33,7 @@ int main(int argc, char *argv[])
     {
         // Send a message to the running instance.
         QStringList application_arguments(application.arguments());
-        QString message(application_arguments.length() > 1 ? application_arguments.at(1) : "bring to front");
-        int ret_val = application.onSendMessage(message) ? EXIT_SUCCESS : EXIT_FAILURE;
+        int ret_val = application.onSendMessage(application_arguments.join(Utils::LIST_SEPARATOR)) ? EXIT_SUCCESS : EXIT_FAILURE;
 
         return ret_val;
     }

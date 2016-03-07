@@ -438,7 +438,7 @@ void DecryptionManagerImpl::onProcess(const QString &inputFile)
     QString output_path(input_file_info.absolutePath());
     if (output_path.isEmpty())
     {
-        this->error("Output path is empty");
+        this->error("The output path is empty");
 
         return;
     }

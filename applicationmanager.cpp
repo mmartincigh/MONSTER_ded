@@ -178,7 +178,8 @@ void ApplicationManager::parseArguments(QStringList &arguments)
     {
         // Check if the argument is a valid file name.
         QFileInfo argument_file_info(argument.next());
-        if (!argument_file_info.exists())
+        if (!argument_file_info.exists()
+                || argument_file_info.isDir())
         {
             // Not a valid file name.
             argument.remove();

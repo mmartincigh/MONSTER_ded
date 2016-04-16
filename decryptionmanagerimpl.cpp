@@ -112,7 +112,7 @@ DecryptionManagerImpl::DecryptionState DecryptionManagerImpl::decryptFileWithMac
     return DecryptionState_Success;
 }
 
-DecryptionManagerImpl::DecryptionState DecryptionManagerImpl::decryptFileWithAes(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, const CryptoPP::SecByteBlock key, const unsigned char *iv, QTime &decryptionTime)
+DecryptionManagerImpl::DecryptionState DecryptionManagerImpl::decryptFileWithAes(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, const CryptoPP::SecByteBlock &key, const unsigned char *iv, QTime &decryptionTime)
 {
     this->debug("Decrypting file with AES: " + inputFile + " [" + Utils::bytesToString(inputFileSize) + "]");
 
@@ -124,8 +124,8 @@ DecryptionManagerImpl::DecryptionState DecryptionManagerImpl::decryptFileWithAes
         // Construct the decryption machinery.
         CryptoPP::FileSink *file_sink = new CryptoPP::FileSink(outputFile.toUtf8().constData());
         CryptoPP::CBC_Mode<CryptoPP::AES>::Decryption aes_decryptor(key, key.size(), iv);
-        CryptoPP::StreamTransformationFilter *stream_transformation_filter_sptr = new CryptoPP::StreamTransformationFilter(aes_decryptor, file_sink);
-        CryptoPP::FileSource file_source(inputFile.toUtf8().constData(), false, stream_transformation_filter_sptr);
+        CryptoPP::StreamTransformationFilter *stream_transformation_filter = new CryptoPP::StreamTransformationFilter(aes_decryptor, file_sink, CryptoPP::BlockPaddingSchemeDef::NO_PADDING);
+        CryptoPP::FileSource file_source(inputFile.toUtf8().constData(), false, stream_transformation_filter);
 
         // Decrypt the file.
         if (inputFileSize <= m_DECRYPTION_THRESHOLD_SIZE)
@@ -162,9 +162,15 @@ DecryptionManagerImpl::DecryptionState DecryptionManagerImpl::decryptFileWithAes
             file_source.PumpAll();
         }
     }
+    catch (const CryptoPP::Exception &e)
+    {
+        this->error("Cannot decrypt file \"" + inputFile + "\" with AES. Crypto++ error: " + e.what());
+
+        return DecryptionState_Error;
+    }
     catch (const std::exception &e)
     {
-        this->error("Cannot decrypt file \"" + inputFile + "\" with AES. " + e.what());
+        this->error("Cannot decrypt file \"" + inputFile + "\" with AES. Unexpected error: " + e.what());
 
         return DecryptionState_Error;
     }
@@ -728,7 +734,8 @@ void DecryptionManagerImpl::onProcess(const QStringList &inputFiles)
     this->debug("Files decrypted");
 
     // Check whether there was only one file to decrypt.
-    if (inputFiles.length() == 1)
+    if (inputFiles.length() == 1
+            && m_errors == 0)
     {
         // Try to open the file.
         emit this->openFile(output_file);

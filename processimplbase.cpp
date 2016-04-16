@@ -211,7 +211,7 @@ void ProcessImplBase::setBytesToProcess(unsigned long long bytesToProcess)
 
     m_bytesToProcess = bytesToProcess;
 
-    this->debug("Bytes to encrypt changed: " + QString::number(m_bytesToProcess));
+    this->debug("Bytes to process changed: " + QString::number(m_bytesToProcess));
 
     emit this->bytesToProcessChanged(m_bytesToProcess);
 }
@@ -303,8 +303,8 @@ void ProcessImplBase::setCurrentInputFile(const QString &currentInputFile)
 bool ProcessImplBase::readKeyFromFile(/* out */ CryptoPP::SecByteBlock &outKey)
 {
     // Initialize the output parameter.
+    outKey.CleanNew(CryptoPP::AES::MAX_KEYLENGTH);
     size_t key_size =  outKey.size();
-    memset(outKey.data(), 0, key_size);
 
     // Get the key.
     QDir application_directory(m_applicationDirPath);
@@ -333,7 +333,7 @@ bool ProcessImplBase::readKeyFromFile(/* out */ CryptoPP::SecByteBlock &outKey)
     }
     if (outKey.empty())
     {
-        this->error("The encryption key is empty");
+        this->error("The key is empty");
 
         return false;
     }
@@ -486,7 +486,7 @@ void ProcessImplBase::setBytesToProcessString(const QString &bytesToProcessStrin
 
     m_bytesToProcessString = bytesToProcessString;
 
-    this->debug("Bytes to encrypt string changed: " + m_bytesToProcessString);
+    this->debug("Bytes to process string changed: " + m_bytesToProcessString);
 
     emit this->bytesToProcessStringChanged(m_bytesToProcessString);
 }

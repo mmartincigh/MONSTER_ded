@@ -112,7 +112,7 @@ EncryptionManagerImpl::EncryptionState EncryptionManagerImpl::encryptFileWithMac
     return EncryptionState_Success;
 }
 
-EncryptionManagerImpl::EncryptionState EncryptionManagerImpl::encryptFileWithAes(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, const CryptoPP::SecByteBlock key, const unsigned char *iv, QTime &encryptionTime)
+EncryptionManagerImpl::EncryptionState EncryptionManagerImpl::encryptFileWithAes(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, const CryptoPP::SecByteBlock &key, const unsigned char *iv, QTime &encryptionTime)
 {
     this->debug("Encrypting file with AES: " + inputFile + " [" + Utils::bytesToString(inputFileSize) + "]");
 
@@ -124,8 +124,8 @@ EncryptionManagerImpl::EncryptionState EncryptionManagerImpl::encryptFileWithAes
         // Construct the encryption machinery.
         CryptoPP::FileSink *file_sink = new CryptoPP::FileSink(outputFile.toUtf8().constData());
         CryptoPP::CBC_Mode<CryptoPP::AES>::Encryption aes_encryptor(key, key.size(), iv);
-        CryptoPP::StreamTransformationFilter *stream_transformation_filter_sptr = new CryptoPP::StreamTransformationFilter(aes_encryptor, file_sink);
-        CryptoPP::FileSource file_source(inputFile.toUtf8().constData(), false, stream_transformation_filter_sptr);
+        CryptoPP::StreamTransformationFilter *stream_transformation_filter = new CryptoPP::StreamTransformationFilter(aes_encryptor, file_sink, CryptoPP::BlockPaddingSchemeDef::NO_PADDING);
+        CryptoPP::FileSource file_source(inputFile.toUtf8().constData(), false, stream_transformation_filter);
 
         // Encrypt the file.
         if (inputFileSize <= m_ENCRYPTION_THRESHOLD_SIZE)
@@ -162,9 +162,15 @@ EncryptionManagerImpl::EncryptionState EncryptionManagerImpl::encryptFileWithAes
             file_source.PumpAll();
         }
     }
+    catch (const CryptoPP::Exception &e)
+    {
+        this->error("Cannot encrypt file \"" + inputFile + "\" with AES. Crypto++ error: " + e.what());
+
+        return EncryptionState_Error;
+    }
     catch (const std::exception &e)
     {
-        this->error("Cannot encrypt file \"" + inputFile + "\" with AES. " + e.what());
+        this->error("Cannot encrypt file \"" + inputFile + "\" with AES. Unexpected error: " + e.what());
 
         return EncryptionState_Error;
     }

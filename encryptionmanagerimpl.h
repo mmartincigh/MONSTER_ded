@@ -27,7 +27,7 @@ public:
 private:
     bool checkIfEnabled();
     EncryptionState encryptFileWithMac(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, QTime &encryptionTime);
-    EncryptionState encryptFileWithAes(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, const CryptoPP::SecByteBlock key, const unsigned char *iv, QTime &encryptionTime);
+    EncryptionState encryptFileWithAes(const QString &inputFile, unsigned long inputFileSize, const QString &outputFile, const CryptoPP::SecByteBlock &key, const unsigned char *iv, QTime &encryptionTime);
 
 public slots:
     void onIsSourcePathUrlValidChanged(bool isSourcePathUrlValid);

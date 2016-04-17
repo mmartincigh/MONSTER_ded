@@ -124,7 +124,7 @@ EncryptionManagerImpl::EncryptionState EncryptionManagerImpl::encryptFileWithAes
         // Construct the encryption machinery.
         CryptoPP::FileSink *file_sink = new CryptoPP::FileSink(outputFile.toUtf8().constData());
         CryptoPP::CBC_Mode<CryptoPP::AES>::Encryption aes_encryptor(key, key.size(), iv);
-        CryptoPP::StreamTransformationFilter *stream_transformation_filter = new CryptoPP::StreamTransformationFilter(aes_encryptor, file_sink, CryptoPP::BlockPaddingSchemeDef::NO_PADDING);
+        CryptoPP::StreamTransformationFilter *stream_transformation_filter = new CryptoPP::StreamTransformationFilter(aes_encryptor, file_sink);
         CryptoPP::FileSource file_source(inputFile.toUtf8().constData(), false, stream_transformation_filter);
 
         // Encrypt the file.

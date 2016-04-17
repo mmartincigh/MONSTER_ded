@@ -2,7 +2,7 @@ TARGET = MONSTER_ded
 
 TEMPLATE = app
 
-VERSION = 1.7.7
+VERSION = 1.7.8
 
 QT += \
     qml \

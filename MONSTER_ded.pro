@@ -2,7 +2,7 @@ TARGET = MONSTER_ded
 
 TEMPLATE = app
 
-VERSION = 1.7.8
+VERSION = 2.0.0
 
 QT += \
     qml \
@@ -34,14 +34,26 @@ INCLUDEPATH += \
 
 win32 {
     CONFIG(debug, debug|release) {
-        # Windows x86 (32bit) debug
-        LIBS += \
-            -L"$$PWD/lib/win/x86/debug"
+        contains(QMAKE_TARGET.arch, x86_64) {
+            # Windows x64 (64bit) debug
+            LIBS += \
+                -L"$$PWD/lib/win/x64/debug"
+        } else {
+            # Windows x86 (32bit) debug
+            LIBS += \
+                -L"$$PWD/lib/win/x86/debug"
+        }
     }
     CONFIG(release, debug|release) {
-        # Windows x86 (32bit) release
-        LIBS += \
-            -L"$$PWD/lib/win/x86/release"
+        contains(QMAKE_TARGET.arch, x86_64) {
+            # Windows x64 (64bit) release
+            LIBS += \
+                -L"$$PWD/lib/win/x64/release"
+        } else {
+            # Windows x86 (32bit) release
+            LIBS += \
+                -L"$$PWD/lib/win/x86/release"
+        }
     }
     LIBS += \
         -lcryptlib
@@ -97,6 +109,7 @@ HEADERS += \
     sourcefilemanager.h \
     sourcepathmanager.h \
     statsmanager.h \
+    systemtrayiconmanager.h \
     utils.h \
     windowmanager.h
 
@@ -122,6 +135,7 @@ SOURCES += \
     sourcefilemanager.cpp \
     sourcepathmanager.cpp \
     statsmanager.cpp \
+    systemtrayiconmanager.cpp \
     utils.cpp \
     windowmanager.cpp
 
@@ -130,7 +144,7 @@ RESOURCES += \
 
 win32 {
     OTHER_FILES += \
-        $(QTDIR)/bin/D3DCompiler_43.dll \
+        $(QTDIR)/bin/d3dcompiler_47.dll \
         $(QTDIR)/bin/icudt54.dll \
         $(QTDIR)/bin/icuin54.dll \
         $(QTDIR)/bin/icuuc54.dll \

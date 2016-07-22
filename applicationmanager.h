@@ -18,6 +18,7 @@
 #include "statsmanager.h"
 #include "settingsmanager.h"
 #include "windowmanager.h"
+#include "systemtrayiconmanager.h"
 
 class ApplicationManager : public Base
 {
@@ -35,6 +36,7 @@ private:
     StatsManager m_statsManager;
     SettingsManager m_settingsManager;
     WindowManager m_windowManager;
+    SystemTrayIconManager m_systemTrayIconManager;
     QStringList m_arguments;
 
 public:
@@ -53,6 +55,7 @@ public:
     ProcessManager *processManager();
     StatsManager *statsManager();
     WindowManager *windowManager();
+    SystemTrayIconManager *systemTrayIconManager();
 
 private:
     void parseArguments(QStringList &arguments);

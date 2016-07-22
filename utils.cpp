@@ -115,3 +115,20 @@ unsigned int Utils::levenshteinDistance(const QString &from_string, const QStrin
 {
     return levenshteinDistance(from_string.toStdString(), to_string.toStdString());
 }
+
+QString Utils::activationReasonToString(QSystemTrayIcon::ActivationReason reason)
+{
+    switch (reason) {
+    case QSystemTrayIcon::Context:
+        return "the context menu for the system tray entry was requested";
+    case QSystemTrayIcon::DoubleClick:
+        return "the system tray entry was double clicked";
+    case QSystemTrayIcon::Trigger:
+        return "the system tray entry was clicked";
+    case QSystemTrayIcon::MiddleClick:
+        return "the system tray entry was clicked with the middle mouse button";
+    case QSystemTrayIcon::Unknown:
+    default:
+        return "unknown reason";
+    }
+}

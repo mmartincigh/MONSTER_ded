@@ -1,6 +1,7 @@
 <RCC>
     <qresource prefix="/images/application">
         <file alias="splashScreen">1UpMushroom256x256.png</file>
+        <file alias="systemTrayIcon">1UpMushroom16x16_T.png</file>
     </qresource>
     <qresource prefix="/qml">
         <file>Base.qml</file>

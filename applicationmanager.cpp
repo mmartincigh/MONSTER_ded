@@ -19,6 +19,7 @@ ApplicationManager::ApplicationManager(const QString &applicationDirPath, const 
     m_statsManager(this),
     m_settingsManager(this),
     m_windowManager(this),
+    m_systemTrayIconManager(this),
     m_arguments(arguments)
 {
     QObject::connect(&m_sourcePathManager, SIGNAL(pathModel(QStringList*)), &m_settingsManager, SLOT(onSourcePathModel(QStringList*)));
@@ -152,6 +153,11 @@ StatsManager *ApplicationManager::statsManager()
 WindowManager *ApplicationManager::windowManager()
 {
     return &m_windowManager;
+}
+
+SystemTrayIconManager *ApplicationManager::systemTrayIconManager()
+{
+    return &m_systemTrayIconManager;
 }
 
 void ApplicationManager::parseArguments(QStringList &arguments)

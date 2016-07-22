@@ -4,6 +4,7 @@
 // Qt
 #include <QString>
 #include <QUrl>
+#include <QSystemTrayIcon>
 
 // Local
 #include "encryptionmanagerimpl.h"
@@ -35,6 +36,7 @@ public:
     static QString pointerToString(void *pointer);
     static unsigned int levenshteinDistance(const std::string &from_string, const std::string &to_string);
     static unsigned int levenshteinDistance(const QString &from_string, const QString &to_string);
+    static QString activationReasonToString(QSystemTrayIcon::ActivationReason reason);
 };
 
 #endif // UTILS_H

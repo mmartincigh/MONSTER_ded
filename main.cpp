@@ -38,8 +38,8 @@ int main(int argc, char *argv[])
         return ret_val;
     }
 
-    QPixmap pixmap(":/images/application/splashScreen");
-    QSplashScreen splash_screen(pixmap);
+    QPixmap splash_screen_pixmap(":/images/application/splashScreen");
+    QSplashScreen splash_screen(splash_screen_pixmap);
     splash_screen.show();
     application.processEvents();
 
@@ -81,6 +81,8 @@ int main(int argc, char *argv[])
     QQuickWindow *main_window = qobject_cast<QQuickWindow *>(root);
     application_manager.windowManager()->setMainWindow(main_window);
     application_manager.windowManager()->setApplication(&application);
+
+    application_manager.systemTrayIconManager()->show();
 
     return application.exec();
 }

@@ -2,7 +2,7 @@ TARGET = MONSTER_ded
 
 TEMPLATE = app
 
-VERSION = 2.0.0
+VERSION = 2.1.0
 
 QT += \
     qml \
@@ -145,11 +145,14 @@ RESOURCES += \
 win32 {
     OTHER_FILES += \
         $(QTDIR)/bin/d3dcompiler_47.dll \
-        $(QTDIR)/bin/icudt54.dll \
-        $(QTDIR)/bin/icuin54.dll \
-        $(QTDIR)/bin/icuuc54.dll \
         $$PWD/AES_key.bin \
         $$PWD/AES_iv.bin
+    lessThan(QT_MINOR_VERSION, 7) {
+        OTHER_FILES += \
+            $(QTDIR)/bin/icudt54.dll \
+            $(QTDIR)/bin/icuin54.dll \
+            $(QTDIR)/bin/icuuc54.dll
+    }
     CONFIG(debug, debug|release) {
         OTHER_FILES += \
             $(QTDIR)/bin/libEGLd.dll \
